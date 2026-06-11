@@ -1,0 +1,22 @@
+{
+  "name": "@riad-finance/contracts",
+  "version": "1.0.0",
+  "description": "RIAD Finance - EVM Payroll & Expense Management on Arbitrum",
+  "private": true,
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test",
+    "test:gas": "forge test --gas-report",
+    "deploy:arbitrum-sepolia": "forge script script/Deploy.s.sol:DeployScript --rpc-url $ARBITRUM_SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast -vvv",
+    "deploy:arbitrum-one": "forge script script/Deploy.s.sol:DeployScript --rpc-url $ARBITRUM_ONE_RPC_URL --private-key $PRIVATE_KEY --broadcast -vvv",
+    "format": "forge fmt",
+    "lint": "solhint 'src/**/*.sol' --fix"
+  },
+  "devDependencies": {
+    "solhint": "^4.5.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.2",
+    "@sablier-labs/v2-core": "github:sablier-labs/v2-core"
+  }
+}

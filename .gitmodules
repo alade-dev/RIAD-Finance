@@ -1,0 +1,9 @@
+[submodule "contracts/lib/openzeppelin-contracts"]
+	path = contracts/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts.git
+	branch = v5.0.2
+
+[submodule "contracts/lib/sablier-v2-core"]
+	path = contracts/lib/sablier-v2-core
+	url = https://github.com/sablier-labs/v2-core.git
+	branch = main
