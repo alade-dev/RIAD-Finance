@@ -1,4 +1,3 @@
-import { PublicKey } from "@solana/web3.js";
 import type { NextRequest } from "next/server";
 import { findCompanyByEmployerWallet, findCompanyById } from "./company-store";
 import { verifyAuthorizedWalletRequest } from "@/lib/wallet-request-auth";
@@ -14,11 +13,11 @@ export class CompanyRouteAuthError extends Error {
 }
 
 function normalizeWallet(wallet: string) {
-  try {
-    return new PublicKey(wallet).toBase58();
-  } catch {
-    throw new CompanyRouteAuthError(400, "Invalid wallet address");
+  const clean = wallet.trim().toLowerCase();
+  if (/^0x[a-fA-F0-9]{40}$/.test(clean)) {
+    return clean;
   }
+  throw new CompanyRouteAuthError(400, "Invalid wallet address: " + wallet);
 }
 
 async function verifyWalletBoundRequest(args: {

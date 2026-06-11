@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@/hooks/useWallet";
 import {
   Loader2,
   Clock,
@@ -35,8 +35,8 @@ function formatDate(dateStr: string) {
 function activityIcon(type: string, status?: string) {
   if (type === "claim") {
     return (
-      <div className="w-10 h-10 rounded-xl bg-[#1eba98]/12 flex items-center justify-center shrink-0 border border-[#1eba98]/25 shadow-sm">
-        <ArrowDownLeft size={16} className="text-[#1eba98]" />
+      <div className="w-10 h-10 rounded-xl bg-[#a855f7]/12 flex items-center justify-center shrink-0 border border-[#a855f7]/25 shadow-sm">
+        <ArrowDownLeft size={16} className="text-[#a855f7]" />
       </div>
     );
   }
@@ -58,7 +58,7 @@ export default function ActivityPage() {
   const { publicKey, signMessage } = useWallet();
   const [items, setItems] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const walletAddr = publicKey?.toBase58();
+  const walletAddr = publicKey;
 
   const fetchActivity = useCallback(async () => {
     if (!walletAddr || !signMessage) return;
@@ -103,7 +103,7 @@ export default function ActivityPage() {
           <button
             onClick={() => void fetchActivity()}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1eba98] hover:bg-[#1eba98]/80 text-black text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#a855f7] hover:bg-[#a855f7]/80 text-black text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
           >
             {loading ? (
               <Loader2 size={14} className="animate-spin" />
@@ -117,7 +117,7 @@ export default function ActivityPage() {
         <div className="bg-[#0b0f14] border border-white/10 rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
           {loading ? (
             <div className="py-24 flex flex-col items-center justify-center">
-              <Loader2 size={24} className="text-[#1eba98] animate-spin mb-4" />
+              <Loader2 size={24} className="text-[#a855f7] animate-spin mb-4" />
               <p className="text-[10px] font-bold uppercase tracking-widest text-[#a8a8aa]">
                 Syncing live activity...
               </p>
@@ -157,7 +157,7 @@ export default function ActivityPage() {
                           className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider ${
                             item.status === "completed" ||
                             item.status === "success"
-                              ? "bg-[#1eba98]/10 text-[#1eba98] border border-[#1eba98]/20"
+                              ? "bg-[#a855f7]/10 text-[#a855f7] border border-[#a855f7]/20"
                               : item.status === "failed"
                                 ? "bg-red-500/10 text-red-400 border border-red-500/20"
                                 : "bg-white/5 text-[#a8a8aa] border border-white/10"
@@ -176,7 +176,7 @@ export default function ActivityPage() {
                       <p
                         className={`text-sm font-bold ${
                           item.type === "claim"
-                            ? "text-[#1eba98]"
+                            ? "text-[#a855f7]"
                             : "text-white"
                         }`}
                       >

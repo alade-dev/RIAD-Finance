@@ -69,7 +69,7 @@ export function TransactionReceiptModal({ isOpen, onClose, receiptData }: Transa
             className="relative w-full max-w-sm overflow-hidden rounded-2xl bg-[#0a0a0a] border border-white/10 shadow-2xl"
           >
             {/* Header */}
-            <div className="bg-[#1eba98]/10 p-6 flex flex-col items-center justify-center border-b border-white/5 relative">
+            <div className="bg-[#a855f7]/10 p-6 flex flex-col items-center justify-center border-b border-white/5 relative">
               <button 
                 onClick={onClose}
                 className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
@@ -77,12 +77,12 @@ export function TransactionReceiptModal({ isOpen, onClose, receiptData }: Transa
                 <X size={20} />
               </button>
               
-              <div className="h-12 w-12 rounded-full bg-[#1eba98]/20 flex items-center justify-center mb-4">
-                <CheckCircle2 size={24} className="text-[#1eba98]" />
+              <div className="h-12 w-12 rounded-full bg-[#a855f7]/20 flex items-center justify-center mb-4">
+                <CheckCircle2 size={24} className="text-[#a855f7]" />
               </div>
               <h2 className="text-white font-bold text-lg mb-1">{getTitle()}</h2>
-              <p className="text-3xl font-mono font-bold text-[#1eba98]">
-                {formatCurrency(receiptData.amount)} <span className="text-sm font-sans text-[#1eba98]/60">USDC</span>
+              <p className="text-3xl font-mono font-bold text-[#a855f7]">
+                {formatCurrency(receiptData.amount)} <span className="text-sm font-sans text-[#a855f7]/60">USDC</span>
               </p>
             </div>
 
@@ -129,7 +129,7 @@ export function TransactionReceiptModal({ isOpen, onClose, receiptData }: Transa
               {receiptData.txHash && (
                 <div className="mt-6 rounded-xl bg-white/5 p-3 flex flex-col gap-2">
                   <div className="flex items-center gap-1.5 text-xs text-[#8f8f95]">
-                    <ShieldCheck size={14} className="text-[#1eba98]" />
+                    <ShieldCheck size={14} className="text-[#a855f7]" />
                     <span>Cryptographically verified</span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -137,10 +137,10 @@ export function TransactionReceiptModal({ isOpen, onClose, receiptData }: Transa
                       {receiptData.txHash}
                     </span>
                     <a 
-                      href={`https://explorer.solana.com/tx/${receiptData.txHash}?cluster=devnet`}
+                      href={`https://sepolia.arbiscan.io/tx/${receiptData.txHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-[#1eba98] hover:text-[#84f7dc] flex items-center gap-1 flex-shrink-0"
+                      className="text-xs text-[#a855f7] hover:text-[#c084fc] flex items-center gap-1 flex-shrink-0"
                     >
                       Explorer <ExternalLink size={12} />
                     </a>
@@ -158,7 +158,7 @@ export function TransactionReceiptModal({ isOpen, onClose, receiptData }: Transa
                 </button>
                 <button
                   onClick={onClose}
-                  className="flex-1 rounded-xl bg-[#1eba98] text-black py-3 flex items-center justify-center text-sm font-bold hover:bg-[#84f7dc] transition-colors"
+                  className="flex-1 rounded-xl bg-[#a855f7] text-black py-3 flex items-center justify-center text-sm font-bold hover:bg-[#c084fc] transition-colors"
                 >
                   Done
                 </button>

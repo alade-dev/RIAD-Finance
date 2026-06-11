@@ -22,7 +22,7 @@ export function Footer() {
                 Built for teams that value privacy
               </h2>
               <p className="text-lg text-gray-500 mb-8">
-                Expaynse provides real financial privacy without compromising on
+                RIAD Finance provides real financial privacy without compromising on
                 the features modern teams need from payroll infrastructure.
               </p>
 
@@ -90,7 +90,7 @@ export function Footer() {
                   </span>
                 </div>
                 <p className="text-gray-400 text-sm leading-relaxed">
-                  Every operation in Expaynse is private by default. No
+                  Every operation in RIAD Finance is private by default. No
                   configuration needed. No opt-in required. Privacy is the
                   foundation, not a feature.
                 </p>
@@ -151,15 +151,15 @@ export function Footer() {
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 mb-8">
-                <img src="/logo.png" alt="Expaynse" className="h-20 w-auto mix-blend-multiply" />
+                <img src="/logo.png" alt="RIAD Finance" className="h-20 w-auto mix-blend-multiply" />
               </div>
               <p className="text-gray-500 mb-6 max-w-sm">
-                Privacy-first payroll infrastructure for Solana. Real-time
-                streaming, MagicBlock private settlements, complete salary
+                Privacy-first payroll infrastructure on Arbitrum. Real-time
+                streaming, stealth address settlements, and complete salary
                 confidentiality.
               </p>
               <p className="text-sm text-gray-400">
-                Built for Solana Privacy Hackathon 2026
+                Built for Arbitrum L2 Ecosystem
               </p>
             </div>
 
@@ -206,21 +206,21 @@ export function Footer() {
                 Technology
               </h4>
               <ul className="space-y-3 list-none p-0 m-0">
-                <li className="text-gray-500 text-sm">Solana</li>
-                <li className="text-gray-500 text-sm">MagicBlock PER</li>
-                <li className="text-gray-500 text-sm">TEE Authentication</li>
-                <li className="text-gray-500 text-sm">Metaplex Core</li>
+                <li className="text-gray-500 text-sm">Arbitrum Sepolia</li>
+                <li className="text-gray-500 text-sm">Sablier V2</li>
+                <li className="text-gray-500 text-sm">Fhenix Encryption</li>
+                <li className="text-gray-500 text-sm">Umbra Protocol</li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-400">
-              © {new Date().getFullYear()} Expaynse. Open source under MIT
+              © {new Date().getFullYear()} RIAD Finance. Open source under MIT
               license.
             </p>
             <p className="text-sm text-gray-400">
-              Private payroll, per-second streaming, on Solana 🔒
+              Private payroll, per-second streaming, on Arbitrum 🔒
             </p>
           </div>
         </div>

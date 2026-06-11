@@ -1,4 +1,4 @@
-// Mock implementation of magicblock-api to remove Solana dependencies during Arbitrum migration.
+// Mock implementation of private-payroll-api to remove Solana dependencies during Arbitrum migration.
 // These will be fully replaced with EVM/Sablier equivalents in Phase 2-4.
 
 export const DEVNET_USDC = "0x0000000000000000000000000000000000000000"; // Mock USDC address
@@ -6,6 +6,11 @@ export const DEVNET_USDC = "0x0000000000000000000000000000000000000000"; // Mock
 export interface PrivateTransferPrivacyConfig {
   delaySeconds?: number;
   splitCount?: number;
+}
+
+export interface BalanceResponse {
+  balance?: string;
+  location?: string;
 }
 
 export async function checkHealth(): Promise<{ status: string }> {
@@ -47,10 +52,14 @@ export async function buildPrivateTransfer(params: {
   return { transactionBase64: "mock-tx-base64", sendTo: "mock-recipient" };
 }
 
+export async function privateTransfer(...args: any[]): Promise<{ transactionBase64: string; sendTo: string }> {
+  return { transactionBase64: "mock-tx-base64", sendTo: "mock-recipient" };
+}
+
 export async function signAndSend(
   transactionBase64: string,
   signTransaction: any,
-  options?: { sendTo?: string; signMessage?: any; publicKey?: any }
+  options?: { sendTo?: string; signMessage?: any; publicKey?: any; rpcUrl?: string; [key: string]: any }
 ): Promise<string> {
   return "0xmocktransactionhash";
 }

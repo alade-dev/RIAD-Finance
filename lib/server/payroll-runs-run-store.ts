@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
-import { MongoClient, type Db } from "mongodb";
+import { type Db } from "mongodb";
+import { getMongoDb } from "./mongodb";
 
 import {
   getPayrollCycleById,
@@ -65,28 +66,6 @@ export interface PayrollRunItemRecord {
   updatedAt: string;
 }
 
-const MONGODB_URI = process.env.MONGODB_URI;
-const MONGODB_DB = process.env.MONGODB_DB || "expaynse";
-
-if (!MONGODB_URI) {
-  throw new Error("Missing MONGODB_URI environment variable");
-}
-
-declare global {
-  // eslint-disable-next-line no-var
-  var __expaynseRealPayrollRunMongoClientPromise:
-    | Promise<MongoClient>
-    | undefined;
-}
-
-const clientPromise =
-  global.__expaynseRealPayrollRunMongoClientPromise ??
-  new MongoClient(MONGODB_URI).connect();
-
-if (process.env.NODE_ENV !== "production") {
-  global.__expaynseRealPayrollRunMongoClientPromise = clientPromise;
-}
-
 function nowIso() {
   return new Date().toISOString();
 }
@@ -108,8 +87,7 @@ function roundMoney(value: number) {
 }
 
 async function getDb(): Promise<Db> {
-  const client = await clientPromise;
-  return client.db(MONGODB_DB);
+  return getMongoDb();
 }
 
 async function payrollRunsCollection() {
@@ -184,12 +162,12 @@ async function recomputeRunStatus(args: {
   const nextStatus = args.forceStatus
     ? args.forceStatus
     : deriveRunStatusFromCounts({
-        queuedCount,
-        processingCount,
-        paidCount,
-        failedCount,
-        skippedCount,
-      });
+      queuedCount,
+      processingCount,
+      paidCount,
+      failedCount,
+      skippedCount,
+    });
 
   const grossAmount = roundMoney(
     runItems.reduce((sum, item) => sum + item.amount, 0),
@@ -202,9 +180,9 @@ async function recomputeRunStatus(args: {
 
   const completedAt =
     nextStatus === "completed" ||
-    nextStatus === "partially_failed" ||
-    nextStatus === "failed" ||
-    nextStatus === "cancelled"
+      nextStatus === "partially_failed" ||
+      nextStatus === "failed" ||
+      nextStatus === "cancelled"
       ? nowIso()
       : undefined;
 

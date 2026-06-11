@@ -1,11 +1,11 @@
 import { verifyMessage } from "viem";
 
-export const EXPAYNSE_AUTH_WALLET_HEADER = "x-expaynse-wallet";
-export const EXPAYNSE_AUTH_TIMESTAMP_HEADER = "x-expaynse-timestamp";
-export const EXPAYNSE_AUTH_SIGNATURE_HEADER = "x-expaynse-signature";
-export const EXPAYNSE_SESSION_HEADER = "x-expaynse-session";
+export const RIAD_AUTH_WALLET_HEADER = "x-riadfinance-wallet";
+export const RIAD_AUTH_TIMESTAMP_HEADER = "x-riadfinance-timestamp";
+export const RIAD_AUTH_SIGNATURE_HEADER = "x-riadfinance-signature";
+export const RIAD_SESSION_HEADER = "x-riadfinance-session";
 
-const AUTH_MESSAGE_PREFIX = "Expaynse Request Authorization";
+const AUTH_MESSAGE_PREFIX = "RIAD Finance Request Authorization";
 const AUTH_VERSION = "1";
 const DEFAULT_MAX_AGE_MS = 5 * 60 * 1000;
 const MAX_FUTURE_SKEW_MS = 60 * 1000;
@@ -76,9 +76,9 @@ export async function createSignedWalletRequestHeaders(input: {
   const signature = await input.signBytes(message);
 
   const headers = new Headers();
-  headers.set(EXPAYNSE_AUTH_WALLET_HEADER, input.wallet);
-  headers.set(EXPAYNSE_AUTH_TIMESTAMP_HEADER, timestamp);
-  headers.set(EXPAYNSE_AUTH_SIGNATURE_HEADER, signature);
+  headers.set(RIAD_AUTH_WALLET_HEADER, input.wallet);
+  headers.set(RIAD_AUTH_TIMESTAMP_HEADER, timestamp);
+  headers.set(RIAD_AUTH_SIGNATURE_HEADER, signature);
   return headers;
 }
 
@@ -90,11 +90,11 @@ export async function verifySignedWalletRequest(input: {
   body?: string;
   maxAgeMs?: number;
 }) {
-  const wallet = input.headers.get(EXPAYNSE_AUTH_WALLET_HEADER)?.trim() ?? "";
+  const wallet = input.headers.get(RIAD_AUTH_WALLET_HEADER)?.trim() ?? "";
   const timestamp =
-    input.headers.get(EXPAYNSE_AUTH_TIMESTAMP_HEADER)?.trim() ?? "";
+    input.headers.get(RIAD_AUTH_TIMESTAMP_HEADER)?.trim() ?? "";
   const signature =
-    input.headers.get(EXPAYNSE_AUTH_SIGNATURE_HEADER)?.trim() ?? "";
+    input.headers.get(RIAD_AUTH_SIGNATURE_HEADER)?.trim() ?? "";
 
   if (!wallet || !timestamp || !signature) {
     throw new Error("Missing request authorization headers");
@@ -154,7 +154,7 @@ export async function verifyAuthorizedWalletRequest(input: {
   body?: string;
   maxAgeMs?: number;
 }) {
-  const sessionToken = input.headers.get(EXPAYNSE_SESSION_HEADER)?.trim();
+  const sessionToken = input.headers.get(RIAD_SESSION_HEADER)?.trim();
 
   if (sessionToken) {
     const { verifyWalletSessionToken } = await import(

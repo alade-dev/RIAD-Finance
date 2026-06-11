@@ -1,20 +1,31 @@
 "use client";
 
-import { useMemo } from "react";
-import {
-  ConnectionProvider,
-  WalletProvider as SolanaWalletProvider,
-} from "@solana/wallet-adapter-react";
-import { clusterApiUrl } from "@solana/web3.js";
+import "@rainbow-me/rainbowkit/styles.css";
+import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { WagmiProvider } from "wagmi";
+import { arbitrum, arbitrumSepolia } from "wagmi/chains";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { ReactNode } from "react";
 
-export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const endpoint = useMemo(() => clusterApiUrl("devnet"), []);
+const queryClient = new QueryClient();
 
+const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID || "3a8170812b534d0ff9d794f1953d50d1";
+
+const config = getDefaultConfig({
+  appName: "RIAD Finance",
+  projectId,
+  chains: [arbitrum, arbitrumSepolia],
+  ssr: true,
+});
+
+export function WalletProvider({ children }: { children: ReactNode }) {
   return (
-    <ConnectionProvider endpoint={endpoint}>
-      <SolanaWalletProvider wallets={[]} autoConnect={false}>
-        {children}
-      </SolanaWalletProvider>
-    </ConnectionProvider>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider>
+          {children}
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }

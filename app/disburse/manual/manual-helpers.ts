@@ -15,7 +15,7 @@ export function downloadPrivatePayrollRun(run: PayrollHistoryRun) {
   link.setAttribute("href", url);
   link.setAttribute(
     "download",
-    `expaynse_private_payroll_run_${run.date.split("T")[0]}.json`,
+    `riad_finance_private_payroll_run_${run.date.split("T")[0]}.json`,
   );
   document.body.appendChild(link);
   link.click();

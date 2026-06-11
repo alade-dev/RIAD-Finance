@@ -40,7 +40,7 @@ export function DateRangeCalendarPicker(props: DateRangeCalendarPickerProps) {
       : 0;
 
   return (
-    <div className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-black/20 p-2 transition-all hover:border-[#1eba98]/30 focus-within:border-[#1eba98]/50 focus-within:ring-1 focus-within:ring-[#1eba98]/20">
+    <div className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-black/20 p-2 transition-all hover:border-[#a855f7]/30 focus-within:border-[#a855f7]/50 focus-within:ring-1 focus-within:ring-[#a855f7]/20">
       <div className="flex w-full items-center gap-3">
         <div className="ml-2 flex shrink-0 items-center justify-center rounded-md bg-white/5 p-1.5 text-[#8f8f95]">
           <Calendar size={14} />
@@ -111,7 +111,7 @@ export function DateRangeCalendarPicker(props: DateRangeCalendarPickerProps) {
       
       {durationDays > 0 && (
         <div className="mr-2 shrink-0">
-          <span className="rounded-md border border-[#1eba98]/20 bg-[#1eba98]/10 px-2.5 py-1 text-[10px] font-bold tracking-wide text-[#84f7dc]">
+          <span className="rounded-md border border-[#a855f7]/20 bg-[#a855f7]/10 px-2.5 py-1 text-[10px] font-bold tracking-wide text-[#c084fc]">
             {durationDays}d
           </span>
         </div>

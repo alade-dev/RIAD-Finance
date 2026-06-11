@@ -7,7 +7,7 @@ import { Plus, Minus } from "lucide-react";
 const faqs = [
     {
         question: "How does payroll streaming work?",
-        answer: "Instead of paying salaries monthly, Expaynse streams USDC to employees every single second on Solana. You deposit funds into a treasury, set per-second rates for each employee, and salaries accrue continuously. Employees can cash out anytime.\n\nRefer to our Documentation for detailed guides on setting up your first stream."
+        answer: "Instead of paying salaries monthly, RIAD Finance streams USDC to employees every single second on Arbitrum. You deposit funds into a treasury, set per-second rates for each employee, and salaries accrue continuously. Employees can cash out anytime.\n\nRefer to our Documentation for detailed guides on setting up your first stream."
     },
     {
         question: "Why stream payroll instead of monthly payments?",
@@ -15,19 +15,19 @@ const faqs = [
     },
     {
         question: "How is salary data kept private on-chain?",
-        answer: "Expaynse uses zero-knowledge proofs to settle streams. The blockchain only sees that a payment occurred — never the amount, never the recipient, never the employer. Validators and explorers see encrypted hashes, not salary data."
+        answer: "RIAD Finance uses zero-knowledge proofs to settle streams. The blockchain only sees that a payment occurred — never the amount, never the recipient, never the employer. Validators and explorers see encrypted hashes, not salary data."
     },
     {
         question: "What tokens are supported?",
-        answer: "Currently, Expaynse supports USDC on Solana. We're adding support for USDT, SOL-native tokens, and SPL tokens in the coming weeks. All settlements happen instantly with sub-second finality."
+        answer: "Currently, RIAD Finance supports USDC on Arbitrum. We're adding support for USDT and ERC-20 tokens in the coming weeks. All settlements happen instantly on our L2 rollup."
     },
     {
         question: "Can I pause or cancel a stream?",
         answer: "Yes. You have full lifecycle control over every stream. Pause, resume, adjust rates, or cancel entirely — all from a single dashboard. Changes take effect immediately on-chain with no delay."
     },
     {
-        question: "How do I integrate Expaynse into my existing HR system?",
-        answer: "Expaynse provides a REST API and webhooks for seamless integration with any HRIS, accounting software, or payroll provider. Sync employee lists, automate rate adjustments, and export reports with a few API calls."
+        question: "How do I integrate RIAD Finance into my existing HR system?",
+        answer: "RIAD Finance provides a REST API and webhooks for seamless integration with any HRIS, accounting software, or payroll provider. Sync employee lists, automate rate adjustments, and export reports with a few API calls."
     },
 ];
 

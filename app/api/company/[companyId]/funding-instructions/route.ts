@@ -23,7 +23,7 @@ export async function GET(
         currency: company.currency,
         treasuryPubkey: company.treasuryPubkey,
         steps: [
-          "Send USDC from employer wallet to the company payroll treasury, or use your MagicBlock deposit/transfer modal.",
+          "Send USDC from employer wallet to the company payroll treasury, or use the treasury deposit modal.",
           "After funding, payroll worker can settle approved employee claims from this treasury.",
           "Do not send all company funds; only fund payroll budget.",
         ],

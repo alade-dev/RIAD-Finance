@@ -30,33 +30,33 @@ const roleOptions: Array<{
   destination: string;
   points: string[];
 }> = [
-  {
-    role: "employer",
-    title: "Employer workspace",
-    eyebrow: "Run payroll",
-    description:
-      "Manage team setup, fund payroll, and control private salary flows from the employer dashboard.",
-    destination: "Dashboard",
-    points: [
-      "Manage employees and payroll controls",
-      "Fund treasury and run private disbursements",
-      "Track setup and history in one place",
-    ],
-  },
-  {
-    role: "employee",
-    title: "Employee workspace",
-    eyebrow: "Receive salary",
-    description:
-      "Open the receive dashboard to track private payroll, initialize once, and claim available balance.",
-    destination: "Receive",
-    points: [
-      "See live claimable and payout history",
-      "Initialize private recipient once",
-      "Request base payout when needed",
-    ],
-  },
-];
+    {
+      role: "employer",
+      title: "Employer workspace",
+      eyebrow: "Run payroll",
+      description:
+        "Manage team setup, fund payroll, and control private salary flows from the employer dashboard.",
+      destination: "Dashboard",
+      points: [
+        "Manage employees and payroll controls",
+        "Fund treasury and run private disbursements",
+        "Track setup and history in one place",
+      ],
+    },
+    {
+      role: "employee",
+      title: "Employee workspace",
+      eyebrow: "Receive salary",
+      description:
+        "Open the receive dashboard to track private payroll, initialize once, and claim available balance.",
+      destination: "Receive",
+      points: [
+        "See live claimable and payout history",
+        "Initialize private recipient once",
+        "Request base payout when needed",
+      ],
+    },
+  ];
 
 async function detectWalletDefaultRole(walletAddress: string): Promise<WalletRole> {
   try {
@@ -164,13 +164,13 @@ export default function GetStartedPage() {
       <Appbar />
 
       <main className="relative overflow-hidden px-4 pb-20 pt-28 sm:px-6 lg:px-8">
-        <div className="absolute inset-x-0 top-0 -z-10 h-[480px] bg-[radial-gradient(circle_at_top,rgba(30,186,152,0.15),transparent_58%),linear-gradient(180deg,rgba(30,186,152,0.08),transparent_72%)]" />
+        <div className="absolute inset-x-0 top-0 -z-10 h-[480px] bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.15),transparent_58%),linear-gradient(180deg,rgba(168,85,247,0.08),transparent_72%)]" />
 
         <div className="mx-auto max-w-7xl">
           <section className="rounded-[2rem] border border-white/5 bg-[#0a0a0a]/90 p-6 shadow-[0_25px_90px_rgba(0,0,0,0.3)] backdrop-blur sm:p-8 lg:p-12">
             <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#1eba98]/30 bg-[#1eba98]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#1eba98]">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#a855f7]/30 bg-[#a855f7]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#a855f7]">
                   <Sparkles size={14} />
                   Choose your workspace
                 </div>
@@ -196,26 +196,23 @@ export default function GetStartedPage() {
                         key={option.role}
                         type="button"
                         onClick={() => handleRolePick(option.role)}
-                        className={`group rounded-[1.75rem] border px-5 py-5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1eba98] focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
-                          isActive
-                            ? "border-[#1eba98] bg-[#1eba98]/10 text-white shadow-[0_20px_50px_rgba(30,186,152,0.15)]"
+                        className={`group rounded-[1.75rem] border px-5 py-5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a855f7] focus-visible:ring-offset-2 focus-visible:ring-offset-black ${isActive
+                            ? "border-[#a855f7] bg-[#a855f7]/10 text-white shadow-[0_20px_50px_rgba(168,85,247,0.15)]"
                             : "border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/10"
-                        }`}
+                          }`}
                       >
                         <div
-                          className={`flex h-12 w-12 items-center justify-center rounded-2xl ${
-                            isActive
-                              ? "bg-[#1eba98]/20 text-[#1eba98]"
+                          className={`flex h-12 w-12 items-center justify-center rounded-2xl ${isActive
+                              ? "bg-[#a855f7]/20 text-[#a855f7]"
                               : "bg-white/5 text-white shadow-sm"
-                          }`}
+                            }`}
                         >
                           <Icon size={22} />
                         </div>
 
                         <p
-                          className={`mt-5 text-[11px] font-semibold uppercase tracking-[0.22em] ${
-                            isActive ? "text-[#1eba98]" : "text-[#a8a8aa]"
-                          }`}
+                          className={`mt-5 text-[11px] font-semibold uppercase tracking-[0.22em] ${isActive ? "text-[#a855f7]" : "text-[#a8a8aa]"
+                            }`}
                         >
                           {option.eyebrow}
                         </p>
@@ -223,9 +220,8 @@ export default function GetStartedPage() {
                           {option.title}
                         </h2>
                         <p
-                          className={`mt-3 text-sm leading-7 ${
-                            isActive ? "text-white/80" : "text-[#a8a8aa]"
-                          }`}
+                          className={`mt-3 text-sm leading-7 ${isActive ? "text-white/80" : "text-[#a8a8aa]"
+                            }`}
                         >
                           {option.description}
                         </p>
@@ -257,7 +253,7 @@ export default function GetStartedPage() {
                       <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a8a8aa]">
                         Step 2
                       </span>
-                      <p className="mt-2">Connect the wallet if this is the first time using Expaynse.</p>
+                      <p className="mt-2">Connect the wallet if this is the first time using RIAD Finance.</p>
                     </div>
                     <div className="rounded-2xl bg-white/5 p-4 shadow-sm">
                       <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a8a8aa]">
@@ -281,7 +277,7 @@ export default function GetStartedPage() {
                         : "Pick a role to continue"}
                     </h2>
                   </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-[#1eba98]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-[#a855f7]">
                     <ShieldCheck size={24} />
                   </div>
                 </div>
@@ -313,14 +309,14 @@ export default function GetStartedPage() {
                 </div>
 
                 {activeRole && (
-                  <div className="mt-6 rounded-[1.75rem] border border-[#1eba98]/20 bg-[#1eba98]/5 p-5">
-                    <p className="text-sm font-semibold text-[#1eba98]">
+                  <div className="mt-6 rounded-[1.75rem] border border-[#a855f7]/20 bg-[#a855f7]/5 p-5">
+                    <p className="text-sm font-semibold text-[#a855f7]">
                       {activeRole.title} includes
                     </p>
                     <div className="mt-4 space-y-3">
                       {activeRole.points.map((point) => (
                         <div key={point} className="flex items-start gap-3 text-sm text-white/80">
-                          <CheckCircle2 size={16} className="mt-1 shrink-0 text-[#1eba98]" />
+                          <CheckCircle2 size={16} className="mt-1 shrink-0 text-[#a855f7]" />
                           <span>{point}</span>
                         </div>
                       ))}
@@ -350,7 +346,7 @@ export default function GetStartedPage() {
                       type="button"
                       onClick={() => routeWithRole(activeRole.role)}
                       disabled={isRouting}
-                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#1eba98] px-6 py-3 text-sm font-bold text-black transition-all hover:bg-[#1eba98]/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:opacity-70"
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#a855f7] px-6 py-3 text-sm font-bold text-black transition-all hover:bg-[#a855f7]/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:opacity-70"
                     >
                       {isRouting
                         ? "Opening workspace..."

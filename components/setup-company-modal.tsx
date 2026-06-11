@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Loader2, X, Building2, CheckCircle2, ShieldCheck, ArrowRight } from "lucide-react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@/hooks/useWallet";
 import { toast } from "sonner";
 import { walletAuthenticatedFetch } from "@/lib/client/wallet-auth-fetch";
+import { useWriteContract } from "wagmi";
+import { RIAD_FINANCE_PAYROLL_ABI, PAYROLL_CONTRACT_ADDRESS } from "@/lib/client/contract-config";
 
 export function SetupCompanyModal({
   isOpen,
@@ -17,6 +19,7 @@ export function SetupCompanyModal({
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const { writeContractAsync } = useWriteContract();
 
   useEffect(() => {
     if (isOpen) {
@@ -49,20 +52,31 @@ export function SetupCompanyModal({
 
     setLoading(true);
     try {
+      // 1. Perform on-chain registration via Wagmi
+      toast.info("Signing transaction to register company on Arbitrum...");
+      const txHash = await writeContractAsync({
+        address: PAYROLL_CONTRACT_ADDRESS,
+        abi: RIAD_FINANCE_PAYROLL_ABI,
+        functionName: "registerCompany",
+        args: [name.trim()],
+      });
+      toast.success(`Transaction sent: ${txHash.slice(0, 10)}...`);
+
+      // 2. Call backend route to record company metadata in MongoDB
       const res = await walletAuthenticatedFetch({
-        wallet: publicKey.toBase58(),
+        wallet: publicKey,
         signMessage,
         path: "/api/company/create",
         method: "POST",
         body: {
           name: name.trim(),
-          employerWallet: publicKey.toBase58(),
+          employerWallet: publicKey,
         },
       });
 
       const data = await res.json();
       if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Failed to create company");
+        throw new Error(data.error || "Failed to save company in database");
       }
 
       setSuccess(true);
@@ -101,9 +115,9 @@ export function SetupCompanyModal({
             </div>
             <h2 className="mb-2 text-2xl font-bold tracking-tight text-white">Setup Complete</h2>
             <p className="text-sm text-[#a8a8aa]">
-              Your company treasury has been securely created.
+              Your company treasury has been securely registered on-chain.
             </p>
-            <Loader2 size={24} className="mt-8 animate-spin text-[#1eba98]" />
+            <Loader2 size={24} className="mt-8 animate-spin text-[#a855f7]" />
           </div>
         ) : (
           <>
@@ -114,7 +128,7 @@ export function SetupCompanyModal({
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold tracking-tight text-white mb-2">Setup Company</h2>
               <p className="text-sm text-[#a8a8aa]">
-                Create your private payroll treasury to start paying employees securely.
+                Create your payroll treasury on Arbitrum to start paying employees securely.
               </p>
             </div>
 
@@ -124,11 +138,11 @@ export function SetupCompanyModal({
                   Admin Wallet
                 </label>
                 <div className="font-mono text-sm text-white truncate opacity-50">
-                  {publicKey?.toBase58() || "Not connected"}
+                  {publicKey || "Not connected"}
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-white/5 bg-[#111111] p-4 focus-within:border-[#1eba98]/50 focus-within:bg-[#1eba98]/5 transition-colors">
+              <div className="rounded-2xl border border-white/5 bg-[#111111] p-4 focus-within:border-[#a855f7]/50 focus-within:bg-[#a855f7]/5 transition-colors">
                 <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[#a8a8aa]">
                   Company Name
                 </label>
@@ -148,14 +162,14 @@ export function SetupCompanyModal({
             <div className="mb-8 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 flex gap-3">
               <ShieldCheck size={20} className="text-emerald-400 shrink-0" />
               <p className="text-xs text-emerald-400/80 leading-relaxed">
-                We will automatically generate and secure a dedicated MagicBlock Ephemeral Treasury for your company.
+                We will register your company on Arbitrum and create a secure on-chain treasury for streaming.
               </p>
             </div>
 
             <button
               onClick={handleCreate}
               disabled={loading || !name.trim()}
-              className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-[#1eba98] py-4 text-sm font-bold text-black transition-all hover:bg-[#1eba98]/90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-[#a855f7] py-4 text-sm font-bold text-black transition-all hover:bg-[#a855f7]/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
                 <>

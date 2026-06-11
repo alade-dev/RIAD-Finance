@@ -1,65 +1,68 @@
 import { useState, useEffect } from "react";
 import { Loader2, X, Wallet, CheckCircle2, ExternalLink, ShieldCheck } from "lucide-react";
 import { useWallet } from "@/hooks/useWallet";
-import {
-  deposit,
-  buildPrivateTransfer,
-  signAndSend,
-  checkHealth,
-  DEVNET_USDC,
-  getBalance,
-} from "@/lib/magicblock-api";
 import { walletAuthenticatedFetch } from "@/lib/client/wallet-auth-fetch";
 import { enqueuePendingSetupAction } from "@/lib/client/history-queue";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useWriteContract, useReadContract } from "wagmi";
+import {
+  RIAD_FINANCE_PAYROLL_ABI,
+  PAYROLL_CONTRACT_ADDRESS,
+  USDC_ADDRESS,
+  ERC20_ABI,
+} from "@/lib/client/contract-config";
 
 const FUNDING_HISTORY_TYPE = "fund-treasury";
 const FUNDING_SUCCESS_MESSAGE = (amountUi: number) =>
   `Successfully deposited ${amountUi} USDC`;
 
-export function DepositModal({ isOpen, onClose, baseBalance = 0, privateBalance = 0, onDepositSuccess, treasuryPubkey }: { isOpen: boolean; onClose: () => void; baseBalance?: number; privateBalance?: number; onDepositSuccess?: () => void; treasuryPubkey?: string }) {
+export function DepositModal({
+  isOpen,
+  onClose,
+  baseBalance = 0,
+  privateBalance = 0,
+  onDepositSuccess,
+  treasuryPubkey,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  baseBalance?: number;
+  privateBalance?: number;
+  onDepositSuccess?: () => void;
+  treasuryPubkey?: string;
+}) {
   const { publicKey, signMessage } = useWallet();
-  const signTransaction = undefined as any;
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [successSig, setSuccessSig] = useState<string | null>(null);
   const [depositedAmount, setDepositedAmount] = useState<number | null>(null);
-  const [magicBlockHealth, setMagicBlockHealth] = useState<"checking" | "ok" | "error">("checking");
-  const [liveBaseBalance, setLiveBaseBalance] = useState(baseBalance);
+  const { writeContractAsync } = useWriteContract();
 
-  // Reset state when modal opens/closes
+  // Fetch live base wallet USDC balance using Wagmi
+  const { data: usdcBalanceData, refetch: refetchUsdcBalance } = useReadContract({
+    address: USDC_ADDRESS,
+    abi: ERC20_ABI,
+    functionName: "balanceOf",
+    args: publicKey ? [publicKey as `0x${string}`] : undefined,
+    query: {
+      enabled: !!publicKey,
+    },
+  });
+
+  const liveBaseBalance = usdcBalanceData
+    ? Number(usdcBalanceData) / 1_000_000
+    : baseBalance;
+
   useEffect(() => {
     if (!isOpen) return;
-
-    const frameId = requestAnimationFrame(() => {
-      setSuccessSig(null);
-      setDepositedAmount(null);
-      setAmount("");
-      setMagicBlockHealth("checking");
-    });
-
-    checkHealth()
-      .then(res => setMagicBlockHealth(res.status === "ok" ? "ok" : "error"))
-      .catch(() => setMagicBlockHealth("error"));
-
+    setSuccessSig(null);
+    setDepositedAmount(null);
+    setAmount("");
     if (publicKey) {
-      void getBalance(publicKey)
-        .then((res) => {
-          const next = parseInt(res.balance ?? "0", 10) / 1_000_000;
-          if (Number.isFinite(next)) {
-            setLiveBaseBalance(next);
-          }
-        })
-        .catch(() => {
-          // fall back to parent-provided balance
-        });
+      void refetchUsdcBalance();
     }
-
-    return () => {
-      cancelAnimationFrame(frameId);
-    };
-  }, [isOpen, publicKey]);
+  }, [isOpen, publicKey, refetchUsdcBalance]);
 
   if (!isOpen) return null;
 
@@ -71,7 +74,7 @@ export function DepositModal({ isOpen, onClose, baseBalance = 0, privateBalance 
   };
 
   const handleDeposit = async () => {
-    if (!publicKey || !signTransaction) {
+    if (!publicKey) {
       toast.error("Wallet not connected");
       return;
     }
@@ -80,114 +83,68 @@ export function DepositModal({ isOpen, onClose, baseBalance = 0, privateBalance 
       toast.error("Enter a valid amount");
       return;
     }
-    let latestBaseBalance = liveBaseBalance;
-    try {
-      const balanceRes = await getBalance(publicKey);
-      latestBaseBalance = parseInt(balanceRes.balance ?? "0", 10) / 1_000_000;
-      if (Number.isFinite(latestBaseBalance)) {
-        setLiveBaseBalance(latestBaseBalance);
-      }
-    } catch {
-      // keep last known balance
+
+    if (val > liveBaseBalance) {
+      toast.error("Insufficient base balance");
+      return;
     }
 
     setLoading(true);
     try {
       const owner = publicKey;
-      let transactionBase64: string | undefined;
-      let sendTo: string | undefined;
+      const amountMicro = BigInt(Math.round(val * 1_000_000));
 
-      if (!Number.isFinite(val) || val <= 0) {
-        toast.error("Enter a valid amount");
-        return;
-      }
+      // 1. Approve USDC transfer to the payroll contract
+      toast.info("Approving USDC transfer...");
+      const approveTx = await writeContractAsync({
+        address: USDC_ADDRESS,
+        abi: ERC20_ABI,
+        functionName: "approve",
+        args: [PAYROLL_CONTRACT_ADDRESS, amountMicro],
+      });
+      toast.success("USDC transfer approved!");
 
-      if (val > latestBaseBalance) {
-        toast.error("Insufficient base balance");
-        return;
-      }
+      // 2. Call depositFunds on the RIADFinancePayroll contract
+      toast.info("Depositing funds to payroll treasury...");
+      const depositTx = await writeContractAsync({
+        address: PAYROLL_CONTRACT_ADDRESS,
+        abi: RIAD_FINANCE_PAYROLL_ABI,
+        functionName: "depositFunds",
+        args: [USDC_ADDRESS, amountMicro],
+      });
 
-      if (latestBaseBalance <= 0) {
-        toast.error("Current wallet has no live base USDC. Fund this wallet first.");
-        return;
-      }
-
-      if (treasuryPubkey) {
-        const buildRes = await buildPrivateTransfer({
-          from: owner,
-          to: treasuryPubkey,
-          amount: val,
-          outputMint: DEVNET_USDC,
-          balances: {
-            fromBalance: "base",
-            toBalance: "ephemeral"
-          }
-        });
-        transactionBase64 = buildRes.transactionBase64;
-        sendTo = buildRes.sendTo;
-      } else {
-        const depositRes = await deposit(owner, val);
-        transactionBase64 = depositRes.transactionBase64;
-        sendTo = depositRes.sendTo;
-      }
-
-      if (transactionBase64 && sendTo) {
-        const sig = await signAndSend(transactionBase64, signTransaction, {
-          sendTo,
-          signMessage: signMessage || undefined,
-          publicKey: publicKey || undefined,
-        });
-
-        // Save deposit to history
-        if (signMessage) {
-          try {
-            await walletAuthenticatedFetch({
-              path: `/api/history?wallet=${owner}`,
-              method: "POST",
-              signMessage,
-              wallet: owner,
-              body: {
-                kind: "setup-action",
-                wallet: owner,
-                type: FUNDING_HISTORY_TYPE,
-                amount: val,
-                txSig: sig,
-                status: "success",
-              },
-            });
-          } catch (historyErr) {
-            console.error("Failed to save deposit to history", historyErr);
-            enqueuePendingSetupAction({
-              kind: "setup-action",
-              wallet: owner,
-              type: FUNDING_HISTORY_TYPE,
-              amount: val,
-              txSig: sig,
-              status: "success",
-            });
-            toast.warning(
-              "Deposit succeeded, but history tracking failed. We'll retry automatically in the background.",
-            );
-          }
-        } else {
-          enqueuePendingSetupAction({
+      // Save deposit to history via API
+      try {
+        await walletAuthenticatedFetch({
+          path: `/api/history?wallet=${owner}`,
+          method: "POST",
+          signMessage,
+          wallet: owner,
+          body: {
             kind: "setup-action",
             wallet: owner,
             type: FUNDING_HISTORY_TYPE,
             amount: val,
-            txSig: sig,
+            txSig: depositTx,
             status: "success",
-          });
-          toast.warning(
-            "Deposit succeeded, but this wallet can't sign messages. History/analytics will sync once message signing is available.",
-          );
-        }
-
-        toast.success(FUNDING_SUCCESS_MESSAGE(val));
-        setDepositedAmount(val);
-        setSuccessSig(sig);
-        onDepositSuccess?.();
+          },
+        });
+      } catch (historyErr) {
+        console.error("Failed to save deposit to history", historyErr);
+        enqueuePendingSetupAction({
+          kind: "setup-action",
+          wallet: owner,
+          type: FUNDING_HISTORY_TYPE,
+          amount: val,
+          txSig: depositTx,
+          status: "success",
+        });
       }
+
+      toast.success(FUNDING_SUCCESS_MESSAGE(val));
+      setDepositedAmount(val);
+      setSuccessSig(depositTx);
+      onDepositSuccess?.();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";
       toast.error(`Deposit failed: ${message}`);
@@ -218,7 +175,7 @@ export function DepositModal({ isOpen, onClose, baseBalance = 0, privateBalance 
 
             <h2 className="mb-1 text-2xl font-bold tracking-tight text-white">Deposit Complete</h2>
             <p className="mb-8 text-sm text-[#a8a8aa]">
-              Your funds have been successfully deposited to the ephemeral vault.
+              Your funds have been successfully deposited to the payroll treasury.
             </p>
 
             <div className="mb-8 rounded-2xl border border-white/5 bg-white/5 p-4">
@@ -243,7 +200,7 @@ export function DepositModal({ isOpen, onClose, baseBalance = 0, privateBalance 
                 <span className="font-mono text-xs text-[#a8a8aa] transition-colors group-hover:text-white">
                   View on Arbiscan
                 </span>
-                <div className="flex items-center gap-1.5 font-mono text-xs text-[#1eba98]">
+                <div className="flex items-center gap-1.5 font-mono text-xs text-[#a855f7]">
                   {successSig.slice(0, 8)}...
                   <ExternalLink size={11} />
                 </div>
@@ -262,7 +219,7 @@ export function DepositModal({ isOpen, onClose, baseBalance = 0, privateBalance 
                 onClick={handleClose}
                 className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-white py-4 text-sm font-bold text-black transition-all hover:bg-white/90"
               >
-                Go to People
+                Go to Teammates
               </Link>
             </div>
           </>
@@ -274,44 +231,27 @@ export function DepositModal({ isOpen, onClose, baseBalance = 0, privateBalance 
 
             <div className="flex justify-center mb-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#111111] px-3 py-1.5 shadow-sm">
-                <ShieldCheck
-                  size={14}
-                  className={
-                    magicBlockHealth === "ok"
-                      ? "text-[#1eba98]"
-                      : magicBlockHealth === "error"
-                        ? "text-amber-400"
-                        : "text-[#a8a8aa]"
-                  }
-                />
-                <span
-                  className={`text-[10px] font-bold uppercase tracking-widest ${magicBlockHealth === "ok"
-                    ? "text-[#1eba98]"
-                    : magicBlockHealth === "error"
-                      ? "text-amber-400"
-                      : "text-[#a8a8aa]"
-                    }`}
-                >
-                  {magicBlockHealth === "ok"
-                    ? "Vault Secured"
-                    : magicBlockHealth === "error"
-                      ? "Network Degraded"
-                      : "Verifying Vault"}
+                <ShieldCheck size={14} className="text-[#a855f7]" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#a855f7]">
+                  Arbitrum Sepolia
                 </span>
               </div>
             </div>
 
-            <div className="text-center">
-              <h2 className="mb-1 text-2xl font-bold tracking-tight text-white">Deposit to Treasury</h2>
+            <div className="text-center flex flex-col items-center">
+              <h2 className="mb-1 text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <img src="/usdc-logo.png" alt="USDC" className="w-6 h-6 object-contain" />
+                Deposit to Treasury
+              </h2>
               <p className="mb-8 text-sm text-[#a8a8aa]">
-                Add base-wallet USDC to the company treasury to fund payroll streams and manual disbursements.
+                Add USDC from your wallet to the on-chain treasury to fund payroll streams.
               </p>
             </div>
 
             <div className="mb-6 grid grid-cols-2 gap-4">
               <div className="rounded-2xl border border-white/5 bg-white/5 p-4">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[#a8a8aa] mb-1">
-                  Your Wallet Balance
+                  Your USDC Balance
                 </p>
                 <p className="text-xl font-bold text-white">
                   {liveBaseBalance.toLocaleString(undefined, {
@@ -325,7 +265,13 @@ export function DepositModal({ isOpen, onClose, baseBalance = 0, privateBalance 
               </div>
               <div className="rounded-2xl border border-white/5 bg-white/5 p-4">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[#a8a8aa] mb-1">Treasury Balance</p>
-                <p className="text-xl font-bold text-white">{privateBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-xs text-[#a8a8aa]">USDC</span></p>
+                <p className="text-xl font-bold text-white">
+                  {privateBalance.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}{" "}
+                  <span className="text-xs text-[#a8a8aa]">USDC</span>
+                </p>
               </div>
             </div>
 
@@ -336,7 +282,7 @@ export function DepositModal({ isOpen, onClose, baseBalance = 0, privateBalance 
                 </label>
                 <button
                   onClick={() => setAmount(liveBaseBalance.toString())}
-                  className="text-[10px] font-bold uppercase tracking-widest text-[#1eba98] hover:text-[#1eba98]/80 transition-colors"
+                  className="text-[10px] font-bold uppercase tracking-widest text-[#a855f7] hover:text-[#a855f7]/80 transition-colors"
                 >
                   Max
                 </button>
@@ -346,7 +292,7 @@ export function DepositModal({ isOpen, onClose, baseBalance = 0, privateBalance 
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="w-full rounded-2xl border border-white/10 bg-[#111111] px-5 py-4 font-mono text-xl text-white outline-none transition-colors focus:border-[#1eba98]/50 focus:bg-[#1eba98]/5"
+                className="w-full rounded-2xl border border-white/10 bg-[#111111] px-5 py-4 font-mono text-xl text-white outline-none transition-colors focus:border-[#a855f7]/50 focus:bg-[#a855f7]/5"
                 min={0}
                 step={0.01}
                 max={liveBaseBalance}
@@ -361,13 +307,13 @@ export function DepositModal({ isOpen, onClose, baseBalance = 0, privateBalance 
                 parseFloat(amount) <= 0 ||
                 parseFloat(amount) > liveBaseBalance
               }
-              className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-[#1eba98] py-4 text-sm font-bold text-black transition-all hover:bg-[#1eba98]/80 disabled:opacity-40"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-[#a855f7] py-4 text-sm font-bold text-black transition-all hover:bg-[#a855f7]/80 disabled:opacity-40"
             >
               {loading ? <Loader2 size={18} className="animate-spin" /> : null}
               {loading ? "Processing Deposit..." : "Confirm Deposit"}
             </button>
             <p className="mt-3 text-center text-xs text-[#a8a8aa]">
-              Deposit uses your connected wallet USDC and moves it into the private payroll treasury.
+              Deposit authorizes the payroll smart contract to draw USDC from your wallet.
             </p>
           </>
         )}

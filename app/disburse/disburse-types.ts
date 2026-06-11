@@ -1,7 +1,5 @@
 import type { PaySchedule } from "@/lib/payroll-math";
-import type {
-  CheckpointCrankStatus,
-} from "@/lib/checkpoint-sync";
+export type CheckpointCrankStatus = "idle" | "running" | "paused" | "error" | "cancelled";
 import type { PayrollPayoutMode } from "@/lib/payroll-payout-mode";
 
 export interface ManagedEmployee {
@@ -241,7 +239,7 @@ export interface RestartStreamBuildResponse {
   };
 }
 
-export type MagicBlockHealthState = "checking" | "ok" | "error";
+export type PrivatePayrollHealthState = "checking" | "ok" | "error";
 
 export type CashoutRequestStatus =
   | "pending"

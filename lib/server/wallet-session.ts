@@ -2,13 +2,13 @@ import { createHmac, timingSafeEqual } from "crypto";
 
 function getSessionSecret() {
   const secret =
-    process.env.EXPAYNSE_SESSION_SECRET ||
-    process.env.EXPENSEE_SESSION_SECRET ||
+    process.env.RIADFINANCE_SESSION_SECRET ||
+    process.env.RIAD_SESSION_SECRET ||
     process.env.NEXTAUTH_SECRET;
 
   if (!secret) {
     throw new Error(
-      "Missing EXPAYNSE_SESSION_SECRET (or NEXTAUTH_SECRET) environment variable",
+      "Missing RIADFINANCE_SESSION_SECRET (or NEXTAUTH_SECRET) environment variable",
     );
   }
 

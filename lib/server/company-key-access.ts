@@ -1,19 +1,19 @@
-import { loadCompanyKeypair } from "./company-key-vault";
+import { loadCompanyPrivateKey } from "./company-key-vault";
 
 /**
  * Internal-only helpers for backend worker.
- * Never expose these keypairs from API routes.
+ * Never expose these privateKeys from API routes.
  */
 
-export function loadCompanyTreasuryKeypair(companyId: string) {
-  return loadCompanyKeypair({
+export function loadCompanyTreasuryPrivateKey(companyId: string) {
+  return loadCompanyPrivateKey({
     companyId,
     kind: "treasury",
   });
 }
 
-export function loadCompanySettlementKeypair(companyId: string) {
-  return loadCompanyKeypair({
+export function loadCompanySettlementPrivateKey(companyId: string) {
+  return loadCompanyPrivateKey({
     companyId,
     kind: "settlement",
   });

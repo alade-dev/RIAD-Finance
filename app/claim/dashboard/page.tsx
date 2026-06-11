@@ -28,7 +28,7 @@ export default function ClaimDashboardPage() {
     payrollSummary,
     payrollSummaryError,
     loadingPayrollSummary,
-    magicBlockHealth,
+    privatePayrollHealth,
     fetchEmployeePayrollSummary,
     fetchPrivateInitStatus,
     fetchPrivateBalance,
@@ -75,9 +75,9 @@ export default function ClaimDashboardPage() {
   const exactClaimableAmountMicro =
     hasLiveSnapshot && canonicalSnapshot
       ? computeLiveClaimableAmountMicro({
-          snapshot: canonicalSnapshot,
-          nowMs: liveNowMs,
-        })
+        snapshot: canonicalSnapshot,
+        nowMs: liveNowMs,
+      })
       : null;
   const monthlySalaryAmount = canonicalSnapshot?.monthlyCapUsd ?? null;
   const claimableNowAmount = hasLiveSnapshot ? microToUsdc(exactClaimableAmountMicro) : null;
@@ -98,10 +98,10 @@ export default function ClaimDashboardPage() {
       ? runtimeStatus === "active"
         ? "Full Time"
         : "On Hold"
-      : "Awaiting PER sync";
+      : "Awaiting Stream sync";
   const nextReleaseLabel = hasLiveSnapshot
     ? "Auto-accruing in real-time"
-    : "Sign + refresh to load live PER state";
+    : "Sign + refresh to load live Stream state";
   const privateBalanceAmount = Number.parseFloat(privBalance ?? "0");
   const employeeExperienceState = !registeredEmployeeWallet
     ? "not_registered"
@@ -167,12 +167,12 @@ export default function ClaimDashboardPage() {
             <h1 className="font-heading text-4xl font-bold tracking-tight text-white">My Payroll</h1>
             <p className="mt-2 max-w-lg text-sm leading-relaxed text-[#a8a8aa]">
               {hasPrivatePayrollMode
-                ? "MagicBlock PER handles your private payroll balance and private payouts. Withdraw whenever your employer sends salary privately."
-                : "Base Solana handles funding and exits. MagicBlock PER handles your live private salary accrual and claimable state."}
+                ? "RIAD Finance handles your private payroll balance and private payouts. Withdraw whenever your employer sends salary privately."
+                : "Arbitrum handles funding and exits. RIAD Finance handles your live private salary accrual and claimable state."}
             </p>
           </div>
           <div className="flex w-fit rounded-2xl border border-white/10 bg-white/5 p-1 backdrop-blur-xl">
-            <button className="h-9 min-w-[108px] rounded-xl bg-[#1eba98] px-4 text-[10px] font-bold uppercase tracking-wider text-black shadow-sm transition-all">
+            <button className="h-9 min-w-[108px] rounded-xl bg-[#a855f7] px-4 text-[10px] font-bold uppercase tracking-wider text-black shadow-sm transition-all">
               Dashboard
             </button>
             <Link href="/claim/balances" className="flex h-9 min-w-[108px] items-center justify-center rounded-xl px-4 text-[10px] font-bold uppercase tracking-wider text-[#8f8f95] transition-all hover:bg-white/10 hover:text-white no-underline">
@@ -210,26 +210,26 @@ export default function ClaimDashboardPage() {
                     : "See whether your payroll is live, how much has accrued privately, and what is already available in your vault."}
               </p>
 
-	              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
-                <ShieldCheck size={14} className={magicBlockHealth === "ok" ? "text-[#1eba98]" : magicBlockHealth === "error" ? "text-amber-300" : "text-[#8f8f95]"} />
-                <span className={`text-[9px] font-bold uppercase tracking-[0.15em] ${magicBlockHealth === "ok" ? "text-[#1eba98]" : magicBlockHealth === "error" ? "text-amber-300" : "text-[#8f8f95]"}`}>
-                  MagicBlock Payments {magicBlockHealth === "ok" ? "Online" : magicBlockHealth === "error" ? "Degraded" : "Checking"}
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
+                <ShieldCheck size={14} className={privatePayrollHealth === "ok" ? "text-[#a855f7]" : privatePayrollHealth === "error" ? "text-amber-300" : "text-[#8f8f95]"} />
+                <span className={`text-[9px] font-bold uppercase tracking-[0.15em] ${privatePayrollHealth === "ok" ? "text-[#a855f7]" : privatePayrollHealth === "error" ? "text-amber-300" : "text-[#8f8f95]"}`}>
+                  RIAD Payments {privatePayrollHealth === "ok" ? "Online" : privatePayrollHealth === "error" ? "Degraded" : "Checking"}
                 </span>
               </div>
-	              {primaryPayrollStream && hasLiveSnapshot ? (
-                <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-[#1eba98]/25 bg-[#1eba98]/10 px-3 py-1.5">
-                  <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#84f7dc]">
-                    Live PER Synced
+              {primaryPayrollStream && hasLiveSnapshot ? (
+                <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-[#a855f7]/25 bg-[#a855f7]/10 px-3 py-1.5">
+                  <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#c084fc]">
+                    Live Stream Synced
                   </span>
                 </div>
-	              ) : null}
-	            </div>
+              ) : null}
+            </div>
 
-	            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-	              <Link href={employeeExperienceCopy.ctaHref} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#1eba98]/40 bg-[#1eba98]/15 px-4 text-[10px] font-bold uppercase tracking-wider text-[#1eba98] transition-all hover:bg-[#1eba98]/25 no-underline">
-	                <LogOut size={14} />
-	                {employeeExperienceCopy.ctaLabel}
-	              </Link>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <Link href={employeeExperienceCopy.ctaHref} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#a855f7]/40 bg-[#a855f7]/15 px-4 text-[10px] font-bold uppercase tracking-wider text-[#a855f7] transition-all hover:bg-[#a855f7]/25 no-underline">
+                <LogOut size={14} />
+                {employeeExperienceCopy.ctaLabel}
+              </Link>
               <button
                 onClick={() => void fetchEmployeePayrollSummary({ force: true })}
                 disabled={loadingPayrollSummary}
@@ -243,41 +243,41 @@ export default function ClaimDashboardPage() {
 
           {loadingPayrollSummary && !payrollSummary ? (
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-3xl bg-black/70 backdrop-blur-sm">
-              <Loader2 size={32} className="mb-4 animate-spin text-[#1eba98]" />
+              <Loader2 size={32} className="mb-4 animate-spin text-[#a855f7]" />
               <p className="text-[10px] font-bold uppercase tracking-widest text-[#a8a8aa]">Syncing Stream...</p>
             </div>
           ) : null}
 
-	          {primaryPayrollStream ? (
-	            <>
-	              <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-5">
-	                <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#84f7dc]">
-	                  {employeeExperienceCopy.eyebrow}
-	                </p>
-	                <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-	                  <div>
-	                    <h3 className="text-lg font-bold text-white">{employeeExperienceCopy.title}</h3>
-	                    <p className="mt-1 text-sm leading-relaxed text-[#a8a8aa]">
-	                      {employeeExperienceCopy.body}
-	                    </p>
-	                  </div>
-	                  <Link
-	                    href={employeeExperienceCopy.ctaHref}
-	                    className="inline-flex h-11 items-center justify-center rounded-xl bg-[#1eba98] px-4 text-[10px] font-bold uppercase tracking-wider text-black transition-all hover:bg-[#18a786] no-underline"
-	                  >
-	                    {employeeExperienceCopy.ctaLabel}
-	                  </Link>
-	                </div>
-	              </div>
+          {primaryPayrollStream ? (
+            <>
+              <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-5">
+                <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#c084fc]">
+                  {employeeExperienceCopy.eyebrow}
+                </p>
+                <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="text-lg font-bold text-white">{employeeExperienceCopy.title}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-[#a8a8aa]">
+                      {employeeExperienceCopy.body}
+                    </p>
+                  </div>
+                  <Link
+                    href={employeeExperienceCopy.ctaHref}
+                    className="inline-flex h-11 items-center justify-center rounded-xl bg-[#a855f7] px-4 text-[10px] font-bold uppercase tracking-wider text-black transition-all hover:bg-[#9333ea] no-underline"
+                  >
+                    {employeeExperienceCopy.ctaLabel}
+                  </Link>
+                </div>
+              </div>
 
-	              <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-2xl border border-[#1eba98]/35 bg-[#1eba98]/10 p-6">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#84f7dc]">Your {cycleInfo.label} Salary</p>
+              <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-2xl border border-[#a855f7]/35 bg-[#a855f7]/10 p-6">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#c084fc]">Your {cycleInfo.label} Salary</p>
                   <p className="mt-2 text-3xl font-bold tracking-tight text-white">
                     {monthlySalaryAmount !== null ? `$${formatUsdc(monthlySalaryAmount, 6)}` : "—"}
                   </p>
                   <p className="mt-1.5 text-[10px] text-[#9ce8d5]">
-                    {monthlySalaryAmount !== null ? "Monthly context from live PER state." : "Available after PER sync."}
+                    {monthlySalaryAmount !== null ? "Monthly context from live Stream state." : "Available after Stream sync."}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
@@ -288,7 +288,7 @@ export default function ClaimDashboardPage() {
                   <p className="mt-1.5 text-[10px] text-[#a8a8aa]">
                     {remainingThisMonthAmount !== null
                       ? `Remaining: $${formatUsdc(remainingThisMonthAmount, 6)}`
-                      : "Requires signed PER snapshot"}
+                      : "Requires signed Stream snapshot"}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
@@ -322,7 +322,7 @@ export default function ClaimDashboardPage() {
               <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-[#8f8f95]">
                 {hasPrivatePayrollMode
                   ? "This employer uses private payroll payouts instead of realtime streaming. Watch your private balance for the next payout."
-                  : "Connect a wallet registered with Expaynse to see your live payroll dashboard."}
+                  : "Connect a wallet registered with RIAD Finance to see your live payroll dashboard."}
               </p>
             </div>
           )}

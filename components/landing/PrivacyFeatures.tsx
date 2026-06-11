@@ -44,7 +44,7 @@ export function PrivacyFeatures() {
                         Built for teams that value privacy
                     </h2>
                     <p className="text-gray-400 text-lg leading-relaxed mb-10">
-                        Expaynse provides real financial privacy without compromising on the features modern teams need from payroll infrastructure.
+                        RIAD Finance provides real financial privacy without compromising on the features modern teams need from payroll infrastructure.
                     </p>
                     <div className="space-y-6">
                         {features.map((f, i) => (
@@ -108,7 +108,7 @@ export function PrivacyFeatures() {
                             <h4 className="text-white font-semibold">Privacy by Default</h4>
                         </div>
                         <p className="text-gray-400 text-sm leading-relaxed">
-                            Every operation in Expaynse is private by default. No configuration needed. No opt-in required. Privacy is the foundation, not a feature.
+                            Every operation in RIAD Finance is private by default. No configuration needed. No opt-in required. Privacy is the foundation, not a feature.
                         </p>
                     </motion.div>
                 </motion.div>

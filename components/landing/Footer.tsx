@@ -11,11 +11,11 @@ export function Footer() {
                     <div className="flex items-center gap-4">
                         <Logo className="w-16 h-16" />
                         <h2 className="text-3xl font-black uppercase tracking-[-0.02em] text-white">
-                            Expaynse
+                            RIAD Finance
                         </h2>
                     </div>
                     <p className="text-zinc-500 text-lg font-medium max-w-sm leading-relaxed">
-Privacy-first real-time payroll streaming on Solana. Pay employees every second with zero-knowledge security.
+                        Privacy-first real-time payroll streaming on Arbitrum. Pay employees every second with zero-knowledge security.
 
                     </p>
                 </div>
@@ -41,7 +41,7 @@ Privacy-first real-time payroll streaming on Solana. Pay employees every second 
 
             <div className="max-w-7xl mx-auto mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">
                 <div className="flex items-center gap-8">
-                    <p>© 2026 Expaynse Labs</p>
+                    <p>© 2026 RIAD Finance Labs</p>
                     <p className="hidden md:block">The future of payroll is real-time.</p>
                 </div>
 

@@ -1,5 +1,4 @@
 import crypto from "node:crypto";
-import { Keypair } from "@solana/web3.js";
 import { Collection } from "mongodb";
 import { requiredEnv } from "./company-env";
 import { getMongoDb } from "./mongodb";
@@ -24,7 +23,7 @@ function encryptionKey(): Buffer {
   return crypto.createHash("sha256").update(secret).digest();
 }
 
-function encryptSecretKey(secretKey: Uint8Array): {
+function encryptSecretKey(secretKey: string): {
   encryptedSecretKeyBase64: string;
   ivBase64: string;
   authTagBase64: string;
@@ -33,7 +32,7 @@ function encryptSecretKey(secretKey: Uint8Array): {
   const cipher = crypto.createCipheriv("aes-256-gcm", encryptionKey(), iv);
 
   const encrypted = Buffer.concat([
-    cipher.update(Buffer.from(secretKey)),
+    cipher.update(secretKey, "utf8"),
     cipher.final(),
   ]);
 
@@ -46,7 +45,7 @@ function encryptSecretKey(secretKey: Uint8Array): {
   };
 }
 
-function decryptSecretKey(record: EncryptedCompanyKey): Uint8Array {
+function decryptSecretKey(record: EncryptedCompanyKey): string {
   const decipher = crypto.createDecipheriv(
     "aes-256-gcm",
     encryptionKey(),
@@ -60,15 +59,16 @@ function decryptSecretKey(record: EncryptedCompanyKey): Uint8Array {
     decipher.final(),
   ]);
 
-  return Uint8Array.from(decrypted);
+  return decrypted.toString("utf8");
 }
 
 // ── Public API ──
 
-export async function saveCompanyKeypair(args: {
+export async function saveCompanyPrivateKey(args: {
   companyId: string;
   kind: "treasury" | "settlement";
-  keypair: Keypair;
+  privateKey: string;
+  address: string;
 }): Promise<EncryptedCompanyKey> {
   const collection = await keysCollection();
 
@@ -78,16 +78,16 @@ export async function saveCompanyKeypair(args: {
   });
 
   if (existing) {
-    throw new Error(`Keypair already exists for company=${args.companyId}, kind=${args.kind}`);
+    throw new Error(`PrivateKey already exists for company=${args.companyId}, kind=${args.kind}`);
   }
 
-  const encrypted = encryptSecretKey(args.keypair.secretKey);
+  const encrypted = encryptSecretKey(args.privateKey);
 
   const record: EncryptedCompanyKey = {
     id: crypto.randomUUID(),
     companyId: args.companyId,
     kind: args.kind,
-    pubkey: args.keypair.publicKey.toBase58(),
+    pubkey: args.address,
     ...encrypted,
     createdAt: new Date().toISOString(),
   };
@@ -97,10 +97,10 @@ export async function saveCompanyKeypair(args: {
   return record;
 }
 
-export async function loadCompanyKeypair(args: {
+export async function loadCompanyPrivateKey(args: {
   companyId: string;
   kind: "treasury" | "settlement";
-}): Promise<Keypair> {
+}): Promise<string> {
   const collection = await keysCollection();
 
   const record = await collection.findOne({
@@ -109,16 +109,16 @@ export async function loadCompanyKeypair(args: {
   });
 
   if (!record) {
-    throw new Error(`Missing ${args.kind} keypair for company ${args.companyId}`);
+    throw new Error(`Missing ${args.kind} privateKey for company ${args.companyId}`);
   }
 
-  return Keypair.fromSecretKey(decryptSecretKey(record));
+  return decryptSecretKey(record);
 }
 
 export async function getCompanyKeyPublicInfo(args: {
   companyId: string;
   kind: "treasury" | "settlement";
-}): Promise<Pick<EncryptedCompanyKey, "companyId" | "kind" | "pubkey" | "createdAt"> | null> {
+}): Promise<Pick<EncryptedCompanyKey, "companyId" | "kind" | "pubkey" | "createdAt" | "id"> | null> {
   const collection = await keysCollection();
 
   const record = await collection.findOne({
@@ -129,6 +129,7 @@ export async function getCompanyKeyPublicInfo(args: {
   if (!record) return null;
 
   return {
+    id: record.id,
     companyId: record.companyId,
     kind: record.kind,
     pubkey: record.pubkey,

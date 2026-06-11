@@ -131,14 +131,14 @@ export function AppSidebar({
       <Link href="/" className="h-16 flex items-center gap-3 px-5 border-b border-white/5 no-underline group">
         <Logo className="w-9 h-9 transition-transform group-hover:scale-110" />
         <span className="text-lg font-bold text-white tracking-tight">
-          expaynse
+          riadfinance
         </span>
       </Link>
 
       <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
         <div className="px-2 mb-4">
           <div className="flex items-center justify-center gap-2 rounded-xl bg-white/5 border border-white/5 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.1em] text-[#a8a8aa]">
-            {role === "employee" ? <UserCircle size={14} className="text-[#1eba98]" /> : <Briefcase size={14} className="text-[#1eba98]" />}
+            {role === "employee" ? <UserCircle size={14} className="text-[#a855f7]" /> : <Briefcase size={14} className="text-[#a855f7]" />}
             {role === "employee" ? "Employee Workspace" : "Employer Workspace"}
           </div>
         </div>
@@ -153,7 +153,7 @@ export function AppSidebar({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search..."
-              className="w-full pl-9 pr-10 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-[#a8a8aa] focus:outline-none focus:ring-2 focus:ring-[#1eba98]/20 focus:border-[#1eba98]/30 transition-all"
+              className="w-full pl-9 pr-10 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-[#a8a8aa] focus:outline-none focus:ring-2 focus:ring-[#a855f7]/20 focus:border-[#a855f7]/30 transition-all"
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 bg-white/5 border border-white/10 rounded-md px-1.5 py-0.5">
               <Command size={10} className="text-[#a8a8aa]" />
@@ -182,13 +182,13 @@ export function AppSidebar({
                         : undefined
                 }
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all no-underline ${isActive
-                  ? "bg-[#1eba98]/10 text-[#1eba98] border border-[#1eba98]/20 shadow-xs"
+                  ? "bg-[#a855f7]/10 text-[#a855f7] border border-[#a855f7]/20 shadow-xs"
                   : "text-[#a8a8aa] hover:text-white hover:bg-white/5"
                   }`}
               >
                 <Icon
                   size={18}
-                  className={isActive ? "text-[#1eba98]" : "text-[#a8a8aa]"}
+                  className={isActive ? "text-[#a855f7]" : "text-[#a8a8aa]"}
                 />
                 {item.label}
               </Link>
@@ -201,8 +201,8 @@ export function AppSidebar({
         {connected && walletAddr ? (
           <div className="space-y-2">
             <div className="flex items-center gap-3 px-3 py-2">
-              <div className="w-8 h-8 rounded-full bg-[#1eba98]/20 flex items-center justify-center">
-                <Wallet size={14} className="text-[#1eba98]" />
+              <div className="w-8 h-8 rounded-full bg-[#a855f7]/20 flex items-center justify-center">
+                <Wallet size={14} className="text-[#a855f7]" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-white truncate">
@@ -215,7 +215,7 @@ export function AppSidebar({
             </div>
             <button
               onClick={disconnect}
-              className="w-full py-2.5 bg-[#1eba98] hover:bg-[#1eba98]/80 text-black text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
+              className="w-full py-2.5 bg-[#a855f7] hover:bg-[#a855f7]/80 text-black text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
             >
               Disconnect
             </button>

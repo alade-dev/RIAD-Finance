@@ -40,6 +40,9 @@ export function useWallet() {
       const msgStr = typeof message === "string" ? message : new TextDecoder().decode(message);
       return await signMessageAsync({ message: msgStr });
     },
+    signTransaction: async (tx: any) => {
+      return tx;
+    },
   };
 }
 

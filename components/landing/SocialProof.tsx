@@ -7,14 +7,14 @@ const testimonials = [
     {
         name: "Sarah Chen",
         handle: "@sarah_payroll",
-        text: "We switched our entire 40-person team to Expaynse last month. Employees love seeing their earnings tick up every second. Zero complaints since day one.",
+        text: "We switched our entire 40-person team to RIAD Finance last month. Employees love seeing their earnings tick up every second. Zero complaints since day one.",
         image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
         verified: true,
     },
     {
         name: "Marcus Webb",
         handle: "@marcus_web3",
-        text: "As a DAO treasurer, I needed private payroll. Expaynse's zero-knowledge streams mean our contributor salaries never hit the public chain. Game changer.",
+        text: "As a DAO treasurer, I needed private payroll. RIAD Finance's zero-knowledge streams mean our contributor salaries never hit the public chain. Game changer.",
         image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus",
         verified: true,
     },
@@ -28,7 +28,7 @@ const testimonials = [
     {
         name: "Leo Park",
         handle: "@leo_engineering",
-        text: "We integrated the Expaynse API directly into our HRIS. Payroll runs itself now. Our finance team actually thanked the engineering team for once.",
+        text: "We integrated the RIAD Finance API directly into our HRIS. Payroll runs itself now. Our finance team actually thanked the engineering team for once.",
         image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Leo",
         verified: true,
     },

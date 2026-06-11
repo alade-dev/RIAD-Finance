@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@/hooks/useWallet";
 import {
   CircleHelp,
   Download,
@@ -165,7 +165,7 @@ export function CompliancePageContent() {
   const [statementSummary, setStatementSummary] = useState<StatementSummary | null>(null);
   const [statements, setStatements] = useState<StatementRow[]>([]);
 
-  const walletAddr = publicKey?.toBase58();
+  const walletAddr = publicKey;
 
   const loadComplianceData = useCallback(async () => {
     if (!walletAddr || !signMessage) return;
@@ -259,7 +259,7 @@ export function CompliancePageContent() {
         }
 
         const payload = await response.json();
-        const filename = `expaynse-compliance-${scope}-${new Date().toISOString().slice(0, 10)}.json`;
+        const filename = `riadfinance-compliance-${scope}-${new Date().toISOString().slice(0, 10)}.json`;
         downloadTextFile(filename, JSON.stringify(payload, null, 2), "application/json;charset=utf-8;");
         const labels = {
           owner: "Internal review export downloaded",
@@ -314,7 +314,7 @@ export function CompliancePageContent() {
 
     const csv = [header.join(","), ...rows.map((row) => row.join(","))].join("\n");
     downloadTextFile(
-      `expaynse-payroll-statements-${new Date().toISOString().slice(0, 10)}.csv`,
+      `riadfinance-payroll-statements-${new Date().toISOString().slice(0, 10)}.csv`,
       csv,
       "text/csv;charset=utf-8;",
     );
@@ -366,7 +366,7 @@ export function CompliancePageContent() {
       <div className="space-y-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#1eba98]/20 bg-[#1eba98]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#1eba98]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#a855f7]/20 bg-[#a855f7]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#a855f7]">
               <ShieldCheck size={12} />
               Compliance Workspace
             </div>
@@ -375,7 +375,7 @@ export function CompliancePageContent() {
                 Private payroll records with controlled audit access.
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#a8a8aa] sm:text-base">
-                MagicBlock secures private execution. Expaynse controls disclosure, statements, and auditor review.
+                Fhenix and TEE enclaves secure private execution. RIAD Finance controls disclosure, statements, and auditor review.
               </p>
             </div>
           </div>
@@ -391,7 +391,7 @@ export function CompliancePageContent() {
             </button>
             <button
               onClick={() => setAuditorModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-2xl bg-[#1eba98] px-4 py-3 text-sm font-bold text-black transition hover:bg-[#21d4ae]"
+              className="inline-flex items-center gap-2 rounded-2xl bg-[#a855f7] px-4 py-3 text-sm font-bold text-black transition hover:bg-[#21d4ae]"
             >
               <Link2 size={16} />
               Generate auditor link
@@ -412,7 +412,7 @@ export function CompliancePageContent() {
                 className="flex items-center justify-between rounded-2xl border border-white/5 bg-[#0a0a0a] px-5 py-4"
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="inline-flex rounded-xl bg-[#1eba98]/10 p-2.5 text-[#1eba98]">
+                  <div className="inline-flex rounded-xl bg-[#a855f7]/10 p-2.5 text-[#a855f7]">
                     <Icon size={16} />
                   </div>
                   <div>
@@ -483,7 +483,7 @@ export function CompliancePageContent() {
                   </div>
                   <button
                     onClick={() => void handleDownloadExport(item.scope)}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1eba98] px-4 py-2.5 text-sm font-bold text-black transition hover:bg-[#21d4ae] md:min-w-[150px]"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#a855f7] px-4 py-2.5 text-sm font-bold text-black transition hover:bg-[#21d4ae] md:min-w-[150px]"
                   >
                     <Download size={15} />
                     Download
@@ -493,7 +493,7 @@ export function CompliancePageContent() {
             </div>
 
             <div className="mt-4 flex items-center gap-2 text-xs text-[#7f7f84]">
-              <InfoHint label="MagicBlock handles screened private execution. Expaynse handles auditor access, statements, exports, and activity records." />
+              <InfoHint label="TEE enclaves handle screened private execution. RIAD Finance handles auditor access, statements, exports, and activity records." />
               Disclosure remains scoped, revocable, and under your control.
             </div>
           </section>
@@ -537,11 +537,10 @@ export function CompliancePageContent() {
                               {token.label?.trim() || "Auditor access link"}
                             </span>
                             <span
-                              className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${
-                                token.revoked || isExpired
-                                  ? "bg-white/10 text-[#a8a8aa]"
-                                  : "bg-[#1eba98]/10 text-[#1eba98]"
-                              }`}
+                              className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${token.revoked || isExpired
+                                ? "bg-white/10 text-[#a8a8aa]"
+                                : "bg-[#a855f7]/10 text-[#a855f7]"
+                                }`}
                             >
                               {stateLabel}
                             </span>
@@ -615,11 +614,10 @@ export function CompliancePageContent() {
                           {formatComplianceAction(event.action)}
                         </span>
                         <span
-                          className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${
-                            event.status === "success"
-                              ? "bg-[#1eba98]/10 text-[#1eba98]"
-                              : "bg-red-500/10 text-red-400"
-                          }`}
+                          className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${event.status === "success"
+                            ? "bg-[#a855f7]/10 text-[#a855f7]"
+                            : "bg-red-500/10 text-red-400"
+                            }`}
                         >
                           {event.status}
                         </span>
@@ -690,13 +688,12 @@ export function CompliancePageContent() {
                         </td>
                         <td className="py-4 pr-4">
                           <span
-                            className={`inline-flex rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${
-                              statement.payout.status === "paid"
-                                ? "bg-[#1eba98]/10 text-[#1eba98]"
-                                : statement.payout.status === "failed"
-                                  ? "bg-red-500/10 text-red-400"
-                                  : "bg-white/10 text-[#a8a8aa]"
-                            }`}
+                            className={`inline-flex rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${statement.payout.status === "paid"
+                              ? "bg-[#a855f7]/10 text-[#a855f7]"
+                              : statement.payout.status === "failed"
+                                ? "bg-red-500/10 text-red-400"
+                                : "bg-white/10 text-[#a8a8aa]"
+                              }`}
                           >
                             {statement.payout.status}
                           </span>

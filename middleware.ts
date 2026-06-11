@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const PITCH_HOSTS = new Set([
-  "pitch.expaynse.xyz",
-  "www.pitch.expaynse.xyz",
+  "pitch.riadfinance.xyz",
+  "www.pitch.riadfinance.xyz",
 ]);
 
 const PUBLIC_FILE_REGEX = /\.[a-z0-9]+$/i;

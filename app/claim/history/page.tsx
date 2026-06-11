@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@/hooks/useWallet";
 import {
   FileDown,
   Loader2,
@@ -151,7 +151,7 @@ function formatTxSig(value?: string) {
 
 export default function ClaimHistoryPage() {
   const { publicKey, signMessage } = useWallet();
-  const walletAddr = publicKey?.toBase58();
+  const walletAddr = publicKey;
 
   const [statements, setStatements] = useState<StatementRow[]>([]);
   const [privateTransfers, setPrivateTransfers] = useState<StatementRow[]>([]);
@@ -359,7 +359,7 @@ export default function ClaimHistoryPage() {
             <Link href="/claim/withdraw" className="flex h-9 min-w-[108px] items-center justify-center rounded-xl px-4 text-[10px] font-bold uppercase tracking-wider text-[#8f8f95] transition-all hover:bg-white/10 hover:text-white no-underline">
               Withdraw
             </Link>
-            <button className="h-9 min-w-[108px] rounded-xl bg-[#1eba98] px-4 text-[10px] font-bold uppercase tracking-wider text-black shadow-sm transition-all">
+            <button className="h-9 min-w-[108px] rounded-xl bg-[#a855f7] px-4 text-[10px] font-bold uppercase tracking-wider text-black shadow-sm transition-all">
               History
             </button>
           </div>
@@ -371,7 +371,7 @@ export default function ClaimHistoryPage() {
             onClick={() => setActiveTab("income")}
             className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${
               activeTab === "income"
-                ? "bg-[#1eba98] text-black shadow-[0_0_16px_rgba(30,186,152,0.25)]"
+                ? "bg-[#a855f7] text-black shadow-[0_0_16px_rgba(168,85,247,0.25)]"
                 : "text-[#8f8f95] hover:bg-white/5 hover:text-white"
             }`}
           >
@@ -391,7 +391,7 @@ export default function ClaimHistoryPage() {
             onClick={() => setActiveTab("withdrawals")}
             className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${
               activeTab === "withdrawals"
-                ? "bg-[#1eba98] text-black shadow-[0_0_16px_rgba(30,186,152,0.25)]"
+                ? "bg-[#a855f7] text-black shadow-[0_0_16px_rgba(168,85,247,0.25)]"
                 : "text-[#8f8f95] hover:bg-white/5 hover:text-white"
             }`}
           >
@@ -422,7 +422,7 @@ export default function ClaimHistoryPage() {
               <button
                 onClick={() => void loadHistory(true)}
                 disabled={loading}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-[#8f8f95] shadow-sm transition-all hover:border-[#1eba98]/40 hover:text-[#1eba98] disabled:opacity-50"
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-[#8f8f95] shadow-sm transition-all hover:border-[#a855f7]/40 hover:text-[#a855f7] disabled:opacity-50"
               >
                 {loading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
               </button>
@@ -439,7 +439,7 @@ export default function ClaimHistoryPage() {
             
             {loading && allStatements.length === 0 ? (
               <div className="px-6 py-14 flex items-center justify-center">
-                <Loader2 className="animate-spin text-[#1eba98]" size={24} />
+                <Loader2 className="animate-spin text-[#a855f7]" size={24} />
               </div>
             ) : allStatements.length === 0 ? (
               <div className="px-6 py-14 text-center text-sm text-[#8f8f95]">
@@ -484,7 +484,7 @@ export default function ClaimHistoryPage() {
                     >
                       <div className="border-b-2 border-black pb-6 mb-8 flex justify-between items-end">
                         <div>
-                          <h1 className="text-4xl font-bold tracking-tight mb-1">Expensee Payroll</h1>
+                          <h1 className="text-4xl font-bold tracking-tight mb-1">RIAD Finance Payroll</h1>
                           <p className="text-lg text-gray-500 uppercase tracking-widest font-semibold">
                             Official Payslip
                           </p>
@@ -549,8 +549,8 @@ export default function ClaimHistoryPage() {
                       </div>
 
                       <div className="text-center text-sm text-gray-400 mt-24 border-t border-gray-100 pt-8">
-                        <p>This is an automatically generated blockchain receipt from Expensee.</p>
-                        <p>Verify the transaction hash on Solscan for absolute cryptographic proof.</p>
+                        <p>This is an automatically generated blockchain receipt from RIAD Finance.</p>
+                        <p>Verify the transaction hash on Arbiscan for absolute cryptographic proof.</p>
                       </div>
                     </div>
                   </div>
@@ -573,7 +573,7 @@ export default function ClaimHistoryPage() {
               <button
                 onClick={() => void loadHistory(true)}
                 disabled={loading}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-[#8f8f95] shadow-sm transition-all hover:border-[#1eba98]/40 hover:text-[#1eba98] disabled:opacity-50"
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-[#8f8f95] shadow-sm transition-all hover:border-[#a855f7]/40 hover:text-[#a855f7] disabled:opacity-50"
               >
                 {loading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
               </button>
@@ -581,7 +581,7 @@ export default function ClaimHistoryPage() {
 
             {loading && withdrawals.length === 0 ? (
               <div className="px-6 py-14 flex items-center justify-center">
-                <Loader2 className="animate-spin text-[#1eba98]" size={24} />
+                <Loader2 className="animate-spin text-[#a855f7]" size={24} />
               </div>
             ) : withdrawals.length === 0 ? (
               <div className="px-6 py-14 text-center text-sm text-[#8f8f95]">
@@ -621,7 +621,7 @@ export default function ClaimHistoryPage() {
                                   ? "border-amber-300/30 bg-amber-400/10 text-amber-200"
                                   : isFailed
                                     ? "border-red-400/30 bg-red-500/10 text-red-200"
-                                    : "border-[#1eba98]/20 bg-[#1eba98]/10 text-[#84f7dc]"
+                                    : "border-[#a855f7]/20 bg-[#a855f7]/10 text-[#c084fc]"
                               }`}
                             >
                               {record.status}
@@ -646,7 +646,7 @@ export default function ClaimHistoryPage() {
                             </span>
                             {record.txSig ? (
                               <a
-                                href={`https://solscan.io/tx/${record.txSig}?cluster=devnet`}
+                                href={`https://sepolia.arbiscan.io/tx/${record.txSig}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="group inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-[#a8a8aa] transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"

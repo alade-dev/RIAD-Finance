@@ -9,9 +9,9 @@ interface RunwayChartProps {
   monthlyBurnRate: number;
 }
 
-const EXPAYNSE_GREEN = "#D9FF00"
-const EXPAYNSE_DARK = "#1A1D1A"
-const EXPAYNSE_RED = "#FF3B30"
+const RIAD_GREEN = "#D9FF00"
+const RIAD_DARK = "#1A1D1A"
+const RIAD_RED = "#FF3B30"
 
 const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
@@ -50,7 +50,7 @@ function CustomTooltip({
     return (
       <div className="bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2 shadow-sm">
         <p className="text-xs text-[#a8a8aa]/60">End of {label}</p>
-        <p className="text-sm font-bold" style={{ color: val === 0 ? EXPAYNSE_RED : EXPAYNSE_GREEN }}>
+        <p className="text-sm font-bold" style={{ color: val === 0 ? RIAD_RED : RIAD_GREEN }}>
           ${val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </p>
       </div>
@@ -78,12 +78,12 @@ export function RunwayProjectionChart({ vaultBalance, monthlyBurnRate }: RunwayC
             <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="runwayGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={EXPAYNSE_GREEN} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={EXPAYNSE_GREEN} stopOpacity={0} />
+                  <stop offset="5%" stopColor={RIAD_GREEN} stopOpacity={0.3} />
+                  <stop offset="95%" stopColor={RIAD_GREEN} stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="criticalGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={EXPAYNSE_RED} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={EXPAYNSE_RED} stopOpacity={0} />
+                  <stop offset="5%" stopColor={RIAD_RED} stopOpacity={0.3} />
+                  <stop offset="95%" stopColor={RIAD_RED} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
@@ -109,12 +109,12 @@ export function RunwayProjectionChart({ vaultBalance, monthlyBurnRate }: RunwayC
               <Area
                 type="monotone"
                 dataKey="balance"
-                stroke={data[data.length - 1].balance === 0 ? EXPAYNSE_RED : EXPAYNSE_GREEN}
+                stroke={data[data.length - 1].balance === 0 ? RIAD_RED : RIAD_GREEN}
                 strokeWidth={3}
                 fill={data[data.length - 1].balance === 0 ? "url(#criticalGradient)" : "url(#runwayGradient)"}
               />
               {monthlyBurnRate > 0 ? (
-                <ReferenceLine y={monthlyBurnRate * 1.5} stroke={EXPAYNSE_RED} strokeDasharray="3 3" opacity={0.5} />
+                <ReferenceLine y={monthlyBurnRate * 1.5} stroke={RIAD_RED} strokeDasharray="3 3" opacity={0.5} />
               ) : null}
             </AreaChart>
           </ResponsiveContainer>

@@ -111,8 +111,8 @@ export function ConnectWalletBtn({
               onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
               className="flex items-center gap-2 pl-2 pr-3 py-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all duration-200 cursor-pointer shadow-sm"
             >
-              <span className="w-7 h-7 rounded-lg flex items-center justify-center bg-[#1eba98]/20 shrink-0">
-                <Wallet size={16} className="text-[#1eba98]" />
+              <span className="w-7 h-7 rounded-lg flex items-center justify-center bg-[#a855f7]/20 shrink-0">
+                <Wallet size={16} className="text-[#a855f7]" />
               </span>
               <span className="font-mono text-[12px] tracking-wide text-white">
                 {truncated}
@@ -142,7 +142,7 @@ export function ConnectWalletBtn({
                       {truncated}
                     </span>
                     {isCopied ? (
-                      <Check size={13} className="text-[#1eba98] shrink-0" />
+                      <Check size={13} className="text-[#a855f7] shrink-0" />
                     ) : (
                       <Copy size={13} className="text-[#a8a8aa] shrink-0" />
                     )}
@@ -185,7 +185,7 @@ export function ConnectWalletBtn({
           <button
             onClick={openModal}
             aria-label="Connect wallet"
-            className={`${isStandalone ? "inline-flex w-full justify-center py-3 rounded-xl" : "hidden md:flex px-6 py-2.5 rounded-full"} items-center gap-2.5 bg-[#1eba98] hover:bg-[#1eba98]/80 active:scale-[0.98] text-black text-[13.5px] font-bold tracking-tight transition-all duration-200 cursor-pointer shadow-sm`}
+            className={`${isStandalone ? "inline-flex w-full justify-center py-3 rounded-xl" : "hidden md:flex px-6 py-2.5 rounded-full"} items-center gap-2.5 bg-[#a855f7] hover:bg-[#a855f7]/80 active:scale-[0.98] text-black text-[13.5px] font-bold tracking-tight transition-all duration-200 cursor-pointer shadow-sm`}
           >
             <Wallet size={16} />
             Connect Wallet
@@ -248,12 +248,12 @@ export function ConnectWalletBtn({
                     <p className="text-[10px] font-bold uppercase tracking-widest text-[#8f8f95] px-3 py-1.5 mb-1">
                       Available Connectors
                     </p>
-                    {wallets.map((w) => {
+                    {wallets.map((w, index) => {
                       const isConnecting =
                         connecting && connectingName === w.name;
                       return (
                         <button
-                          key={w.id}
+                          key={`${w.id}-${index}`}
                           onClick={() => handleSelectWallet(w.id, w.name)}
                           disabled={connecting}
                           className="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer border border-transparent hover:border-white/15 group"
@@ -278,7 +278,7 @@ export function ConnectWalletBtn({
                               <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                             </svg>
                           ) : (
-                            <span className="text-[10px] font-bold text-[#1eba98] bg-[#1eba98]/10 border border-[#1eba98]/30 px-2.5 py-1 rounded-full shrink-0 uppercase tracking-tighter">
+                            <span className="text-[10px] font-bold text-[#a855f7] bg-[#a855f7]/10 border border-[#a855f7]/30 px-2.5 py-1 rounded-full shrink-0 uppercase tracking-tighter">
                               Ready
                             </span>
                           )}

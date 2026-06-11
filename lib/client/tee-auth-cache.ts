@@ -1,8 +1,8 @@
 "use client";
 
-import { isJwtExpired } from "@/lib/magicblock-api";
+import { isJwtExpired } from "@/lib/private-payroll-api";
 
-const TEE_TOKEN_STORAGE_PREFIX = "expaynse-tee-token";
+const TEE_TOKEN_STORAGE_PREFIX = "riadfinance-tee-token";
 
 type CachedTeeToken = {
   token: string;

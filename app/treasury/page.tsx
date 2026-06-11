@@ -9,7 +9,7 @@ import { walletAuthenticatedFetch } from "@/lib/client/wallet-auth-fetch";
 import { DepositModal } from "@/components/deposit-modal";
 import { WithdrawModal } from "@/components/withdraw-modal";
 import { AuditorModal } from "@/components/auditor-modal";
-import { getPrivateBalance, getBalance, fetchTeeAuthToken, isJwtExpired } from "@/lib/magicblock-api";
+import { getPrivateBalance, getBalance, fetchTeeAuthToken, isJwtExpired } from "@/lib/private-payroll-api";
 import { getOrCreateCachedTeeToken, loadCachedTeeToken, clearCachedTeeToken } from "@/lib/client/tee-auth-cache";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { toast } from "sonner";
@@ -342,7 +342,7 @@ function TreasuryPageContent() {
         : payrollModeFilter === "Private Payroll"
           ? "private-payroll"
           : "streaming";
-    link.setAttribute("download", `expaynse_treasury_${modeSuffix}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `riad_finance_treasury_${modeSuffix}_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -466,7 +466,7 @@ function TreasuryPageContent() {
       .reduce((sum, tx) => sum + tx.amount, 0);
 
     return [
-      { name: "Deposits", value: depositsTotal, color: "#1eba98" },
+      { name: "Deposits", value: depositsTotal, color: "#a855f7" },
       { name: "Streaming", value: streamingTotal, color: "#3b82f6" },
       { name: "Transfers", value: transferTotal, color: "#8b5cf6" },
       { name: "Claims", value: claimsTotal, color: "#3b3b3b" },
@@ -541,7 +541,7 @@ function TreasuryPageContent() {
             </button>
             <button
               onClick={() => setDepositOpen(true)}
-              className="inline-flex h-[44px] items-center gap-2 rounded-2xl bg-[#1eba98] px-5 text-sm font-semibold text-black transition-colors hover:bg-[#1eba98]/80 shadow-[0_0_20px_rgba(30,186,152,0.3)]"
+              className="inline-flex h-[44px] items-center gap-2 rounded-2xl bg-[#a855f7] px-5 text-sm font-semibold text-black transition-colors hover:bg-[#a855f7]/80 shadow-[0_0_20px_rgba(168,85,247,0.3)]"
             >
               <Plus size={16} />
               Deposit
@@ -587,7 +587,7 @@ function TreasuryPageContent() {
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#a8a8aa]">Total Deposited</p>
             <p className="mt-2 text-2xl font-bold tracking-tight text-white">{trackedDeposited.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })} USDC</p>
             <p className="mt-1 text-xs text-[#a8a8aa]">Funds added to private vault (verified tx history)</p>
-            <div className="absolute top-5 right-5 text-[#1eba98]">
+            <div className="absolute top-5 right-5 text-[#a855f7]">
               <ArrowDownLeft size={20} />
             </div>
           </div>
@@ -616,7 +616,7 @@ function TreasuryPageContent() {
                   <button
                     key={r}
                     onClick={() => setChartRange(r)}
-                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition-all ${chartRange === r ? "text-[#1eba98] bg-[#1eba98]/10" : "text-[#555] hover:text-[#8f8f95]"
+                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition-all ${chartRange === r ? "text-[#a855f7] bg-[#a855f7]/10" : "text-[#555] hover:text-[#8f8f95]"
                       }`}
                   >
                     {r}
@@ -632,8 +632,8 @@ function TreasuryPageContent() {
                 <AreaChart data={volumeData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#1eba98" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#1eba98" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#a855f7" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#8f8f95" }} dy={10} interval={chartRange === "30D" ? 4 : "preserveStartEnd"} />
@@ -642,7 +642,7 @@ function TreasuryPageContent() {
                     contentStyle={{ borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", background: "#111", color: "#fff", boxShadow: "0 10px 30px rgba(0,0,0,0.4)" }}
                     formatter={(value: any) => [formatChartAmount(Number(value)), "total"]}
                   />
-                  <Area type="monotone" dataKey="total" stroke="#1eba98" strokeWidth={2} fillOpacity={1} fill="url(#colorTotal)" />
+                  <Area type="monotone" dataKey="total" stroke="#a855f7" strokeWidth={2} fillOpacity={1} fill="url(#colorTotal)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -694,7 +694,7 @@ function TreasuryPageContent() {
                     key={tab}
                     onClick={() => setFilterTab(tab as any)}
                     className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filterTab === tab
-                        ? "bg-[#1eba98] text-black shadow-sm"
+                        ? "bg-[#a855f7] text-black shadow-sm"
                         : "text-[#8f8f95] hover:text-white"
                       }`}
                   >
@@ -710,7 +710,7 @@ function TreasuryPageContent() {
                     onClick={() => setPayrollModeFilter(tab as typeof payrollModeFilter)}
                     className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       payrollModeFilter === tab
-                        ? "bg-[#1eba98]/15 text-[#84f7dc]"
+                        ? "bg-[#a855f7]/15 text-[#c084fc]"
                         : "text-[#8f8f95] hover:text-white"
                     }`}
                   >
@@ -726,13 +726,13 @@ function TreasuryPageContent() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search transactions..."
-                  className="pl-9 pr-4 py-2 bg-white/5 rounded-xl text-xs text-white outline-none focus:ring-2 focus:ring-[#1eba98]/20 border border-white/10 focus:border-[#1eba98]/30 transition-all w-[200px] placeholder:text-[#8f8f95]"
+                  className="pl-9 pr-4 py-2 bg-white/5 rounded-xl text-xs text-white outline-none focus:ring-2 focus:ring-[#a855f7]/20 border border-white/10 focus:border-[#a855f7]/30 transition-all w-[200px] placeholder:text-[#8f8f95]"
                 />
               </div>
 
               <button
                 onClick={() => setAuditorModalOpen(true)}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[#1eba98]/10 hover:bg-[#1eba98]/20 border border-[#1eba98]/20 text-[#1eba98] text-xs font-bold rounded-xl transition-colors shadow-sm"
+                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[#a855f7]/10 hover:bg-[#a855f7]/20 border border-[#a855f7]/20 text-[#a855f7] text-xs font-bold rounded-xl transition-colors shadow-sm"
               >
                 <ShieldCheck size={14} />
                 Auditor Link
@@ -765,7 +765,7 @@ function TreasuryPageContent() {
                 {loading ? (
                   <tr>
                     <td colSpan={7} className="py-24 text-center">
-                      <Loader2 size={24} className="animate-spin text-[#1eba98] mx-auto mb-4" />
+                      <Loader2 size={24} className="animate-spin text-[#a855f7] mx-auto mb-4" />
                     </td>
                   </tr>
                 ) : filteredTransactions.length === 0 ? (
@@ -785,7 +785,7 @@ function TreasuryPageContent() {
                     <tr key={item.id} className="hover:bg-white/[0.03] transition-colors">
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.type === "Private Vault Deposit" ? "bg-[#1eba98]/10 text-[#1eba98]" :
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.type === "Private Vault Deposit" ? "bg-[#a855f7]/10 text-[#a855f7]" :
                               "bg-amber-500/10 text-amber-500"
                             }`}>
                             {item.type === "Private Vault Deposit" ? <ArrowDownLeft size={14} /> : <ArrowUpRight size={14} />}
@@ -808,13 +808,13 @@ function TreasuryPageContent() {
                         <span className="text-[10px] text-[#8f8f95] ml-2">{new Date(item.date).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}</span>
                       </td>
                       <td className="py-4 px-6">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-[#1eba98]/10 text-[#1eba98] text-[10px] font-bold">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-[#a855f7]/10 text-[#a855f7] text-[10px] font-bold">
                           <ShieldCheck size={10} />
                           Secured
                         </span>
                       </td>
                       <td className="py-4 px-6">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold ${item.status === "success" ? "bg-[#1eba98]/10 text-[#1eba98]" : "bg-red-500/10 text-red-400"
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold ${item.status === "success" ? "bg-[#a855f7]/10 text-[#a855f7]" : "bg-red-500/10 text-red-400"
                           }`}>
                           {item.status === "success" ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
                           {item.status === "success" ? "Completed" : "Failed"}
@@ -826,7 +826,7 @@ function TreasuryPageContent() {
                             href={`https://sepolia.arbiscan.io/tx/${item.txSig}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[10px] font-mono text-[#1eba98] hover:text-[#1eba98]/70 transition-colors cursor-pointer hover:underline"
+                            className="text-[10px] font-mono text-[#a855f7] hover:text-[#a855f7]/70 transition-colors cursor-pointer hover:underline"
                           >
                             {item.txSig.slice(0, 6)}...{item.txSig.slice(-4)}
                           </a>

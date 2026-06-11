@@ -1,5 +1,4 @@
 import crypto from "node:crypto";
-import { Keypair, PublicKey } from "@solana/web3.js";
 import { z } from "zod";
 import { boolEnv } from "./company-env";
 import {
@@ -7,16 +6,16 @@ import {
   findCompanyByEmployerWallet,
   findCompanyById,
 } from "./company-store";
-import { saveCompanyKeypair } from "./company-key-vault";
+import { saveCompanyPrivateKey } from "./company-key-vault";
 import type { Company, CreateCompanyInput, PublicCompanyResponse } from "./company-types";
-import bs58 from "bs58";
-import nacl from "tweetnacl";
+import { verifyMessage } from "viem";
+import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
 // ── Zod schema ──
 
 const createCompanySchema = z.object({
   name: z.string().min(2).max(80),
-  employerWallet: z.string().min(32),
+  employerWallet: z.string().min(42),
   message: z.string().optional(),
   signature: z.string().optional(),
 });
@@ -28,26 +27,26 @@ function expectedCreateCompanyMessage(args: {
   companyName: string;
 }): string {
   return [
-    "Create Expaynsee payroll company",
+    "Create RIAD Financee payroll company",
     `Company: ${args.companyName}`,
     `Employer: ${args.employerWallet}`,
   ].join("\n");
 }
 
-function verifyWalletSignature(args: {
+async function verifyWalletSignature(args: {
   wallet: string;
   message: string;
   signature: string;
-}): boolean {
-  const publicKey = new PublicKey(args.wallet);
-  const messageBytes = new TextEncoder().encode(args.message);
-  const signatureBytes = bs58.decode(args.signature);
-
-  return nacl.sign.detached.verify(
-    messageBytes,
-    signatureBytes,
-    publicKey.toBytes()
-  );
+}): Promise<boolean> {
+  try {
+    return await verifyMessage({
+      address: args.wallet as `0x${string}`,
+      message: args.message,
+      signature: args.signature as `0x${string}`,
+    });
+  } catch {
+    return false;
+  }
 }
 
 // ── Helpers ──
@@ -68,7 +67,7 @@ function toPublicCompany(company: Company): PublicCompanyResponse {
 // ── Public API ──
 
 export async function getCompanyForEmployer(employerWallet: string): Promise<PublicCompanyResponse | null> {
-  const company = await findCompanyByEmployerWallet(employerWallet);
+  const company = await findCompanyByEmployerWallet(employerWallet.toLowerCase());
   return company ? toPublicCompany(company) : null;
 }
 
@@ -80,7 +79,7 @@ export async function getCompany(companyId: string): Promise<PublicCompanyRespon
 export async function createCompany(input: CreateCompanyInput): Promise<PublicCompanyResponse> {
   const parsed = createCompanySchema.parse(input);
 
-  const employerWallet = new PublicKey(parsed.employerWallet).toBase58();
+  const employerWallet = parsed.employerWallet.toLowerCase();
 
   // Idempotent: return existing company if already created
   const existing = await findCompanyByEmployerWallet(employerWallet);
@@ -103,7 +102,7 @@ export async function createCompany(input: CreateCompanyInput): Promise<PublicCo
       throw new Error("Invalid signed message.");
     }
 
-    const ok = verifyWalletSignature({
+    const ok = await verifyWalletSignature({
       wallet: employerWallet,
       message: parsed.message,
       signature: parsed.signature,
@@ -114,9 +113,11 @@ export async function createCompany(input: CreateCompanyInput): Promise<PublicCo
     }
   }
 
-  // Generate keypairs
-  const treasury = Keypair.generate();
-  const settlement = Keypair.generate();
+  // Generate private keys
+  const treasuryPrivateKey = generatePrivateKey();
+  const settlementPrivateKey = generatePrivateKey();
+  const treasuryAccount = privateKeyToAccount(treasuryPrivateKey);
+  const settlementAccount = privateKeyToAccount(settlementPrivateKey);
 
   const now = new Date().toISOString();
   const companyId = crypto.randomUUID();
@@ -125,24 +126,26 @@ export async function createCompany(input: CreateCompanyInput): Promise<PublicCo
     id: companyId,
     name: parsed.name.trim(),
     employerWallet,
-    treasuryPubkey: treasury.publicKey.toBase58(),
-    settlementPubkey: settlement.publicKey.toBase58(),
+    treasuryPubkey: treasuryAccount.address,
+    settlementPubkey: settlementAccount.address,
     currency: "USDC",
     createdAt: now,
     updatedAt: now,
   };
 
-  // Encrypt and store keypairs
-  await saveCompanyKeypair({
+  // Encrypt and store keys
+  await saveCompanyPrivateKey({
     companyId,
     kind: "treasury",
-    keypair: treasury,
+    privateKey: treasuryPrivateKey,
+    address: treasuryAccount.address,
   });
 
-  await saveCompanyKeypair({
+  await saveCompanyPrivateKey({
     companyId,
     kind: "settlement",
-    keypair: settlement,
+    privateKey: settlementPrivateKey,
+    address: settlementAccount.address,
   });
 
   // Store company record

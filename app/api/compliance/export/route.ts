@@ -129,7 +129,7 @@ async function buildScopedExport(args: {
     generatedAt: new Date().toISOString(),
     roleHint: profile,
     retentionNotice:
-      "Expaynse compliance exports are wallet-scoped evidence bundles. Keep them under your internal retention and disclosure policy before sharing.",
+      "RIAD Finance compliance exports are wallet-scoped evidence bundles. Keep them under your internal retention and disclosure policy before sharing.",
     summary: {
       payrollRunCount: args.history.payrollRuns.length,
       setupActionCount: args.history.setupActions.length,
@@ -187,7 +187,7 @@ async function buildScopedExport(args: {
         disclosure: {
           level: "internal-review",
           note:
-            "This export contains the authenticated wallet's full Expaynse payroll history and compliance access log.",
+            "This export contains the authenticated wallet's full RIAD Finance payroll history and compliance access log.",
         },
         records: {
           payrollRuns: args.history.payrollRuns,

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { X, Copy, CheckCircle2, ShieldAlert } from "lucide-react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@/hooks/useWallet";
 import { walletAuthenticatedFetch } from "@/lib/client/wallet-auth-fetch";
 
 interface AuditorModalProps {
@@ -27,7 +27,7 @@ export function AuditorModal({ isOpen, onClose }: AuditorModalProps) {
     setError(null);
 
     try {
-      const employerWallet = publicKey.toBase58();
+      const employerWallet = publicKey;
       if (!employerWallet) throw new Error("Wallet not connected");
       const response = await walletAuthenticatedFetch({
         path: "/api/auditor-tokens",
@@ -80,7 +80,7 @@ export function AuditorModal({ isOpen, onClose }: AuditorModalProps) {
         onClick={e => e.stopPropagation()}
       >
         <div className="flex justify-between items-center p-6 border-b border-white/5 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#1eba98]/10 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#a855f7]/10 to-transparent pointer-events-none" />
           <h2 className="text-xl font-bold text-white relative z-10">Auditor link</h2>
           <button 
             onClick={handleClose}
@@ -91,10 +91,10 @@ export function AuditorModal({ isOpen, onClose }: AuditorModalProps) {
         </div>
 
         <div className="p-6 overflow-y-auto overflow-x-hidden">
-          <div className="mb-6 p-4 rounded-2xl bg-[#1eba98]/10 border border-[#1eba98]/20 flex gap-3">
-            <ShieldAlert className="text-[#1eba98] shrink-0" size={20} />
+          <div className="mb-6 p-4 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/20 flex gap-3">
+            <ShieldAlert className="text-[#a855f7] shrink-0" size={20} />
             <div>
-              <h4 className="text-sm font-bold text-[#1eba98] mb-1">Read-only auditor access</h4>
+              <h4 className="text-sm font-bold text-[#a855f7] mb-1">Read-only auditor access</h4>
               <p className="text-xs text-[#a8a8aa]">
                 This creates a read-only link for review. Auditors can see payroll records and activity, but they cannot move funds or change anything.
               </p>
@@ -117,7 +117,7 @@ export function AuditorModal({ isOpen, onClose }: AuditorModalProps) {
                   value={label}
                   onChange={(event) => setLabel(event.target.value)}
                   placeholder="Quarterly audit"
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-[#6f6f75] focus:border-[#1eba98]/30 focus:outline-none"
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-[#6f6f75] focus:border-[#a855f7]/30 focus:outline-none"
                 />
               </div>
 
@@ -133,7 +133,7 @@ export function AuditorModal({ isOpen, onClose }: AuditorModalProps) {
                       onClick={() => setExpiresDays(days)}
                       className={`rounded-2xl border px-3 py-3 text-xs font-bold uppercase tracking-[0.16em] transition ${
                         expiresDays === days
-                          ? "border-[#1eba98]/30 bg-[#1eba98]/10 text-[#1eba98]"
+                          ? "border-[#a855f7]/30 bg-[#a855f7]/10 text-[#a855f7]"
                           : "border-white/10 bg-white/5 text-[#a8a8aa] hover:bg-white/10"
                       }`}
                     >
@@ -161,7 +161,7 @@ export function AuditorModal({ isOpen, onClose }: AuditorModalProps) {
                   onClick={handleCopy}
                   className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors shrink-0"
                 >
-                  {copied ? <CheckCircle2 size={16} className="text-[#1eba98]" /> : <Copy size={16} />}
+                  {copied ? <CheckCircle2 size={16} className="text-[#a855f7]" /> : <Copy size={16} />}
                 </button>
               </div>
               <p className="text-xs text-center text-[#8f8f95]">

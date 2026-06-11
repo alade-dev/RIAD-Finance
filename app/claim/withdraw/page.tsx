@@ -27,18 +27,18 @@ import type {
   OnChainPendingClaim,
 } from "@/components/claim/claim-types";
 import { toast } from "sonner";
-import { PublicKey } from "@solana/web3.js";
+import { isAddress } from "viem";
 import { walletAuthenticatedFetch } from "@/lib/client/wallet-auth-fetch";
 import {
   getBalance,
   getPrivateBalance,
   privateTransfer,
   signAndSend,
-} from "@/lib/magicblock-api";
+} from "@/lib/private-payroll-api";
 
 export default function ClaimWithdrawPage() {
   const {
-    publicKey,
+    publicKey: publicKeyRaw,
     signTransaction,
     signMessage,
     privBalance,
@@ -56,6 +56,14 @@ export default function ClaimWithdrawPage() {
     getOrFetchToken,
     liveNowMs,
   } = useClaimData();
+
+  const publicKey = useMemo(() => {
+    if (!publicKeyRaw) return null;
+    return {
+      toBase58: () => publicKeyRaw,
+      toString: () => publicKeyRaw,
+    };
+  }, [publicKeyRaw]) as any;
   const [visiblePrivBalance, setVisiblePrivBalance] = useState<string | null>(null);
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");
   const [withdrawRecipient, setWithdrawRecipient] = useState<string>("");
@@ -205,12 +213,7 @@ export default function ClaimWithdrawPage() {
 
   const isValidWithdrawRecipient = useMemo(() => {
     if (!withdrawRecipientTrimmed) return false;
-    try {
-      new PublicKey(withdrawRecipientTrimmed);
-      return true;
-    } catch {
-      return false;
-    }
+    return isAddress(withdrawRecipientTrimmed);
   }, [withdrawRecipientTrimmed]);
 
   const isValidAmount = (() => {
@@ -391,7 +394,7 @@ export default function ClaimWithdrawPage() {
         });
       }
 
-      if (signMessage) {
+      if (signMessage !== undefined) {
         try {
           await walletAuthenticatedFetch({
             path: `/api/history?wallet=${publicKey.toBase58()}`,
@@ -415,7 +418,7 @@ export default function ClaimWithdrawPage() {
                   : "custom-address",
               },
               providerMeta: {
-                provider: "magicblock",
+                provider: "riad-finance",
                 sendTo:
                   typeof buildRes.sendTo === "string" ? buildRes.sendTo : undefined,
                 action: isOwnWalletDestination
@@ -452,7 +455,7 @@ export default function ClaimWithdrawPage() {
         );
         if (activeToken && publicKey) {
           void getPrivateBalance(publicKey.toBase58(), activeToken)
-            .then((balance) => {
+            .then((balance: { balance?: string }) => {
               const latestMicro = parseInt(balance.balance ?? "0", 10) || 0;
               setVisiblePrivBalance(
                 latestMicro > 0 ? (latestMicro / 1_000_000).toFixed(6) : "0",
@@ -472,7 +475,7 @@ export default function ClaimWithdrawPage() {
         ? "Your private balance is no longer available for this withdrawal. The UI has been refreshed with the latest state."
         : rawMessage;
       toast.error(`Transaction failed: ${message}`, { id: withdrawToastId });
-      if (publicKey && signMessage) {
+      if (publicKey && signMessage !== undefined) {
         try {
           await walletAuthenticatedFetch({
             path: `/api/history?wallet=${publicKey.toBase58()}`,
@@ -497,7 +500,7 @@ export default function ClaimWithdrawPage() {
                   : "custom-address",
               },
               providerMeta: {
-                provider: "magicblock",
+                provider: "riad-finance",
                 action: isOwnWalletDestination
                   ? "employee-withdrawal"
                   : "employee-external-transfer",
@@ -642,7 +645,7 @@ export default function ClaimWithdrawPage() {
       const signature = await signAndSend(
         buildJson.transactions.requestWithdrawal.transactionBase64,
         signTransaction,
-        { sendTo: "ephemeral", rpcUrl: `https://devnet-tee.magicblock.app?token=${encodeURIComponent(token)}`, signMessage, publicKey }
+        { sendTo: "ephemeral", rpcUrl: `https://tee.riad.finance?token=${encodeURIComponent(token)}`, signMessage, publicKey }
       );
 
       // Persist claim metadata so backend payout reconciliation can continue.
@@ -714,7 +717,7 @@ export default function ClaimWithdrawPage() {
                 toBalance: "ephemeral",
               },
               providerMeta: {
-                provider: "magicblock",
+                provider: "riad-finance",
                 action: "claim",
                 destinationWallet: publicKey.toBase58(),
                 creditVerified: true,
@@ -824,7 +827,7 @@ export default function ClaimWithdrawPage() {
             >
               Balances
             </Link>
-            <button className="h-9 min-w-[108px] rounded-full bg-[#1eba98] px-4 text-[10px] font-bold uppercase tracking-wider text-black shadow-sm transition-all">
+            <button className="h-9 min-w-[108px] rounded-full bg-[#a855f7] px-4 text-[10px] font-bold uppercase tracking-wider text-black shadow-sm transition-all">
               Withdraw
             </button>
           </div>
@@ -841,9 +844,14 @@ export default function ClaimWithdrawPage() {
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8f8f95]">
             Private Balance
           </p>
-          <p className="mt-3 text-4xl font-bold text-white tracking-tight">
-            {displayedPrivBalance} <span className="text-xl text-[#a8a8aa] font-medium">USDC</span>
-          </p>
+          <div className="mt-3 flex items-center justify-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 shrink-0 shadow-sm">
+              <img src="/usdc-logo.png" alt="USDC" className="w-6 h-6 object-contain" />
+            </div>
+            <p className="text-4xl font-bold text-white tracking-tight">
+              {displayedPrivBalance} <span className="text-xl text-[#a8a8aa] font-medium">USDC</span>
+            </p>
+          </div>
         </div>
 
         <div className="w-full flex flex-col gap-8">
@@ -854,10 +862,10 @@ export default function ClaimWithdrawPage() {
                   <label className="mb-3 block px-1 text-[10px] font-bold uppercase tracking-widest text-[#8f8f95]">
                     Destination Wallet
                   </label>
-                  <div className="group rounded-2xl border border-white/10 bg-white/5 px-5 py-3.5 shadow-inner transition-all focus-within:border-[#1eba98]/40">
+                  <div className="group rounded-2xl border border-white/10 bg-white/5 px-5 py-3.5 shadow-inner transition-all focus-within:border-[#a855f7]/40">
                     <input
                       type="text"
-                      placeholder="Enter Solana address"
+                      placeholder="Enter Arbitrum address (0x...)"
                       value={inputWithdrawRecipient}
                       onChange={(e) => setWithdrawRecipient(e.target.value)}
                       disabled={!canUsePrivateBalance}
@@ -870,7 +878,7 @@ export default function ClaimWithdrawPage() {
                       <p className="text-[10px] font-medium italic text-[#8f8f95]">
                         {isOwnWalletDestination
                           ? "Direct withdrawal to your base wallet."
-                          : "Transfer from your PER private balance to the destination wallet's base balance."}
+                          : "Transfer from your private balance to the destination wallet's base balance."}
                       </p>
                     </div>
                     <button
@@ -879,14 +887,14 @@ export default function ClaimWithdrawPage() {
                         setWithdrawRecipient(publicKey?.toBase58() ?? "")
                       }
                       disabled={!canUsePrivateBalance}
-                      className="text-[10px] font-bold uppercase tracking-wider text-[#1eba98] transition-colors hover:text-[#64f0ce]"
+                      className="text-[10px] font-bold uppercase tracking-wider text-[#a855f7] transition-colors hover:text-[#64f0ce]"
                     >
                       Use My Wallet
                     </button>
                   </div>
                   {withdrawRecipientTrimmed && !isValidWithdrawRecipient && (
                     <p className="mt-2 px-1 text-[10px] font-bold text-red-300">
-                      Invalid Solana address format
+                      Invalid Arbitrum address format
                     </p>
                   )}
                 </div>
@@ -897,7 +905,7 @@ export default function ClaimWithdrawPage() {
                       ? "Amount to Withdraw"
                       : "Amount to Send"}
                   </label>
-                  <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-5 py-3.5 shadow-inner transition-all focus-within:border-[#1eba98]/40">
+                  <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-5 py-3.5 shadow-inner transition-all focus-within:border-[#a855f7]/40">
                     <input
                       type="number"
                       placeholder={`Max ${privBalanceNum.toString()}`}
@@ -909,9 +917,12 @@ export default function ClaimWithdrawPage() {
                       disabled={!canUsePrivateBalance}
                       className="flex-1 bg-transparent text-lg font-bold text-white outline-none placeholder:text-[#62626b]"
                     />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#8f8f95]">
-                      USDC
-                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <img src="/usdc-logo.png" alt="USDC" className="w-4 h-4 object-contain" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-[#8f8f95]">
+                        USDC
+                      </span>
+                    </div>
                     <button
                       type="button"
                       onClick={() =>
@@ -920,7 +931,7 @@ export default function ClaimWithdrawPage() {
                       disabled={
                         !canUsePrivateBalance || privBalanceNum <= 0
                       }
-                      className="text-[10px] font-bold uppercase tracking-wider text-[#1eba98] transition-colors hover:text-[#64f0ce]"
+                      className="text-[10px] font-bold uppercase tracking-wider text-[#a855f7] transition-colors hover:text-[#64f0ce]"
                     >
                       Max
                     </button>
@@ -981,9 +992,9 @@ export default function ClaimWithdrawPage() {
                           !isValidWithdrawRecipient ||
                           (withdrawAmount.trim() !== "" && !isValidAmount)
                         }
-                        className={`flex h-14 flex-1 items-center justify-center gap-2 rounded-xl bg-[#1eba98] px-6 text-[11px] font-bold uppercase tracking-widest text-black transition-all hover:bg-[#18a786] disabled:opacity-30 disabled:animate-none disabled:scale-100 ${
+                        className={`flex h-14 flex-1 items-center justify-center gap-2 rounded-xl bg-[#a855f7] px-6 text-[11px] font-bold uppercase tracking-widest text-black transition-all hover:bg-[#9333ea] disabled:opacity-30 disabled:animate-none disabled:scale-100 ${
                           privBalanceNum >= 0.000001 && requestMaxUsdc < 0.000001 && isValidWithdrawRecipient && isValidAmount && !withdrawing
-                            ? "shadow-[0_0_40px_rgba(30,186,152,0.6)] ring-2 ring-[#1eba98] ring-offset-4 ring-offset-[#0b0b0d] animate-pulse hover:animate-none scale-[1.02]"
+                            ? "shadow-[0_0_40px_rgba(168,85,247,0.6)] ring-2 ring-[#a855f7] ring-offset-4 ring-offset-[#0b0b0d] animate-pulse hover:animate-none scale-[1.02]"
                             : "shadow-lg"
                         }`}
                       >
@@ -1092,7 +1103,7 @@ export default function ClaimWithdrawPage() {
 
                 <div>
                   <div className="grid grid-cols-1 gap-3">
-                    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 shadow-inner transition-all focus-within:border-[#1eba98]/40">
+                    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 shadow-inner transition-all focus-within:border-[#a855f7]/40">
                       <input
                         type="number"
                         min="0.000001"
@@ -1106,7 +1117,7 @@ export default function ClaimWithdrawPage() {
                         type="button"
                         onClick={() => setRequestAmount(requestMaxUsdc.toFixed(6))}
                         disabled={requestMaxUsdc <= 0}
-                        className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#1eba98] transition-colors hover:text-[#64f0ce] disabled:opacity-30"
+                        className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#a855f7] transition-colors hover:text-[#64f0ce] disabled:opacity-30"
                       >
                         Max
                       </button>
@@ -1128,7 +1139,7 @@ export default function ClaimWithdrawPage() {
                       type="button"
                       onClick={() => setRequestAmount(requestMaxUsdc.toFixed(6))}
                       disabled={requestMaxUsdc <= 0}
-                      className="text-[10px] font-bold uppercase tracking-wider text-[#1eba98] transition-colors hover:text-[#64f0ce] disabled:opacity-30"
+                      className="text-[10px] font-bold uppercase tracking-wider text-[#a855f7] transition-colors hover:text-[#64f0ce] disabled:opacity-30"
                     >
                       Use Max
                     </button>
@@ -1158,9 +1169,9 @@ export default function ClaimWithdrawPage() {
                       requestMaxUsdc <= 0 ||
                       hasPendingRequest
                     }
-                    className={`flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#1eba98] px-6 text-[11px] font-bold uppercase tracking-widest text-black transition-all hover:bg-[#18a786] disabled:opacity-30 disabled:animate-none disabled:scale-100 ${
+                    className={`flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#a855f7] px-6 text-[11px] font-bold uppercase tracking-widest text-black transition-all hover:bg-[#9333ea] disabled:opacity-30 disabled:animate-none disabled:scale-100 ${
                       requestMaxUsdc >= 0.000001 && !hasPendingRequest && hasLiveSnapshot
-                        ? "shadow-[0_0_40px_rgba(30,186,152,0.6)] ring-2 ring-[#1eba98] ring-offset-4 ring-offset-[#0b0b0d] animate-pulse hover:animate-none scale-[1.02]"
+                        ? "shadow-[0_0_40px_rgba(168,85,247,0.6)] ring-2 ring-[#a855f7] ring-offset-4 ring-offset-[#0b0b0d] animate-pulse hover:animate-none scale-[1.02]"
                         : "shadow-sm"
                     }`}
                   >
@@ -1198,8 +1209,8 @@ export default function ClaimWithdrawPage() {
               <X size={18} />
             </button>
 
-            <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#1eba98]/20 bg-[#1eba98]/10">
-              <CheckCircle2 size={28} className="text-[#1eba98]" />
+            <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#a855f7]/20 bg-[#a855f7]/10">
+              <CheckCircle2 size={28} className="text-[#a855f7]" />
             </div>
 
             <h2 className="mb-1 text-2xl font-bold text-white">
@@ -1217,7 +1228,7 @@ export default function ClaimWithdrawPage() {
               </p>
               <p className="text-xl font-bold text-white">
                 {successModal.amount.toFixed(6)}{" "}
-                <span className="text-sm font-medium text-[#1eba98]">
+                <span className="text-sm font-medium text-[#a855f7]">
                   USDC
                 </span>
               </p>
@@ -1226,7 +1237,7 @@ export default function ClaimWithdrawPage() {
             {successModal.txSig && (
               <div className="mb-8 space-y-2">
                 <a
-                  href={`https://solscan.io/tx/${successModal.txSig}?cluster=devnet`}
+                  href={`https://sepolia.arbiscan.io/tx/${successModal.txSig}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex w-full items-center justify-between rounded-xl border border-white/5 bg-white/5 px-4 py-3 transition-all hover:border-white/10 hover:bg-white/10"
@@ -1234,7 +1245,7 @@ export default function ClaimWithdrawPage() {
                   <span className="font-mono text-xs text-[#8f8f95] transition-colors group-hover:text-white">
                     Transaction
                   </span>
-                  <div className="flex items-center gap-1.5 font-mono text-xs text-[#1eba98]">
+                  <div className="flex items-center gap-1.5 font-mono text-xs text-[#a855f7]">
                     {successModal.txSig.slice(0, 8)}...
                     <ExternalLink size={11} />
                   </div>
@@ -1245,7 +1256,7 @@ export default function ClaimWithdrawPage() {
             {publicKey && (
               <div className="mb-8 space-y-2">
                 <a
-                  href={`https://solscan.io/account/${publicKey.toBase58()}?cluster=devnet`}
+                  href={`https://sepolia.arbiscan.io/address/${publicKey.toBase58()}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex w-full items-center justify-between rounded-xl border border-white/5 bg-white/5 px-4 py-3 transition-all hover:border-white/10 hover:bg-white/10"
@@ -1253,7 +1264,7 @@ export default function ClaimWithdrawPage() {
                   <span className="font-mono text-xs text-[#8f8f95] transition-colors group-hover:text-white">
                     Devnet USDC Balance
                   </span>
-                  <div className="flex items-center gap-1.5 font-mono text-xs text-[#1eba98]">
+                  <div className="flex items-center gap-1.5 font-mono text-xs text-[#a855f7]">
                     {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
                     <ExternalLink size={11} />
                   </div>
@@ -1263,7 +1274,7 @@ export default function ClaimWithdrawPage() {
 
             <button
               onClick={() => setSuccessModal(null)}
-              className="w-full rounded-2xl bg-[#1eba98] py-3.5 text-sm font-bold text-black transition-colors hover:bg-[#18a786]"
+              className="w-full rounded-2xl bg-[#a855f7] py-3.5 text-sm font-bold text-black transition-colors hover:bg-[#9333ea]"
             >
               Done
             </button>

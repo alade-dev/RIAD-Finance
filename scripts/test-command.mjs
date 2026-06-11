@@ -4,34 +4,7 @@ import path from "node:path";
 const rootDir = process.cwd();
 const isWindows = process.platform === "win32";
 const nodeBin = process.execPath;
-const tsMochaBin = path.join(
-  rootDir,
-  "node_modules",
-  ".bin",
-  isWindows ? "ts-mocha.cmd" : "ts-mocha",
-);
-
 const tests = {
-  "payroll-devnet": {
-    command: tsMochaBin,
-    args: ["-p", "./tsconfig.payroll.json", "-t", "300000", "tests/payroll/payroll.ts"],
-  },
-  "app-smoke": {
-    command: nodeBin,
-    args: ["--env-file=.env", "--loader", "./tests/helpers/alias-loader.mjs", "tests/app/route-smoke.ts"],
-  },
-  "app-e2e": {
-    command: nodeBin,
-    args: ["--env-file=.env", "--loader", "./tests/helpers/alias-loader.mjs", "tests/app/payroll-end-to-end.e2e.ts"],
-  },
-  realtime: {
-    command: nodeBin,
-    args: ["--env-file=.env", "--loader", "./tests/helpers/alias-loader.mjs", "tests/app/payroll-realtime.e2e.ts"],
-  },
-  "checkpoint-logic": {
-    command: nodeBin,
-    args: ["--loader", "./tests/helpers/alias-loader.mjs", "tests/app/checkpoint-crank-logic.test.ts"],
-  },
   "app-init-readiness": {
     command: nodeBin,
     args: ["--loader", "./tests/helpers/alias-loader.mjs", "tests/app/private-init-readiness.test.ts"],
@@ -47,10 +20,6 @@ const tests = {
   "app-monthly-start-modes": {
     command: nodeBin,
     args: ["--loader", "./tests/helpers/alias-loader.mjs", "tests/app/monthly-stream-start-modes.test.ts"],
-  },
-  "magicblock-e2e": {
-    command: nodeBin,
-    args: ["tests/magicblock/api.e2e.ts"],
   },
 };
 

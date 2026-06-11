@@ -94,7 +94,7 @@ export interface EmployeePayrollSummaryResponse {
   syncedAt: string;
 }
 
-export type MagicBlockHealthState = "checking" | "ok" | "error";
+export type PrivatePayrollHealthState = "checking" | "ok" | "error";
 
 export type ClaimCashoutRequest = {
   id: string;

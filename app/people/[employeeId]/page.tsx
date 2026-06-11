@@ -17,7 +17,7 @@ import { EmployerLayout } from "@/components/employer-layout";
 import { computeLiveClaimableAmountMicro } from "@/components/claim/claim-utils";
 import { walletAuthenticatedFetch } from "@/lib/client/wallet-auth-fetch";
 import { getOrCreateCachedTeeToken, loadCachedTeeToken } from "@/lib/client/tee-auth-cache";
-import { fetchTeeAuthToken, isJwtExpired } from "@/lib/magicblock-api";
+import { fetchTeeAuthToken, isJwtExpired } from "@/lib/private-payroll-api";
 import {
   getAccruedInCycle,
   getScheduleCycleSnapshot,
@@ -337,7 +337,7 @@ export default function EmployeeStatementPage() {
 
         {loading ? (
           <div className="py-24 flex flex-col items-center justify-center">
-            <Loader2 size={28} className="animate-spin text-[#1eba98] mb-4" />
+            <Loader2 size={28} className="animate-spin text-[#a855f7] mb-4" />
             <p className="text-sm text-[#8f8f95]">Loading employee statement...</p>
           </div>
         ) : !employee ? (

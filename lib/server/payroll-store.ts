@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
-import { MongoClient, Db, Collection } from "mongodb";
-import type { CheckpointCrankStatus } from "@/lib/checkpoint-sync";
+import { type Db, type Collection } from "mongodb";
+import { getMongoDb } from "./mongodb";
+export type CheckpointCrankStatus = "idle" | "running" | "paused" | "error" | "cancelled";
 import { normalizePayrollMode, type PayrollMode } from "@/lib/payroll-mode";
 
 export type PayrollStreamStatus = "active" | "paused" | "stopped";
@@ -96,7 +97,7 @@ export interface PayrollStreamRecord {
   updatedAt: string;
 }
 
-export type TransferStatus = 
+export type TransferStatus =
   | "transfer_pending"    // DB record created, API not confirmed yet
   | "transfer_sent"       // money tx sent, payroll state not settled yet
   | "settlement_pending"  // waiting for settleSalary/mark_paid
@@ -121,7 +122,7 @@ export interface PayrollTransferRecord {
     memo?: string;
   };
   providerMeta?: {
-    provider?: "magicblock";
+    provider?: "riad-finance";
     sendTo?: string;
     clientRefId?: string;
     settleAmountMicro?: string;
@@ -133,7 +134,7 @@ export interface PayrollTransferRecord {
   updatedAt: string;
 }
 
-export type OnChainClaimStatus = 
+export type OnChainClaimStatus =
   | "requested"
   | "paying"
   | "paid"
@@ -292,23 +293,7 @@ export interface UpdateStreamRuntimeStateInput {
   monthlyCapState?: PayrollStreamRecord["monthlyCapState"];
 }
 
-const MONGODB_URI = process.env.MONGODB_URI;
-const MONGODB_DB = process.env.MONGODB_DB || "expaynse";
 
-if (!MONGODB_URI) {
-  throw new Error("Missing MONGODB_URI environment variable");
-}
-
-declare global {
-  var __expaynseMongoClientPromise: Promise<MongoClient> | undefined;
-}
-
-const clientPromise =
-  global.__expaynseMongoClientPromise ?? new MongoClient(MONGODB_URI).connect();
-
-if (process.env.NODE_ENV !== "production") {
-  global.__expaynseMongoClientPromise = clientPromise;
-}
 
 function nowIso() {
   return new Date().toISOString();
@@ -330,8 +315,8 @@ export function normalizeAllowedPayoutModes(
 ): PayrollPayoutMode[] {
   const normalized = Array.isArray(allowedPayoutModes)
     ? (["base", "ephemeral"] as const).filter((mode) =>
-        allowedPayoutModes.includes(mode),
-      )
+      allowedPayoutModes.includes(mode),
+    )
     : [];
 
   if (normalized.length > 0) {
@@ -379,8 +364,7 @@ function assertNonNegativeNumber(value: number, fieldName: string) {
 }
 
 async function getDb(): Promise<Db> {
-  const client = await clientPromise;
-  return client.db(MONGODB_DB);
+  return getMongoDb();
 }
 
 async function employersCollection(): Promise<Collection<EmployerDoc>> {
@@ -555,8 +539,8 @@ export async function createEmployee(input: CreateEmployeeInput) {
           : "full_time",
     paySchedule:
       input.paySchedule === "semi_monthly" ||
-      input.paySchedule === "biweekly" ||
-      input.paySchedule === "weekly"
+        input.paySchedule === "biweekly" ||
+        input.paySchedule === "weekly"
         ? input.paySchedule
         : "monthly",
     compensationUnit:
@@ -604,7 +588,7 @@ export async function updateEmployee(
   const collection = await employeesCollection();
 
   const timestamp = nowIso();
-  
+
   const { id, employerWallet: _ew, wallet: _w, createdAt, updatedAt, ...allowedUpdates } = updates;
 
   const result = await collection.findOneAndUpdate(
@@ -781,15 +765,15 @@ export async function createStream(input: CreateStreamInput) {
     status: input.status ?? "active",
     compensationSnapshot: input.compensationSnapshot
       ? {
-          employmentType: input.compensationSnapshot.employmentType,
-          paySchedule: input.compensationSnapshot.paySchedule,
-          compensationUnit: input.compensationSnapshot.compensationUnit,
-          compensationAmountUsd: input.compensationSnapshot.compensationAmountUsd,
-          weeklyHours: input.compensationSnapshot.weeklyHours,
-          monthlySalaryUsd: input.compensationSnapshot.monthlySalaryUsd,
-          startsAt: input.compensationSnapshot.startsAt ?? normalizedStartsAt,
-          endsAt: input.compensationSnapshot.endsAt ?? null,
-        }
+        employmentType: input.compensationSnapshot.employmentType,
+        paySchedule: input.compensationSnapshot.paySchedule,
+        compensationUnit: input.compensationSnapshot.compensationUnit,
+        compensationAmountUsd: input.compensationSnapshot.compensationAmountUsd,
+        weeklyHours: input.compensationSnapshot.weeklyHours,
+        monthlySalaryUsd: input.compensationSnapshot.monthlySalaryUsd,
+        startsAt: input.compensationSnapshot.startsAt ?? normalizedStartsAt,
+        endsAt: input.compensationSnapshot.endsAt ?? null,
+      }
       : undefined,
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -1594,7 +1578,7 @@ export async function createOnChainClaim(input: {
   requestTxSignature: string;
 }) {
   const collection = await onChainClaimsCollection();
-  
+
   const id = crypto.randomUUID();
   const timestamp = nowIso();
 
@@ -1621,7 +1605,7 @@ export async function listOnChainClaimsForEmployee(employeeWallet: string) {
     .find({ employeeWallet })
     .sort({ createdAt: -1 })
     .toArray();
-    
+
   return docs.map(doc => {
     const { _id, ...rest } = doc;
     return { ...rest, id: _id };
@@ -1634,7 +1618,7 @@ export async function listOnChainClaimsForStream(streamId: string) {
     .find({ streamId })
     .sort({ createdAt: -1 })
     .toArray();
-    
+
   return docs.map(doc => {
     const { _id, ...rest } = doc;
     return { ...rest, id: _id };
@@ -1652,13 +1636,13 @@ export async function listOnChainClaimsForEmployer(
   if (streamIds.length === 0) {
     return [];
   }
-  
+
   const collection = await onChainClaimsCollection();
   const docs = await collection
     .find({ streamId: { $in: streamIds } })
     .sort({ createdAt: -1 })
     .toArray();
-    
+
   return docs.map(doc => {
     const { _id, ...rest } = doc;
     return { ...rest, id: _id };
@@ -1686,7 +1670,7 @@ export async function getOnChainClaimById(id: string) {
 
 export async function updateOnChainClaim(id: string, updates: Partial<OnChainClaimRecord>) {
   const collection = await onChainClaimsCollection();
-  
+
   const updatePayload = {
     ...updates,
     updatedAt: nowIso()

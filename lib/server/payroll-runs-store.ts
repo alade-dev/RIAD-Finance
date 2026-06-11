@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
-import { MongoClient, type Db } from "mongodb";
+import { type Db } from "mongodb";
+import { getMongoDb } from "./mongodb";
 
 import { listEmployees, type EmployeeRecord } from "@/lib/server/payroll-store";
 
@@ -99,26 +100,6 @@ export interface CreatePayrollCycleInput {
   payDate: string;
 }
 
-const MONGODB_URI = process.env.MONGODB_URI;
-const MONGODB_DB = process.env.MONGODB_DB || "expaynse";
-
-if (!MONGODB_URI) {
-  throw new Error("Missing MONGODB_URI environment variable");
-}
-
-declare global {
-  // eslint-disable-next-line no-var
-  var __expaynseRealPayrollMongoClientPromise: Promise<MongoClient> | undefined;
-}
-
-const clientPromise =
-  global.__expaynseRealPayrollMongoClientPromise ??
-  new MongoClient(MONGODB_URI).connect();
-
-if (process.env.NODE_ENV !== "production") {
-  global.__expaynseRealPayrollMongoClientPromise = clientPromise;
-}
-
 function nowIso() {
   return new Date().toISOString();
 }
@@ -184,8 +165,7 @@ function getMonthDays(dateIso: string) {
 }
 
 async function getDb(): Promise<Db> {
-  const client = await clientPromise;
-  return client.db(MONGODB_DB);
+  return getMongoDb();
 }
 
 async function payrollProfilesCollection() {

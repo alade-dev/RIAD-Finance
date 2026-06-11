@@ -1,21 +1,21 @@
 export const PAYROLL_RUNTIME_BOUNDARY = {
   base: {
-    label: "Base Solana",
-    shortLabel: "Base",
+    label: "Arbitrum Sepolia",
+    shortLabel: "Arbitrum",
     description:
-      "Company setup, treasury funding, and public wallet exits live on base Solana.",
+      "Company setup, treasury funding, and stream creations live on Arbitrum Sepolia.",
   },
   per: {
-    label: "MagicBlock PER",
-    shortLabel: "PER",
+    label: "Sablier Streams",
+    shortLabel: "Sablier",
     description:
-      "Live salary accrual, private claimable state, and private balances live in MagicBlock PER.",
+      "Live salary accrual and streaming withdrawals live in Sablier V2 streams.",
   },
   server: {
-    label: "Expaynse Bridge",
+    label: "RIAD Finance Bridge",
     shortLabel: "Bridge",
     description:
-      "Expaynse only bridges wallet auth, signed snapshot reads, and lifecycle actions between base and PER.",
+      "RIAD Finance bridges wallet auth, signed snapshot reads, and stealth address generation.",
   },
 } as const;
 

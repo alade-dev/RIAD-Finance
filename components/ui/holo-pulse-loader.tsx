@@ -6,7 +6,7 @@ interface LoaderProps {
   fullScreen?: boolean;
 }
 
-export function ExpaynseLoader({ text = 'Loading', size = 'md', fullScreen = true }: LoaderProps) {
+export function RIADFinanceLoader({ text = 'Loading', size = 'md', fullScreen = true }: LoaderProps) {
   const [dots, setDots] = React.useState('')
 
   React.useEffect(() => {

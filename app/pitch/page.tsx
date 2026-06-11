@@ -40,7 +40,7 @@ const slides = [
             <div className="relative w-[320px] h-auto overflow-hidden bg-black z-20 shadow-[0_0_100px_-20px_rgba(30,186,152,0.25)] rounded-[2.5rem]">
               <Image
                 src="/phone-screenshot-v2.png"
-                alt="Expaynse App"
+                alt="RIAD Finance App"
                 width={632}
                 height={1048}
                 className="w-full h-auto object-contain"
@@ -160,9 +160,9 @@ const slides = [
         <div className="flex h-full w-full flex-col justify-center gap-4 md:hidden">
           <div className="text-center">
             <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[0.32em] text-kast-teal">Architecture</p>
-            <h2 className="text-[30px] font-semibold leading-tight text-white">How Expaynse Works</h2>
+            <h2 className="text-[30px] font-semibold leading-tight text-white">How RIAD Finance Works</h2>
             <p className="mx-auto mt-3 max-w-[340px] text-[13px] font-semibold leading-relaxed text-gray-400">
-              Solana anchors payroll records. MagicBlock runs confidential transfers and real-time payroll.
+              Arbitrum anchors payroll. Sablier and Fhenix run private payroll streams.
             </p>
           </div>
 
@@ -197,7 +197,7 @@ const slides = [
                   <h3 className="mt-1 text-[22px] font-extrabold text-white">Real-time Streaming</h3>
                 </div>
                 <span className="rounded-full border border-kast-teal/30 bg-kast-teal/10 px-3 py-1 text-[9px] font-extrabold uppercase tracking-[0.2em] text-kast-teal">
-                  PER
+                  STREAM
                 </span>
               </div>
               <p className="mb-4 text-[13px] font-semibold leading-relaxed text-gray-400">
@@ -219,8 +219,8 @@ const slides = [
           className="relative hidden aspect-video w-full max-w-[1540px] overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_30px_90px_rgba(0,0,0,0.55)] md:block"
         >
           <Image
-            src="/pitch-architecture-expaynse.svg?v=8"
-            alt="Expaynse architecture overview showing private payout and real-time private streaming modes"
+            src="/pitch-architecture-riadfinance.svg?v=8"
+            alt="RIAD Finance architecture overview showing private payout and real-time private streaming modes"
             fill
             priority
             unoptimized
@@ -252,7 +252,7 @@ const slides = [
             </div>
           ))}
         </div>
-        
+
         <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest text-center mt-4">
           SOURCES: RISEWORKS 2025 / BINANCE RESEARCH / ALPHAPOINT / MCKINSEY / JUNIPER RESEARCH
         </p>
@@ -293,7 +293,7 @@ const slides = [
           <p className="text-[12px] font-bold text-kast-teal tracking-[0.3em] uppercase mb-5">How we compare</p>
           <h2 className="text-[44px] md:text-[50px] font-medium text-white tracking-tight">Competitive Landscape</h2>
         </div>
-        
+
         <div className="w-full rounded-2xl bg-[#0c0c0c] border border-white/10 overflow-hidden shadow-2xl">
           <div className="grid grid-cols-6 text-left border-b border-white/10 bg-[#0c0c0c] text-[12px] md:text-[13px] font-extrabold text-gray-200 uppercase tracking-widest divide-x divide-white/10 whitespace-nowrap">
             <div className="py-7 px-4 md:px-6 flex items-center">Company</div>
@@ -303,41 +303,41 @@ const slides = [
             <div className="py-7 px-4 md:px-6 flex items-center justify-center">Salary Privacy</div>
             <div className="py-7 px-4 md:px-6 flex items-center">Best Fit</div>
           </div>
-          
+
           <div className="divide-y divide-white/10 bg-[#0c0c0c]">
             {[
               { company: "Zebec", payroll: true, realtime: true, native: true, privacy: false, fit: "Crypto payroll streaming", hl: false },
               { company: "Superfluid", payroll: false, realtime: true, native: true, privacy: false, fit: "General token streaming", hl: false },
               { company: "Gusto", payroll: true, realtime: false, native: false, privacy: false, fit: "Traditional payroll compliance", hl: false },
-              { company: "Expaynse", payroll: true, realtime: true, native: true, privacy: true, fit: "Private real-time payroll", hl: true },
+              { company: "RIAD Finance", payroll: true, realtime: true, native: true, privacy: true, fit: "Private real-time payroll", hl: true },
             ].map((row, idx) => (
               <div key={idx} className={`grid grid-cols-6 items-stretch text-[15px] divide-x divide-white/10 transition-colors ${row.hl ? "bg-kast-teal/[0.03]" : ""}`}>
                 <div className={`py-7 px-4 md:px-6 flex items-center font-bold ${row.hl ? "text-kast-teal text-[24px]" : "text-white text-[18px]"}`}>{row.company}</div>
-                
+
                 <div className="py-7 px-4 md:px-6 flex items-center justify-center">
                   <span className={`px-5 py-1.5 rounded-full text-[14px] font-bold ${row.payroll ? "bg-kast-teal/10 text-kast-teal border border-kast-teal/20" : "bg-gray-500/10 text-gray-400 border border-gray-500/20"}`}>
                     {row.payroll ? "Yes" : "No"}
                   </span>
                 </div>
-                
+
                 <div className="py-7 px-4 md:px-6 flex items-center justify-center">
                   <div className={`w-12 h-12 rounded-full border flex items-center justify-center ${row.realtime ? "border-kast-teal/30 text-kast-teal bg-kast-teal/5" : "border-red-500/30 text-red-500 bg-red-500/5"}`}>
                     {row.realtime ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
                   </div>
                 </div>
-                
+
                 <div className="py-7 px-4 md:px-6 flex items-center justify-center">
                   <div className={`w-12 h-12 rounded-full border flex items-center justify-center ${row.native ? "border-kast-teal/30 text-kast-teal bg-kast-teal/5" : "border-red-500/30 text-red-500 bg-red-500/5"}`}>
                     {row.native ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
                   </div>
                 </div>
-                
+
                 <div className="py-7 px-4 md:px-6 flex items-center justify-center">
                   <div className={`w-12 h-12 rounded-full border flex items-center justify-center ${row.privacy ? "border-kast-teal/30 text-kast-teal bg-kast-teal/5" : "border-red-500/30 text-red-500 bg-red-500/5"}`}>
                     {row.privacy ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
                   </div>
                 </div>
-                
+
                 <div className="py-7 px-4 md:px-6 flex items-center text-white/70 font-semibold leading-[1.4] pr-4">{row.fit}</div>
               </div>
             ))}
@@ -384,22 +384,22 @@ const slides = [
     ),
   },
   {
-    id: "why-solana",
+    id: "why-arbitrum",
     content: (
       <div className="flex flex-col h-full justify-center max-w-6xl mx-auto px-6 w-full">
         <div className="text-center mb-16">
           <p className="text-[12px] font-bold text-kast-teal tracking-[0.3em] uppercase mb-5">Infrastructure</p>
           <h2 className="text-[44px] md:text-[50px] font-medium text-white tracking-tight">
-            Why <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#14F195] to-[#9945FF]">Solana</span>
+            Why <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#10a5e9] to-[#2563eb]">Arbitrum</span>
           </h2>
-          <p className="text-[18px] text-gray-300 max-w-2xl mx-auto mt-6 font-semibold">Solana already has the stablecoin payment activity needed for payroll.</p>
+          <p className="text-[18px] text-gray-300 max-w-2xl mx-auto mt-6 font-semibold">Arbitrum has the stablecoin liquidity and L2 efficiency needed for scalable payroll.</p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           {[
-            { value: "$1T+", label: "Stablecoin volume 2025" },
-            { value: "$200B", label: "Monthly transfers" },
-            { value: "$15.4B", label: "Stablecoin market cap" },
+            { value: "$150B+", label: "Stablecoin volume" },
+            { value: "Sub-cent", label: "Transaction fees" },
+            { value: "$3B+", label: "Stablecoin market cap" },
           ].map((stat, idx) => (
             <div key={idx} className="bg-[#0c0c0c] border border-white/10 rounded-2xl flex flex-col items-center justify-center text-center p-12 min-h-[200px] shadow-xl">
               <p className="text-[54px] font-bold text-kast-teal mb-4 leading-none tracking-tight">{stat.value}</p>
@@ -407,14 +407,14 @@ const slides = [
             </div>
           ))}
         </div>
-        
+
         <div className="rounded-full py-4 px-10 text-center mx-auto inline-block bg-[#0c0c0c] border border-white/10 shadow-xl">
           <p className="text-[15px] text-gray-400 font-medium">
-            Trusted by <span className="text-white font-bold">PayPal</span>, <span className="text-white font-bold">Visa</span>, <span className="text-white font-bold">Western Union</span>, <span className="text-white font-bold">Worldpay</span>, and <span className="text-white font-bold">Fiserv</span>.
+            Powered by <span className="text-white font-bold">Arbitrum</span>, <span className="text-white font-bold">Sablier</span>, <span className="text-white font-bold">Fhenix</span>, and <span className="text-white font-bold">OpenZeppelin</span>.
           </p>
         </div>
-        
-        <p className="text-[11px] text-gray-500 text-center mt-6 tracking-wide">Sources: CoinMarketCap, DLNews, CryptoRank, BLS QCEW 2024</p>
+
+        <p className="text-[11px] text-gray-500 text-center mt-6 tracking-wide">Sources: L2Beat, DeFiLlama, Arbitrum Docs</p>
       </div>
     ),
   },
@@ -423,48 +423,30 @@ const slides = [
     content: (
       <div className="flex flex-col h-full justify-center max-w-7xl mx-auto px-6 w-full">
         <div className="text-center mb-20">
-          <p className="text-[12px] font-bold text-kast-teal tracking-[0.3em] uppercase mb-6">The team behind Expaynse</p>
+          <p className="text-[12px] font-bold text-kast-teal tracking-[0.3em] uppercase mb-6">The team behind RIAD Finance</p>
           <h2 className="text-[44px] md:text-[50px] font-medium text-white tracking-tight">Team</h2>
           <p className="text-[18px] text-gray-300 mt-6 max-w-2xl mx-auto font-semibold leading-relaxed">Founder-led execution with the right mix: payments, product, operations, and marketing.</p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[
             {
-              name: "Shuman",
-              role: "Founder & CTO",
-              desc: "Superteam Nepal Solana Minihack 2026 winner, 2nd at MagicBlock Privacy Blitz V3, and Superteam Nepal member.",
-              image: "/shuman.jpg",
+              name: "Teslim",
+              role: "Founder & CEO",
+              desc: "Web3 Builder and Crypto Native with full-stack experience in finance.",
+              image: "/teslim.jpg",
               imgClass: "object-[50%_62%] scale-[1.15]",
-            },
-            { 
-              name: "Isha", 
-              role: "Marketing Lead", 
-              desc: "Growth marketer at Expaynse Protocol, building awareness, traction, and community.",
-              image: "/isha.jpg", 
-            },
-            { 
-              name: "Ananda", 
-              role: "Business Ops", 
-              desc: "3 years consulting at Anovox Labs, with strong business ops experience and startup scaling work.",
-              image: "/ananda.jpg",
-            },
-            { 
-              name: "Mohit", 
-              role: "Full Stack Dev", 
-              desc: "2 years of full-stack experience, with shipped fintech products and high-scale commerce systems.",
-              image: "/mohit.jpg",
-            },
+            }
           ].map((member, idx) => (
             <div key={idx} className="bg-[#0c0c0c] border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col text-left group shadow-xl">
               <div className="w-20 h-20 rounded-full mb-8 border border-white/10 overflow-hidden flex items-center justify-center bg-kast-teal/10 group-hover:border-kast-teal/40 transition-colors duration-500 shrink-0 relative">
                 <span className="text-[24px] font-bold text-white/80">{member.name[0]}</span>
                 {member.image && (
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
-                    className={`w-full h-full object-cover absolute inset-0 z-10 transition-transform duration-300 ${member.imgClass || ""}`} 
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className={`w-full h-full object-cover absolute inset-0 z-10 transition-transform duration-300 ${member.imgClass || ""}`}
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
                   />
                 )}
               </div>
@@ -482,20 +464,20 @@ const slides = [
     content: (
       <div className="flex flex-col h-full justify-between max-w-5xl mx-auto px-6 py-24 w-full text-center relative z-10">
         <div /> {/* Spacer to balance flex layout */}
-        
+
         <div className="-mt-12">
           <p className="text-[12px] font-bold text-kast-teal tracking-[0.3em] uppercase mb-16">Find us on</p>
-          <h2 className="text-[54px] md:text-[68px] font-bold text-white tracking-tight mb-8">expaynse.xyz</h2>
+          <h2 className="text-[54px] md:text-[68px] font-bold text-white tracking-tight mb-8">riadfinance.xyz</h2>
           <p className="text-[18px] md:text-[22px] text-gray-400 font-medium">Follow our journey and stay close to the build.</p>
         </div>
-        
+
         <div className="flex flex-wrap justify-center items-center gap-6 text-[15px] md:text-[17px] font-medium tracking-wide">
-          <a href="https://expaynse.xyz" target="_blank" rel="noopener noreferrer" className="text-white hover:text-kast-teal transition-colors">
-            https://expaynse.xyz
+          <a href="https://riadfinance.xyz" target="_blank" rel="noopener noreferrer" className="text-white hover:text-kast-teal transition-colors">
+            https://riadfinance.xyz
           </a>
           <span className="text-white/20">/</span>
-          <a href="https://x.com/expaynse" target="_blank" rel="noopener noreferrer" className="text-kast-teal hover:text-kast-teal/80 transition-colors">
-            https://x.com/expaynse
+          <a href="https://x.com/riadfinance" target="_blank" rel="noopener noreferrer" className="text-kast-teal hover:text-kast-teal/80 transition-colors">
+            https://x.com/riadfinance
           </a>
         </div>
       </div>
@@ -510,7 +492,7 @@ const slides = [
             <p className="text-[12px] font-bold uppercase tracking-[0.3em] text-kast-teal">Last Step</p>
             <h2 className="text-[50px] md:text-[72px] font-bold tracking-tight text-white">Watch the Demo</h2>
             <p className="mx-auto max-w-3xl text-[18px] md:text-[24px] font-medium leading-relaxed text-gray-400">
-              See how Expaynse handles private transfers and real-time private payroll end to end.
+              See how RIAD Finance handles private transfers and real-time private payroll end to end.
             </p>
           </div>
 
@@ -574,20 +556,20 @@ export default function PitchDeck() {
 
       <div className="absolute top-0 left-0 w-full z-50 px-6 lg:px-12 py-5 flex items-center gap-3">
         <div className="relative w-8 h-8">
-          <Image src="/logo.png" alt="Expaynse Logo" fill className="object-contain invert mix-blend-screen" />
+          <Image src="/logo.png" alt="RIAD Finance Logo" fill className="object-contain invert mix-blend-screen" />
         </div>
-        <span className="text-white text-lg font-semibold tracking-tight">Expaynse</span>
+        <span className="text-white text-lg font-semibold tracking-tight">RIAD Finance</span>
       </div>
 
       <div className="relative flex-1 z-10 w-full h-full">
-        
-          <div 
-            key={currentSlide} 
-            className="absolute inset-0 w-full h-full"
-          >
-            {slides[currentSlide].content}
-          </div>
-        
+
+        <div
+          key={currentSlide}
+          className="absolute inset-0 w-full h-full"
+        >
+          {slides[currentSlide].content}
+        </div>
+
       </div>
 
       <div className="absolute bottom-0 left-0 w-full p-6 z-50 flex justify-between items-center bg-gradient-to-t from-black via-black/80 to-transparent">

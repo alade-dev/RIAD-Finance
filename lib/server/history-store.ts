@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
-import { MongoClient, Db, Collection } from "mongodb";
+import { type Db, type Collection } from "mongodb";
+import { getMongoDb } from "./mongodb";
 
 export interface PrivacyConfigRecord {
   visibility?: "private";
@@ -13,7 +14,7 @@ export interface PrivacyConfigRecord {
 }
 
 export interface ProviderMetaRecord {
-  provider?: "magicblock";
+  provider?: "riad-finance";
   sendTo?: string;
   clientRefId?: string;
   action?: "employee-withdrawal" | "employee-private-transfer" | "claim";
@@ -73,25 +74,6 @@ type PayrollRunDoc = PayrollRun;
 type SetupActionDoc = SetupAction;
 type ClaimRecordDoc = ClaimRecord;
 
-const MONGODB_URI = process.env.MONGODB_URI;
-const MONGODB_DB = process.env.MONGODB_DB || "expaynse";
-
-if (!MONGODB_URI) {
-  throw new Error("Missing MONGODB_URI environment variable");
-}
-
-declare global {
-  var __expaynseHistoryMongoClientPromise: Promise<MongoClient> | undefined;
-}
-
-const clientPromise =
-  global.__expaynseHistoryMongoClientPromise ??
-  new MongoClient(MONGODB_URI).connect();
-
-if (process.env.NODE_ENV !== "production") {
-  global.__expaynseHistoryMongoClientPromise = clientPromise;
-}
-
 function normalizeWallet(wallet: string) {
   return wallet.trim();
 }
@@ -109,8 +91,7 @@ function nowIso() {
 }
 
 async function getDb(): Promise<Db> {
-  const client = await clientPromise;
-  return client.db(MONGODB_DB);
+  return getMongoDb();
 }
 
 async function payrollRunsCollection(): Promise<Collection<PayrollRunDoc>> {

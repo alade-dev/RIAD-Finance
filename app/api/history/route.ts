@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Connection, clusterApiUrl } from "@solana/web3.js";
 import {
   clearWalletActivityHistory,
   getWalletActivityHistory,
@@ -102,8 +101,8 @@ function normalizeProviderMeta(value: unknown): ProviderMetaRecord | undefined {
   const input = value as Record<string, unknown>;
   const meta: ProviderMetaRecord = {};
 
-  if (input.provider === "magicblock") {
-    meta.provider = "magicblock";
+  if (input.provider === "riad-finance") {
+    meta.provider = input.provider;
   }
 
   if (typeof input.sendTo === "string" && input.sendTo.trim()) {
@@ -136,8 +135,6 @@ function normalizeProviderMeta(value: unknown): ProviderMetaRecord | undefined {
   return Object.keys(meta).length > 0 ? meta : undefined;
 }
 
-const devnetConnection = new Connection(clusterApiUrl("devnet"), "confirmed");
-
 export async function GET(request: NextRequest) {
   try {
     const wallet = getWalletFromRequest(request);
@@ -156,37 +153,6 @@ export async function GET(request: NextRequest) {
     }
 
     const history = await getWalletActivityHistory(wallet);
-
-    const failedSetupActions = history.setupActions.filter(
-      (action) => action.status === "failed" && !!action.txSig,
-    );
-
-    if (failedSetupActions.length > 0) {
-      const statuses = await devnetConnection.getSignatureStatuses(
-        failedSetupActions
-          .map((action) => action.txSig)
-          .filter((value): value is string => Boolean(value)),
-      );
-
-      await Promise.all(
-        failedSetupActions.map(async (action, index) => {
-          const status = statuses.value[index];
-          if (
-            status &&
-            !status.err &&
-            (status.confirmationStatus === "confirmed" ||
-              status.confirmationStatus === "finalized")
-          ) {
-            await updateSetupActionStatus({
-              id: action.id,
-              wallet,
-              status: "success",
-            });
-            action.status = "success";
-          }
-        }),
-      );
-    }
 
     await saveComplianceEvent({
       actorWallet: wallet,

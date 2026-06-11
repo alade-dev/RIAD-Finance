@@ -5,9 +5,9 @@ import { WalletProvider } from "@/components/wallet-provider";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  title: "expaynse — Privacy-First Payroll for Solana",
+  title: "RIAD Finance — Privacy-First Payroll for Arbitrum",
   description:
-    "Run payroll with complete financial privacy. Per-second streaming, MagicBlock private settlements, and complete salary confidentiality on Solana.",
+    "Run payroll with complete financial privacy. Per-second streaming, private settlements, and complete salary confidentiality on Arbitrum.",
 };
 
 export default function RootLayout({

@@ -3,7 +3,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@/hooks/useWallet";
 import {
   ArrowRight,
   ChevronLeft,
@@ -66,7 +66,7 @@ function SinglePayoutSelectorContent() {
     () => resolveMode(searchParams.get("mode")),
     [searchParams],
   );
-  const walletAddr = publicKey?.toBase58();
+  const walletAddr = publicKey;
 
   const loadData = useCallback(async () => {
     if (!walletAddr || !signMessage) {
@@ -179,7 +179,7 @@ function SinglePayoutSelectorContent() {
               href="/payouts/single?mode=private"
               className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors ${
                 mode === "private"
-                  ? "bg-[#1eba98] text-black"
+                  ? "bg-[#a855f7] text-black"
                   : "text-[#a8a8aa] hover:text-white"
               }`}
             >
@@ -189,7 +189,7 @@ function SinglePayoutSelectorContent() {
               href="/payouts/single?mode=stream"
               className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors ${
                 mode === "stream"
-                  ? "bg-[#1eba98] text-black"
+                  ? "bg-[#a855f7] text-black"
                   : "text-[#a8a8aa] hover:text-white"
               }`}
             >
@@ -208,7 +208,7 @@ function SinglePayoutSelectorContent() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search employee by name, wallet, department, or role..."
-              className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-3 text-sm text-white placeholder:text-[#8f8f95] focus:border-[#1eba98]/40 focus:outline-none"
+              className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-3 text-sm text-white placeholder:text-[#8f8f95] focus:border-[#a855f7]/40 focus:outline-none"
             />
           </div>
         </div>
@@ -216,7 +216,7 @@ function SinglePayoutSelectorContent() {
         <div className="grid gap-4">
           {loading ? (
             <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-10 text-center">
-              <Loader2 size={20} className="mx-auto mb-3 animate-spin text-[#1eba98]" />
+              <Loader2 size={20} className="mx-auto mb-3 animate-spin text-[#a855f7]" />
               <p className="text-sm text-[#a8a8aa]">Loading employee list...</p>
             </div>
           ) : filteredEmployees.length === 0 ? (
@@ -265,7 +265,7 @@ function SinglePayoutSelectorContent() {
                           Salary {formatUsd(salary)}
                         </span>
                         {stream ? (
-                          <span className="rounded-full border border-[#1eba98]/30 bg-[#1eba98]/10 px-2.5 py-1 text-[11px] font-semibold text-[#63e7c8]">
+                          <span className="rounded-full border border-[#a855f7]/30 bg-[#a855f7]/10 px-2.5 py-1 text-[11px] font-semibold text-[#63e7c8]">
                             <Waves size={12} className="mr-1 inline-block" />
                             Stream {stream.status}
                           </span>
@@ -277,7 +277,7 @@ function SinglePayoutSelectorContent() {
                         <span
                           className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
                             privateReady
-                              ? "border-[#1eba98]/30 bg-[#1eba98]/10 text-[#63e7c8]"
+                              ? "border-[#a855f7]/30 bg-[#a855f7]/10 text-[#63e7c8]"
                               : "border-amber-500/30 bg-amber-500/10 text-amber-300"
                           }`}
                         >
@@ -298,7 +298,7 @@ function SinglePayoutSelectorContent() {
                     ) : (
                       <Link
                         href={modeConfig.href(employee.id)}
-                        className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#1eba98] px-4 text-sm font-bold text-black transition-colors hover:bg-[#1eba98]/85"
+                        className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#a855f7] px-4 text-sm font-bold text-black transition-colors hover:bg-[#a855f7]/85"
                       >
                         {modeConfig.actionLabel}
                         <ArrowRight size={16} />
@@ -320,7 +320,7 @@ function SinglePayoutFallback() {
     <EmployerLayout>
       <div className="mx-auto w-full max-w-6xl space-y-6">
         <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-10 text-center">
-          <Loader2 size={20} className="mx-auto mb-3 animate-spin text-[#1eba98]" />
+          <Loader2 size={20} className="mx-auto mb-3 animate-spin text-[#a855f7]" />
           <p className="text-sm text-[#a8a8aa]">Loading single payout...</p>
         </div>
       </div>

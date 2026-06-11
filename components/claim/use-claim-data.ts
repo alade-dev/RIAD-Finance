@@ -1,13 +1,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@/hooks/useWallet";
 import { toast } from "sonner";
 import {
   getPrivateBalance,
   fetchTeeAuthToken,
   isJwtExpired,
   type BalanceResponse,
-} from "@/lib/magicblock-api";
+} from "@/lib/private-payroll-api";
 import {
   clearCachedTeeToken,
   getOrCreateCachedTeeToken,
@@ -16,10 +16,10 @@ import {
 import type {
   EmployeePayrollSummaryResponse,
   EmployeePrivateInitStatusResponse,
-  MagicBlockHealthState,
+  PrivatePayrollHealthState,
 } from "./claim-types";
 
-const CLAIM_DATA_CACHE_KEY = "expaynse:claim-data-cache";
+const CLAIM_DATA_CACHE_KEY = "riadfinance:claim-data-cache";
 
 type ClaimDataCache = {
   wallet: string;
@@ -76,13 +76,13 @@ export function useClaimData() {
   const [privateInitError, setPrivateInitError] = useState<string | null>(initialCache?.privateInitError ?? null);
   const [privateInitMessage, setPrivateInitMessage] = useState<string | null>(initialCache?.privateInitMessage ?? null);
   const [withdrawing, setWithdrawing] = useState(false);
-  const [magicBlockHealth, setMagicBlockHealth] = useState<MagicBlockHealthState>("checking");
+  const [privatePayrollHealth, setPrivatePayrollHealth] = useState<PrivatePayrollHealthState>("checking");
   const [liveNowMs, setLiveNowMs] = useState(() => Date.now());
 
   const tokenCache = useRef<string | null>(null);
   const payrollSummaryInFlightRef = useRef(false);
   const payrollSummaryLastFetchAtRef = useRef(0);
-  const walletAddress = publicKey?.toBase58() ?? "";
+  const walletAddress = publicKey ?? "";
 
   useEffect(() => {
     if (!walletAddress) return;
@@ -107,10 +107,10 @@ export function useClaimData() {
     privateInitMessage,
   ]);
 
-  const resolveMagicBlockHealth = useCallback(
+  const resolvePrivatePayrollHealth = useCallback(
     (summary: EmployeePayrollSummaryResponse | null) => {
-      if (!summary || summary.streams.length === 0) return "checking" as MagicBlockHealthState;
-      if (summary.streams.some((stream) => stream.liveState?.ready)) return "ok" as MagicBlockHealthState;
+      if (!summary || summary.streams.length === 0) return "checking" as PrivatePayrollHealthState;
+      if (summary.streams.some((stream) => stream.liveState?.ready)) return "ok" as PrivatePayrollHealthState;
       if (
         summary.streams.some(
           (stream) =>
@@ -119,9 +119,9 @@ export function useClaimData() {
             stream.liveState?.reason === "snapshot-unavailable",
         )
       ) {
-        return "error" as MagicBlockHealthState;
+        return "error" as PrivatePayrollHealthState;
       }
-      return "checking" as MagicBlockHealthState;
+      return "checking" as PrivatePayrollHealthState;
     },
     [],
   );
@@ -131,7 +131,7 @@ export function useClaimData() {
     const cache = loadClaimDataCache();
     const timeoutId = window.setTimeout(() => {
       if (publicKey) {
-        const nextWallet = publicKey.toBase58();
+        const nextWallet = publicKey;
         if (cache?.wallet === nextWallet) {
           setPrivBalance(cache.privBalance);
           setPayrollSummary(cache.payrollSummary);
@@ -177,10 +177,10 @@ export function useClaimData() {
       if (tokenCache.current && !isJwtExpired(tokenCache.current)) return tokenCache.current;
       if (tokenCache.current && isJwtExpired(tokenCache.current)) {
         tokenCache.current = null;
-        if (publicKey) clearCachedTeeToken(publicKey.toBase58());
+        if (publicKey) clearCachedTeeToken(publicKey);
       }
       if (!tokenCache.current && publicKey) {
-        const persisted = loadCachedTeeToken(publicKey.toBase58());
+        const persisted = loadCachedTeeToken(publicKey);
         if (persisted) {
           tokenCache.current = persisted;
           return persisted;
@@ -188,7 +188,7 @@ export function useClaimData() {
       }
       if (!interactive) return null;
       if (!publicKey || !signMessage) throw new Error("Wallet does not support message signing");
-      const token = await getOrCreateCachedTeeToken(publicKey.toBase58(), async () => {
+      const token = await getOrCreateCachedTeeToken(publicKey, async () => {
         toast.info("Please sign the message to authorize access to your private vault");
         return fetchTeeAuthToken(publicKey, signMessage);
       });
@@ -203,7 +203,7 @@ export function useClaimData() {
       if (!publicKey) return;
       if (!options?.silent) setCheckingPrivateInitStatus(true);
       try {
-        const response = await fetch(`/api/employee-private-init?employeeWallet=${publicKey.toBase58()}`);
+        const response = await fetch(`/api/employee-private-init?employeeWallet=${publicKey}`);
         const json = (await response.json()) as EmployeePrivateInitStatusResponse & {
           error?: string;
         };
@@ -237,7 +237,7 @@ export function useClaimData() {
           interactive: options?.interactive ?? options?.silent !== true,
         });
         if (!token) return;
-        const res = (await getPrivateBalance(publicKey.toBase58(), token)) as BalanceResponse;
+        const res = (await getPrivateBalance(publicKey, token)) as BalanceResponse;
         if (res.location !== "ephemeral") throw new Error(`Expected ephemeral balance, got ${res.location}`);
         const normalized = parseFloat((parseInt(res.balance ?? "0", 10) / 1_000_000).toFixed(6)).toString();
         setPrivBalance(normalized);
@@ -274,7 +274,7 @@ export function useClaimData() {
           token = null;
         }
         const response = await fetch(
-          `/api/payroll/employee?employeeWallet=${publicKey.toBase58()}`,
+          `/api/payroll/employee?employeeWallet=${publicKey}`,
           {
             headers: token ? { Authorization: `Bearer ${token}` } : undefined,
           },
@@ -289,9 +289,9 @@ export function useClaimData() {
         }
         setPayrollSummary(json as EmployeePayrollSummaryResponse);
         setPayrollSummaryError(null);
-        setMagicBlockHealth(resolveMagicBlockHealth(json as EmployeePayrollSummaryResponse));
+        setPrivatePayrollHealth(resolvePrivatePayrollHealth(json as EmployeePayrollSummaryResponse));
       } catch (err: unknown) {
-        setMagicBlockHealth("error");
+        setPrivatePayrollHealth("error");
         if (!silent) {
           const message = err instanceof Error ? err.message : "Unknown error";
           setPayrollSummaryError(message);
@@ -302,7 +302,7 @@ export function useClaimData() {
         payrollSummaryInFlightRef.current = false;
       }
     },
-    [publicKey, getOrFetchToken, resolveMagicBlockHealth]
+    [publicKey, getOrFetchToken, resolvePrivatePayrollHealth]
   );
 
   return {
@@ -323,11 +323,11 @@ export function useClaimData() {
     privateInitError,
     privateInitMessage,
     withdrawing,
-    magicBlockHealth,
+    privatePayrollHealth,
     liveNowMs,
     setInitializingPrivateAccount,
     setWithdrawing,
-    setMagicBlockHealth,
+    setPrivatePayrollHealth,
     fetchPrivateInitStatus,
     fetchPrivateBalance,
     fetchEmployeePayrollSummary,

@@ -4,19 +4,7 @@ import {
   isWalletAuthorizationError,
   verifyAuthorizedWalletRequest,
 } from "@/lib/wallet-request-auth";
-import { MongoClient } from "mongodb";
-
-const MONGODB_URI = process.env.MONGODB_URI ?? "";
-const MONGODB_DB = process.env.MONGODB_DB ?? "expaynse";
-
-const clientPromise =
-  (global as unknown as { __expaynseRealPayrollRunMongoClientPromise?: Promise<MongoClient> })
-    .__expaynseRealPayrollRunMongoClientPromise ??
-  new MongoClient(MONGODB_URI).connect();
-if (process.env.NODE_ENV !== "production") {
-  (global as unknown as { __expaynseRealPayrollRunMongoClientPromise?: Promise<MongoClient> }).__expaynseRealPayrollRunMongoClientPromise =
-    clientPromise;
-}
+import { getMongoDb } from "@/lib/server/mongodb";
 
 function badRequest(message: string, status = 400) {
   return NextResponse.json({ error: message }, { status });
@@ -43,8 +31,7 @@ export async function GET(request: NextRequest) {
       path: `${request.nextUrl.pathname}${request.nextUrl.search}`,
     });
 
-    const client = await clientPromise;
-    const db = client.db(MONGODB_DB);
+    const db = await getMongoDb();
     const runs = db.collection("payroll_runs_real");
 
     const runList = await runs

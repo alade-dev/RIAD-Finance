@@ -1,9 +1,3 @@
-import {
-  CHECKPOINT_STALE_GRACE_MS,
-  isCheckpointSyncRunning,
-  isCheckpointTimestampFresh,
-} from "@/lib/checkpoint-sync";
-
 import type {
   DataSourceBadge,
   ManagedEmployee,
@@ -64,9 +58,9 @@ export const STREAM_STATUS_PRIORITY: Record<StreamStatus, number> = {
 };
 
 export const BASE_DEVNET_RPC_URL =
-  process.env.NEXT_PUBLIC_SOLANA_RPC_URL || "https://api.devnet.solana.com";
+  process.env.NEXT_PUBLIC_ARBITRUM_SEPOLIA_RPC_URL || "https://sepolia-rollup.arbitrum.io/rpc";
 export const BASE_DEVNET_RPC_FALLBACKS = Array.from(
-  new Set([BASE_DEVNET_RPC_URL, "https://api.devnet.solana.com"].filter(Boolean)),
+  new Set([BASE_DEVNET_RPC_URL, "https://sepolia-rollup.arbitrum.io/rpc"].filter(Boolean)),
 );
 
 export function resolvePrivateInitStatus(
@@ -143,15 +137,7 @@ export function isCheckpointStateFresh(
   preview: PrivatePayrollStateResponse | null | undefined,
   nowMs: number,
 ) {
-  if (!stream || !isCheckpointSyncRunning(stream.checkpointCrankStatus) || !preview) {
-    return false;
-  }
-
-  return isCheckpointTimestampFresh(
-    preview.state.lastAccrualTimestamp,
-    nowMs,
-    CHECKPOINT_STALE_GRACE_MS,
-  );
+  return false;
 }
 
 export function isMissingPrivateStateMessage(message: string) {
@@ -263,8 +249,8 @@ export function resolveGoLiveReadiness(args: {
 
   if (!args.isOnboarded) {
     return {
-      label: "PER setup needed",
-      copy: "Create or re-onboard the employee shell and private payroll state inside MagicBlock PER.",
+      label: "Stream setup needed",
+      copy: "Create or re-onboard the employee shell and private payroll state.",
     };
   }
 
@@ -302,7 +288,7 @@ export function resolveGoLiveReadiness(args: {
   if (args.effectiveStatus === "active") {
     return {
       label: "Live now",
-      copy: "The stream is already live in MagicBlock PER and accruing privately.",
+      copy: "The stream is already live and accruing privately on Arbitrum.",
     };
   }
 

@@ -31,10 +31,10 @@ export interface ClaimRecord {
 export type WalletRole = "employer" | "employee";
 
 const getKeys = (wallet: string) => ({
-  PAYROLL_HISTORY: `expaynse_${wallet}_payroll`,
-  CLAIM_HISTORY: `expaynse_${wallet}_claims`,
-  SETUP_HISTORY: `expaynse_${wallet}_setup`,
-  WALLET_ROLE: `expaynse_${wallet}_role`,
+  PAYROLL_HISTORY: `riadfinance_${wallet}_payroll`,
+  CLAIM_HISTORY: `riadfinance_${wallet}_claims`,
+  SETUP_HISTORY: `riadfinance_${wallet}_setup`,
+  WALLET_ROLE: `riadfinance_${wallet}_role`,
 });
 
 export const savePayrollRun = (

@@ -14,7 +14,7 @@ type PendingSetupAction = {
 
 type PendingHistoryItem = PendingSetupAction;
 
-const PENDING_HISTORY_KEY = "expaynse:pending-history";
+const PENDING_HISTORY_KEY = "riadfinance:pending-history";
 
 function safeParse(json: string): unknown {
   try {
@@ -62,7 +62,7 @@ export function enqueuePendingSetupAction(item: Omit<PendingSetupAction, "queued
 
 export async function drainPendingHistory(input: {
   wallet: string;
-  signMessage: (message: Uint8Array) => Promise<Uint8Array>;
+  signMessage: (message: any) => Promise<string>;
 }) {
   if (typeof window === "undefined") return { drained: 0, remaining: 0 };
 

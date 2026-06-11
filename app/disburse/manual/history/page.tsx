@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@/hooks/useWallet";
 import Link from "next/link";
 import {
   ChevronLeft,
@@ -87,7 +87,7 @@ export default function PrivatePayrollHistoryPage() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
 
-  const wallet = publicKey?.toBase58() ?? "";
+  const wallet = publicKey ?? "";
 
   const fetchRuns = useCallback(async () => {
     if (!wallet || !signMessage) return;
@@ -189,14 +189,14 @@ export default function PrivatePayrollHistoryPage() {
 
   const exportRunsJson = () => {
     downloadJson(
-      `expaynse_private_payroll_runs_${new Date().toISOString().split("T")[0]}.json`,
+      `riad_finance_private_payroll_runs_${new Date().toISOString().split("T")[0]}.json`,
       filteredRuns,
     );
   };
 
   const exportRunsCsv = () => {
     downloadCsv(
-      `expaynse_private_payroll_runs_${new Date().toISOString().split("T")[0]}.csv`,
+      `riad_finance_private_payroll_runs_${new Date().toISOString().split("T")[0]}.csv`,
       [
         [
           "date",
@@ -320,7 +320,7 @@ export default function PrivatePayrollHistoryPage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.1fr_1.9fr]">
           <div className="rounded-3xl border border-white/10 bg-[#0a0a0a] p-6">
             <div className="mb-5 flex items-center gap-3">
-              <Users size={18} className="text-[#1eba98]" />
+              <Users size={18} className="text-[#a855f7]" />
               <h2 className="text-lg font-bold text-white">Employee Rollup</h2>
             </div>
             <div className="space-y-3">
@@ -332,7 +332,7 @@ export default function PrivatePayrollHistoryPage() {
                   >
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-bold text-white">{item.name}</p>
-                      <p className="text-sm font-bold text-[#84f7dc]">
+                      <p className="text-sm font-bold text-[#c084fc]">
                         {item.amount.toFixed(2)} USDC
                       </p>
                     </div>
@@ -353,14 +353,14 @@ export default function PrivatePayrollHistoryPage() {
           <div className="rounded-3xl border border-white/10 bg-[#0a0a0a] p-6">
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
-                <History size={18} className="text-[#1eba98]" />
+                <History size={18} className="text-[#a855f7]" />
                 <h2 className="text-lg font-bold text-white">Run Statements</h2>
               </div>
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search employees, addresses, or amounts"
-                className="h-11 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none placeholder:text-[#8f8f95] focus:border-[#1eba98]/40"
+                className="h-11 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none placeholder:text-[#8f8f95] focus:border-[#a855f7]/40"
               />
             </div>
 
@@ -402,7 +402,7 @@ export default function PrivatePayrollHistoryPage() {
                         <button
                           onClick={() =>
                             downloadJson(
-                              `expaynse_private_payroll_run_${run.id}.json`,
+                              `riad_finance_private_payroll_run_${run.id}.json`,
                               run,
                             )
                           }

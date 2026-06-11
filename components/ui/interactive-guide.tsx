@@ -10,8 +10,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-const DEFAULT_GUIDE_STORAGE_PREFIX = 'expaynse-guide';
-const GUIDE_STORAGE_EVENT = 'expaynse-guide-storage-change';
+const DEFAULT_GUIDE_STORAGE_PREFIX = 'riadfinance-guide';
+const GUIDE_STORAGE_EVENT = 'riadfinance-guide-storage-change';
 
 function notifyGuideStorageChange(key: string) {
   if (typeof window === 'undefined') return;
@@ -207,11 +207,9 @@ export function InteractiveGuide({
         className="fixed inset-0 z-[100]"
         style={{
           background: targetRect
-            ? `radial-gradient(circle at ${targetRect.left + targetRect.width / 2}px ${
-                targetRect.top + targetRect.height / 2
-              }px, transparent ${Math.max(targetRect.width, targetRect.height) / 2 + 20}px, rgba(0,0,0,0.72) ${
-                Math.max(targetRect.width, targetRect.height) / 2 + 64
-              }px)`
+            ? `radial-gradient(circle at ${targetRect.left + targetRect.width / 2}px ${targetRect.top + targetRect.height / 2
+            }px, transparent ${Math.max(targetRect.width, targetRect.height) / 2 + 20}px, rgba(0,0,0,0.72) ${Math.max(targetRect.width, targetRect.height) / 2 + 64
+            }px)`
             : 'rgba(0,0,0,0.72)',
         }}
         onClick={handleSkip}
@@ -231,9 +229,9 @@ export function InteractiveGuide({
             width: targetRect.width + 16,
             height: targetRect.height + 16,
             borderRadius: 14,
-            border: '2px solid rgba(30, 186, 152, 0.95)',
+            border: '2px solid rgba(168, 85, 247, 0.95)',
             boxShadow:
-              '0 0 0 4px rgba(30, 186, 152, 0.16), 0 0 24px rgba(30, 186, 152, 0.24)',
+              '0 0 0 4px rgba(168, 85, 247, 0.16), 0 0 24px rgba(168, 85, 247, 0.24)',
           }}
         >
           <motion.div
@@ -246,7 +244,7 @@ export function InteractiveGuide({
               repeat: Infinity,
               ease: 'easeInOut',
             }}
-            className="absolute inset-0 rounded-[12px] border-2 border-[#1eba98]"
+            className="absolute inset-0 rounded-[12px] border-2 border-[#a855f7]"
           />
         </motion.div>
       )}
@@ -264,75 +262,75 @@ export function InteractiveGuide({
         }}
         onClick={(event) => event.stopPropagation()}
       >
-          <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-emerald-500" />
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Step {currentStep + 1} of {steps.length}
-              </span>
-            </div>
-            <button
-              onClick={handleSkip}
-              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <X className="w-4 h-4 text-gray-400" />
-            </button>
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-500" />
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Step {currentStep + 1} of {steps.length}
+            </span>
           </div>
+          <button
+            onClick={handleSkip}
+            className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <X className="w-4 h-4 text-gray-400" />
+          </button>
+        </div>
 
-          <div className="mx-5 h-1 bg-gray-100 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-emerald-400 rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.3 }}
-            />
-          </div>
+        <div className="mx-5 h-1 bg-gray-100 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-emerald-400 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.3 }}
+          />
+        </div>
 
-          <div className="px-5 py-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {step.title}
-            </h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              {step.description}
-            </p>
-          </div>
+        <div className="px-5 py-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            {step.title}
+          </h3>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            {step.description}
+          </p>
+        </div>
 
-          <div className="flex items-center justify-between px-5 pb-5">
-            <button
-              onClick={handleSkip}
-              className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              Skip tour
-            </button>
-            <div className="flex items-center gap-2">
-              {currentStep > 0 && (
-                <button
-                  onClick={handlePrev}
-                  className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back
-                </button>
-              )}
+        <div className="flex items-center justify-between px-5 pb-5">
+          <button
+            onClick={handleSkip}
+            className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            Skip tour
+          </button>
+          <div className="flex items-center gap-2">
+            {currentStep > 0 && (
               <button
-                onClick={handleNext}
-                className="flex items-center gap-1 px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+                onClick={handlePrev}
+                className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                {currentStep === steps.length - 1 ? (
-                  <>
-                    <CheckCircle className="w-4 h-4" />
-                    Done
-                  </>
-                ) : (
-                  <>
-                    Next
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
+                <ArrowLeft className="w-4 h-4" />
+                Back
               </button>
-            </div>
+            )}
+            <button
+              onClick={handleNext}
+              className="flex items-center gap-1 px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              {currentStep === steps.length - 1 ? (
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  Done
+                </>
+              ) : (
+                <>
+                  Next
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
           </div>
-        </motion.div>
+        </div>
+      </motion.div>
     </AnimatePresence>
   );
 }
@@ -350,7 +348,7 @@ export function useGuideStatus(
   const hasCompleted = useSyncExternalStore(
     (onStoreChange) => {
       if (typeof window === 'undefined') {
-        return () => {};
+        return () => { };
       }
 
       const onStorage = (event: StorageEvent) => {

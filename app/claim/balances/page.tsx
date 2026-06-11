@@ -1,12 +1,12 @@
 
 "use client";
 
-import { useEffect } from "react";
-import { 
-  Loader2, 
-  Wallet, 
-  RefreshCw, 
-  LogOut, 
+import { useEffect, useMemo } from "react";
+import {
+  Loader2,
+  Wallet,
+  RefreshCw,
+  LogOut,
   ArrowRightLeft,
   CircleCheck,
   ShieldAlert
@@ -15,19 +15,19 @@ import Link from "next/link";
 import { EmployeeLayout } from "@/components/employee-layout";
 import { useClaimData } from "@/components/claim/use-claim-data";
 import { formatDisplayedUsdcBalance } from "@/components/claim/claim-helpers";
-import { 
+import {
   formatMicroUsdc,
   formatPayrollRate,
   formatLastPrivateUpdate,
   computeLiveClaimableAmountMicro,
 } from "@/components/claim/claim-utils";
 import { toast } from "sonner";
-import { signAndSend } from "@/lib/magicblock-api";
+import { signAndSend } from "@/lib/private-payroll-api";
 import { walletAuthenticatedFetch } from "@/lib/client/wallet-auth-fetch";
 
 export default function ClaimBalancesPage() {
   const {
-    publicKey,
+    publicKey: publicKeyRaw,
     signTransaction,
     signMessage,
     privBalance,
@@ -43,6 +43,14 @@ export default function ClaimBalancesPage() {
     fetchEmployeePayrollSummary,
     liveNowMs,
   } = useClaimData();
+
+  const publicKey = useMemo(() => {
+    if (!publicKeyRaw) return null;
+    return {
+      toBase58: () => publicKeyRaw,
+      toString: () => publicKeyRaw,
+    };
+  }, [publicKeyRaw]) as any;
 
   useEffect(() => {
     if (publicKey) {
@@ -81,8 +89,8 @@ export default function ClaimBalancesPage() {
   const previewRatePerSecond =
     hasLiveSnapshot && canonicalSnapshot
       ? Number(
-          canonicalSnapshot.ratePerSecondMicro,
-        ) / 1_000_000
+        canonicalSnapshot.ratePerSecondMicro,
+      ) / 1_000_000
       : NaN;
   const effectiveRatePerSecond =
     Number.isFinite(previewRatePerSecond) && previewRatePerSecond > 0
@@ -91,9 +99,9 @@ export default function ClaimBalancesPage() {
   const exactPrimaryClaimableAmountMicro =
     hasLiveSnapshot && canonicalSnapshot
       ? computeLiveClaimableAmountMicro({
-          snapshot: canonicalSnapshot,
-          nowMs: liveNowMs,
-        })
+        snapshot: canonicalSnapshot,
+        nowMs: liveNowMs,
+      })
       : null;
 
   const handleInitialize = async () => {
@@ -223,15 +231,15 @@ export default function ClaimBalancesPage() {
             <h1 className="font-heading text-4xl font-bold tracking-tight text-white">My Balances</h1>
             <p className="mt-2 max-w-lg text-sm leading-relaxed text-[#a8a8aa]">
               {hasPrivatePayrollMode
-                ? "MagicBlock PER shows your private balance and private payroll payouts. Base Solana is where you withdraw publicly."
-                : "Base Solana shows public wallet funds. MagicBlock PER shows your private balance and live payroll accrual."}
+                ? "RIAD Finance shows your private balance and private payroll payouts. Arbitrum is where you withdraw."
+                : "Arbitrum shows wallet funds. RIAD Finance shows your private balance and live payroll accrual."}
             </p>
           </div>
           <div className="flex w-fit rounded-2xl border border-white/10 bg-white/5 p-1 backdrop-blur-xl">
             <Link href="/claim/dashboard" className="flex h-9 min-w-[108px] items-center justify-center rounded-xl px-4 text-[10px] font-bold uppercase tracking-wider text-[#8f8f95] transition-all hover:bg-white/10 hover:text-white no-underline">
               Dashboard
             </Link>
-            <button className="h-9 min-w-[108px] rounded-xl bg-[#1eba98] px-4 text-[10px] font-bold uppercase tracking-wider text-black shadow-sm transition-all">
+            <button className="h-9 min-w-[108px] rounded-xl bg-[#a855f7] px-4 text-[10px] font-bold uppercase tracking-wider text-black shadow-sm transition-all">
               Balances
             </button>
             <Link href="/claim/withdraw" className="flex h-9 min-w-[108px] items-center justify-center rounded-xl px-4 text-[10px] font-bold uppercase tracking-wider text-[#8f8f95] transition-all hover:bg-white/10 hover:text-white no-underline">
@@ -245,7 +253,7 @@ export default function ClaimBalancesPage() {
             <div className="rounded-3xl border border-white/10 bg-[#0b0b0d] p-8 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
               <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#1eba98]/15 text-[#1eba98]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#a855f7]/15 text-[#a855f7]">
                     <Wallet size={20} />
                   </div>
                   <div>
@@ -255,20 +263,25 @@ export default function ClaimBalancesPage() {
                 </div>
                 <button
                   onClick={() => void fetchEmployeePayrollSummary({ silent: false, interactive: true })}
-                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-[#8f8f95] shadow-sm transition-all hover:border-[#1eba98]/40 hover:text-[#1eba98]"
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-[#8f8f95] shadow-sm transition-all hover:border-[#a855f7]/40 hover:text-[#a855f7]"
                 >
                   <RefreshCw size={16} />
                 </button>
               </div>
 
               <div className="mb-10">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-6xl font-bold tracking-tighter text-white">
-                    {hasLiveSnapshot && exactPrimaryClaimableAmountMicro !== null
-                      ? formatMicroUsdc(exactPrimaryClaimableAmountMicro, 6)
-                      : "—"}
-                  </span>
-                  <span className="text-xl font-bold tracking-tight text-[#62626b]">USDC</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center shrink-0 border border-white/10 shadow-sm">
+                    <img src="/usdc-logo.png" alt="USDC" className="w-7 h-7 object-contain" />
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-6xl font-bold tracking-tighter text-white">
+                      {hasLiveSnapshot && exactPrimaryClaimableAmountMicro !== null
+                        ? formatMicroUsdc(exactPrimaryClaimableAmountMicro, 6)
+                        : "—"}
+                    </span>
+                    <span className="text-xl font-bold tracking-tight text-[#62626b]">USDC</span>
+                  </div>
                 </div>
                 <p className="mt-2 text-xs text-[#a8a8aa]">
                   {hasPrivatePayrollMode
@@ -276,15 +289,15 @@ export default function ClaimBalancesPage() {
                     : "Accrued from your active payroll stream."}
                 </p>
                 {hasLiveSnapshot ? (
-                  <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#1eba98]/30 bg-[#1eba98]/10 px-3 py-1.5">
-                    <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#84f7dc]">
+                  <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#a855f7]/30 bg-[#a855f7]/10 px-3 py-1.5">
+                    <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#c084fc]">
                       Payroll Source: Live PER
                     </span>
                   </div>
                 ) : null}
               </div>
 
-	              {!registeredEmployeeWallet ? (
+              {!registeredEmployeeWallet ? (
                 <div className="flex items-start gap-4 rounded-2xl border border-dashed border-white/20 bg-white/[0.02] p-6">
                   <ShieldAlert className="shrink-0 text-[#8f8f95]" size={20} />
                   <div>
@@ -296,24 +309,24 @@ export default function ClaimBalancesPage() {
                     </p>
                   </div>
                 </div>
-	              ) : !privateAccountInitialized ? (
-	                <div className="rounded-2xl border border-amber-300/30 bg-amber-500/10 p-6">
+              ) : !privateAccountInitialized ? (
+                <div className="rounded-2xl border border-amber-300/30 bg-amber-500/10 p-6">
                   <div className="flex items-start gap-4 mb-4">
                     <ShieldAlert className="shrink-0 text-amber-300" size={20} />
                     <div>
-	                      <p className="text-sm font-bold text-amber-200">Account Initialization Required</p>
-	                      <p className="mt-1 text-xs leading-relaxed text-amber-100/90">
-	                        {hasPrivatePayrollMode
-                            ? "To receive private payroll payouts, you must first initialize your private account."
-                            : "To receive private USDC from your payroll streams, you must first initialize your private account."}
-	                      </p>
-                        {privateInitStatus === "failed" && privateInitError ? (
-                          <p className="mt-2 text-xs leading-relaxed text-amber-100/80">
-                            Last setup attempt: {privateInitError}
-                          </p>
-                        ) : null}
-	                    </div>
-	                  </div>
+                      <p className="text-sm font-bold text-amber-200">Account Initialization Required</p>
+                      <p className="mt-1 text-xs leading-relaxed text-amber-100/90">
+                        {hasPrivatePayrollMode
+                          ? "To receive private payroll payouts, you must first initialize your private account."
+                          : "To receive private USDC from your payroll streams, you must first initialize your private account."}
+                      </p>
+                      {privateInitStatus === "failed" && privateInitError ? (
+                        <p className="mt-2 text-xs leading-relaxed text-amber-100/80">
+                          Last setup attempt: {privateInitError}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
                   <button
                     onClick={handleInitialize}
                     disabled={initializingPrivateAccount}
@@ -323,10 +336,10 @@ export default function ClaimBalancesPage() {
                   </button>
                 </div>
               ) : (
-                <div className="flex items-start gap-4 rounded-2xl border border-[#1eba98]/30 bg-[#1eba98]/10 p-6">
-                  <CircleCheck className="shrink-0 text-[#1eba98]" size={20} />
+                <div className="flex items-start gap-4 rounded-2xl border border-[#a855f7]/30 bg-[#a855f7]/10 p-6">
+                  <CircleCheck className="shrink-0 text-[#a855f7]" size={20} />
                   <div>
-                    <p className="text-sm font-bold text-[#84f7dc]">Stream Active & Synced</p>
+                    <p className="text-sm font-bold text-[#c084fc]">Stream Active & Synced</p>
                     <p className="mt-1 text-xs leading-relaxed text-[#9ce8d5]">
                       {hasPrivatePayrollMode
                         ? "Your private account is ready. Private payroll payouts will appear here after your employer runs payroll."
@@ -370,29 +383,29 @@ export default function ClaimBalancesPage() {
             <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-[#0b0b0d] p-8 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-emerald-500/20 transition-all" />
               <div className="relative z-10">
-                <p className="mb-6 text-[10px] font-bold uppercase tracking-[0.2em] text-[#84f7dc]">Quick Actions</p>
-	                <h4 className="text-xl font-bold tracking-tight mb-2">{quickAction.title}</h4>
-	                <p className="mb-8 text-xs leading-relaxed text-[#a8a8aa]">
-	                  {quickAction.body}
-	                </p>
-	                <div className="space-y-3">
-	                  <Link href={quickAction.href} className="group/item flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:bg-white/10 no-underline">
-	                    <div className="flex items-center gap-3">
-	                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#1eba98]/20 text-[#1eba98]">
-	                        <ArrowRightLeft size={16} />
-	                      </div>
-	                      <span className="text-xs font-bold uppercase tracking-wider">{quickAction.label}</span>
-	                    </div>
-	                    <LogOut size={14} className="text-[#8f8f95] transition-colors group-hover/item:text-[#1eba98]" />
-	                  </Link>
+                <p className="mb-6 text-[10px] font-bold uppercase tracking-[0.2em] text-[#c084fc]">Quick Actions</p>
+                <h4 className="text-xl font-bold tracking-tight mb-2">{quickAction.title}</h4>
+                <p className="mb-8 text-xs leading-relaxed text-[#a8a8aa]">
+                  {quickAction.body}
+                </p>
+                <div className="space-y-3">
+                  <Link href={quickAction.href} className="group/item flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:bg-white/10 no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#a855f7]/20 text-[#a855f7]">
+                        <ArrowRightLeft size={16} />
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-wider">{quickAction.label}</span>
+                    </div>
+                    <LogOut size={14} className="text-[#8f8f95] transition-colors group-hover/item:text-[#a855f7]" />
+                  </Link>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-3xl border border-[#1eba98]/30 bg-[#1eba98]/10 p-8">
-              <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-[#84f7dc]">Security Note</p>
+            <div className="rounded-3xl border border-[#a855f7]/30 bg-[#a855f7]/10 p-8">
+              <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-[#c084fc]">Security Note</p>
               <p className="text-xs italic leading-relaxed text-[#9ce8d5]">
-                Your balances are encrypted and only accessible by your private key. Expaynse never stores your unencrypted balance or transaction history.
+                Your balances are encrypted and only accessible by your private key. RIAD Finance never stores your unencrypted balance or transaction history.
               </p>
             </div>
           </div>

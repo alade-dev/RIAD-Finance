@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@/hooks/useWallet";
 import {
   Users,
   Search,
@@ -25,7 +25,7 @@ import {
 import {
   fetchTeeAuthToken,
   isJwtExpired,
-} from "@/lib/magicblock-api";
+} from "@/lib/private-payroll-api";
 import {
   monthlyUsdToRatePerSecond,
 } from "@/lib/payroll-math";
@@ -49,7 +49,7 @@ import {
 } from "@/components/ui/interactive-guide";
 import { DateRangeCalendarPicker } from "@/components/date-range-calendar-picker";
 
-const PEOPLE_ONBOARDING_HANDOFF_KEY = "expaynse:people-onboarding-handoff";
+const PEOPLE_ONBOARDING_HANDOFF_KEY = "riadfinance:people-onboarding-handoff";
 
 interface Employee {
   id: string;
@@ -322,7 +322,7 @@ function getLiveAccrued(preview?: PrivatePayrollStateResponse | null) {
 export default function PeoplePage() {
   const { publicKey, signMessage } = useWallet();
   const router = useRouter();
-  const walletAddr = publicKey?.toBase58();
+  const walletAddr = publicKey;
   const payrollGuideScope = walletAddr || "guest";
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [streams, setStreams] = useState<StreamInfo[]>([]);
@@ -456,7 +456,7 @@ export default function PeoplePage() {
       throw new Error("Wallet does not support message signing");
     }
 
-    const wallet = publicKey.toBase58();
+    const wallet = publicKey;
     const persisted = loadCachedTeeToken(wallet);
     if (persisted && !isJwtExpired(persisted)) {
       tokenCache.current = persisted;
@@ -767,10 +767,10 @@ export default function PeoplePage() {
         prev.map((row) =>
           row.wallet === employee.wallet
             ? {
-                ...row,
-                privateRecipientInitStatus: "processing",
-                privateRecipientInitError: null,
-              }
+              ...row,
+              privateRecipientInitStatus: "processing",
+              privateRecipientInitError: null,
+            }
             : row,
         ),
       );
@@ -819,10 +819,10 @@ export default function PeoplePage() {
           prev.map((row) =>
             row.wallet === employee.wallet
               ? {
-                  ...row,
-                  privateRecipientInitStatus: "failed",
-                  privateRecipientInitError: message,
-                }
+                ...row,
+                privateRecipientInitStatus: "failed",
+                privateRecipientInitError: message,
+              }
               : row,
           ),
         );
@@ -856,7 +856,7 @@ export default function PeoplePage() {
         startDate,
         endDate,
       });
-          
+
       if (ratePerSecond <= 0) {
         toast.error("Set a valid salary and date range.");
         return;
@@ -953,7 +953,7 @@ export default function PeoplePage() {
 
     setAdding(true);
     const employeeStartDateIso = new Date().toISOString();
-      
+
     try {
       const employeeRes = await walletAuthenticatedFetch({
         wallet: walletAddr,
@@ -1071,7 +1071,7 @@ export default function PeoplePage() {
             </button>
             <button
               onClick={() => setShowAdd(true)}
-              className="inline-flex items-center gap-2 px-5 py-[11px] bg-[#1eba98] hover:bg-[#1eba98]/80 text-black text-xs font-bold rounded-xl transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-5 py-[11px] bg-[#a855f7] hover:bg-[#a855f7]/80 text-black text-xs font-bold rounded-xl transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
             >
               <Plus size={16} />
               Add Employee
@@ -1117,7 +1117,7 @@ export default function PeoplePage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search employees..."
-                  className="pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-[#a8a8aa] focus:outline-none focus:border-[#1eba98] focus:ring-1 focus:ring-[#1eba98]/20 w-48 lg:w-56"
+                  className="pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-[#a8a8aa] focus:outline-none focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7]/20 w-48 lg:w-56"
                 />
               </div>
 
@@ -1168,7 +1168,7 @@ export default function PeoplePage() {
 
           {loading ? (
             <div className="py-24 flex flex-col items-center justify-center border-t border-white/5">
-              <Loader2 size={24} className="text-[#1eba98] animate-spin mb-4" />
+              <Loader2 size={24} className="text-[#a855f7] animate-spin mb-4" />
               <p className="text-[10px] font-bold uppercase tracking-widest text-[#a8a8aa]">Syncing team data...</p>
             </div>
           ) : filtered.length === 0 ? (
@@ -1216,18 +1216,18 @@ export default function PeoplePage() {
                         ? "Syncing"
                         : "Setup"
                     : isStreamingLive
-                    ? "Streaming"
-                    : hasMissingPrivateState
-                      ? "State missing"
-                      : stream?.checkpointCrankStatus === "active" && hasFreshPreview
-                        ? "Checkpoint stale"
-                      : hasFutureStart
-                        ? "Scheduled"
-                        : status === "active"
-                          ? "Needs sync"
-                          : status === "paused"
-                            ? "Paused"
-                            : "Stopped";
+                      ? "Streaming"
+                      : hasMissingPrivateState
+                        ? "State missing"
+                        : stream?.checkpointCrankStatus === "active" && hasFreshPreview
+                          ? "Checkpoint stale"
+                          : hasFutureStart
+                            ? "Scheduled"
+                            : status === "active"
+                              ? "Needs sync"
+                              : status === "paused"
+                                ? "Paused"
+                                : "Stopped";
                 const statusColor =
                   emp.payrollMode === "private_payroll"
                     ? privateInitStatus === "confirmed"
@@ -1236,18 +1236,18 @@ export default function PeoplePage() {
                         ? "bg-blue-500/15 text-blue-300 border-blue-400/30"
                         : "bg-amber-500/15 text-amber-300 border-amber-400/30"
                     : isStreamingLive
-                    ? "bg-emerald-500/15 text-emerald-300 border-emerald-400/30"
-                    : hasMissingPrivateState
-                      ? "bg-rose-500/15 text-rose-300 border-rose-400/30"
-                      : stream?.checkpointCrankStatus === "active" && hasFreshPreview
-                        ? "bg-amber-500/15 text-amber-300 border-amber-400/30"
-                      : hasFutureStart
-                        ? "bg-blue-500/15 text-blue-300 border-blue-400/30"
-                        : status === "active"
+                      ? "bg-emerald-500/15 text-emerald-300 border-emerald-400/30"
+                      : hasMissingPrivateState
+                        ? "bg-rose-500/15 text-rose-300 border-rose-400/30"
+                        : stream?.checkpointCrankStatus === "active" && hasFreshPreview
                           ? "bg-amber-500/15 text-amber-300 border-amber-400/30"
-                          : status === "paused"
-                            ? "bg-amber-500/15 text-amber-300 border-amber-400/30"
-                            : "bg-rose-500/15 text-rose-300 border-rose-400/30";
+                          : hasFutureStart
+                            ? "bg-blue-500/15 text-blue-300 border-blue-400/30"
+                            : status === "active"
+                              ? "bg-amber-500/15 text-amber-300 border-amber-400/30"
+                              : status === "paused"
+                                ? "bg-amber-500/15 text-amber-300 border-amber-400/30"
+                                : "bg-rose-500/15 text-rose-300 border-rose-400/30";
                 return (
                   <div
                     key={emp.id}
@@ -1318,10 +1318,10 @@ export default function PeoplePage() {
                             {emp.payrollMode === "private_payroll"
                               ? "Manual payout"
                               : stream?.checkpointCrankStatus === "active" && hasFreshPreview
-                              ? "Checkpoint stale"
-                              : status === "active"
-                                ? "Needs sync"
-                                : "—"}
+                                ? "Checkpoint stale"
+                                : status === "active"
+                                  ? "Needs sync"
+                                  : "—"}
                           </span>
                         </>
                       )}
@@ -1372,7 +1372,7 @@ export default function PeoplePage() {
 
                     <div className="flex items-center justify-end gap-2.5 flex-wrap">
                       {emp.payrollMode === "private_payroll" &&
-                      getPrivateInitStatus(emp, stream) !== "confirmed" ? (
+                        getPrivateInitStatus(emp, stream) !== "confirmed" ? (
                         <button
                           onClick={() => {
                             void initializePrivatePayrollRecipient(emp);
@@ -1381,7 +1381,7 @@ export default function PeoplePage() {
                             !signMessage ||
                             initializingWallets.includes(emp.wallet)
                           }
-                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#1eba98] bg-[#1eba98]/10 border border-[#1eba98]/30 rounded-xl hover:bg-[#1eba98]/15 transition-colors disabled:opacity-50"
+                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#a855f7] bg-[#a855f7]/10 border border-[#a855f7]/30 rounded-xl hover:bg-[#a855f7]/15 transition-colors disabled:opacity-50"
                         >
                           {initializingWallets.includes(emp.wallet) ? (
                             <Loader2 size={12} className="animate-spin" />
@@ -1405,7 +1405,7 @@ export default function PeoplePage() {
                             setStreamModalEmployee(emp);
                           }}
                           disabled={!signMessage}
-                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#1eba98] bg-[#1eba98]/10 border border-[#1eba98]/30 rounded-xl hover:bg-[#1eba98]/15 transition-colors disabled:opacity-50"
+                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#a855f7] bg-[#a855f7]/10 border border-[#a855f7]/30 rounded-xl hover:bg-[#a855f7]/15 transition-colors disabled:opacity-50"
                         >
                           <Play size={12} />
                           Stream
@@ -1462,7 +1462,7 @@ export default function PeoplePage() {
                 <button
                   type="button"
                   onClick={() => setPayrollGuideOpenForWallet(walletAddr ?? null)}
-                  className="rounded-full border border-[#1eba98]/25 bg-[#1eba98]/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#1eba98] transition-colors hover:bg-[#1eba98]/15"
+                  className="rounded-full border border-[#a855f7]/25 bg-[#a855f7]/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#a855f7] transition-colors hover:bg-[#a855f7]/15"
                 >
                   Quick guide
                 </button>
@@ -1487,18 +1487,18 @@ export default function PeoplePage() {
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="e.g. John Doe"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-[#8f8f95] focus:outline-none focus:ring-2 focus:ring-[#1eba98]/25"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-[#8f8f95] focus:outline-none focus:ring-2 focus:ring-[#a855f7]/25"
                 />
               </div>
               <div>
                 <label className="text-[11px] font-bold text-[#8f8f95] uppercase tracking-wider mb-1.5 block">
-                  Solana wallet
+                  Arbitrum wallet
                 </label>
                 <input
                   value={newWallet}
                   onChange={(e) => setNewWallet(e.target.value)}
                   placeholder="Enter wallet address..."
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-[#8f8f95] focus:outline-none focus:ring-2 focus:ring-[#1eba98]/25 font-mono"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-[#8f8f95] focus:outline-none focus:ring-2 focus:ring-[#a855f7]/25 font-mono"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -1514,7 +1514,7 @@ export default function PeoplePage() {
                       setNewDepartment(nextDepartment);
                       setNewRole(roleOptions[0] ?? "");
                     }}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#1eba98]/25"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#a855f7]/25"
                   >
                     {DEPARTMENT_OPTIONS.map((department) => (
                       <option key={department} value={department}>{department}</option>
@@ -1528,7 +1528,7 @@ export default function PeoplePage() {
                   <select
                     value={newRole}
                     onChange={(e) => setNewRole(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#1eba98]/25"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#a855f7]/25"
                   >
                     {(ROLE_OPTIONS_BY_DEPARTMENT[newDepartment] ?? []).map((role) => (
                       <option key={role} value={role}>{role}</option>
@@ -1554,11 +1554,10 @@ export default function PeoplePage() {
                               ? "mode-streaming"
                               : undefined
                         }
-                        className={`w-full rounded-xl border px-4 py-3 text-left transition-colors ${
-                          newPayrollMode === option.value
-                            ? "border-[#1eba98]/50 bg-[#1eba98]/10"
+                        className={`w-full rounded-xl border px-4 py-3 text-left transition-colors ${newPayrollMode === option.value
+                            ? "border-[#a855f7]/50 bg-[#a855f7]/10"
                             : "border-white/10 bg-white/5 hover:bg-white/10"
-                        } min-h-[88px]`}
+                          } min-h-[88px]`}
                       >
                         <p className="text-sm font-semibold text-white">
                           {option.label}
@@ -1584,7 +1583,7 @@ export default function PeoplePage() {
                         min={0}
                         step="0.01"
                         placeholder="3000"
-                        className="w-full pl-8 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-[#8f8f95] focus:outline-none focus:border-[#1eba98]/30 focus:ring-1 focus:ring-[#1eba98]/12"
+                        className="w-full pl-8 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-[#8f8f95] focus:outline-none focus:border-[#a855f7]/30 focus:ring-1 focus:ring-[#a855f7]/12"
                       />
                     </div>
                     <div className="mt-2 min-h-[16px]">
@@ -1620,7 +1619,7 @@ export default function PeoplePage() {
                 !Number.isFinite(parsedAmount) ||
                 parsedAmount <= 0
               }
-              className="w-full mt-8 py-3.5 bg-[#1eba98] text-black rounded-xl text-sm font-bold hover:bg-[#1eba98]/85 transition-colors disabled:opacity-50"
+              className="w-full mt-8 py-3.5 bg-[#a855f7] text-black rounded-xl text-sm font-bold hover:bg-[#a855f7]/85 transition-colors disabled:opacity-50"
             >
               {adding ? (
                 <Loader2 size={16} className="animate-spin mx-auto" />
@@ -1691,7 +1690,7 @@ export default function PeoplePage() {
                     value={streamSalaryInput}
                     onChange={(e) => setStreamSalaryInput(e.target.value)}
                     placeholder="e.g. 3000"
-                    className="w-full rounded-xl border border-white/10 bg-white/5 py-3 pl-8 pr-4 text-white text-lg font-bold outline-none focus:border-[#1eba98]/40 focus:ring-2 focus:ring-[#1eba98]/10 transition-all placeholder:text-[#555]"
+                    className="w-full rounded-xl border border-white/10 bg-white/5 py-3 pl-8 pr-4 text-white text-lg font-bold outline-none focus:border-[#a855f7]/40 focus:ring-2 focus:ring-[#a855f7]/10 transition-all placeholder:text-[#555]"
                     autoFocus
                   />
                 </div>
@@ -1759,7 +1758,7 @@ export default function PeoplePage() {
                   !streamStartDate ||
                   !streamEndDate
                 }
-                className="flex-1 rounded-xl bg-[#1eba98] py-3 text-sm font-bold text-black hover:bg-[#1eba98]/80 transition-colors disabled:opacity-40 shadow-[0_0_20px_rgba(30,186,152,0.25)] flex items-center justify-center gap-2"
+                className="flex-1 rounded-xl bg-[#a855f7] py-3 text-sm font-bold text-black hover:bg-[#a855f7]/80 transition-colors disabled:opacity-40 shadow-[0_0_20px_rgba(168,85,247,0.25)] flex items-center justify-center gap-2"
               >
                 {startingStream ? (
                   <>

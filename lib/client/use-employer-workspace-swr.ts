@@ -63,7 +63,7 @@ export interface EmployerWorkspaceSnapshot {
 
 export function useEmployerWorkspaceSWR(input: {
   walletAddr?: string;
-  signMessage?: ((message: Uint8Array) => Promise<Uint8Array>) | null;
+  signMessage?: ((message: any) => Promise<string>) | null;
 }) {
   const walletAddr = input.walletAddr ?? "";
   const signMessage = input.signMessage ?? null;

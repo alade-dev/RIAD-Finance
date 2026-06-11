@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@/hooks/useWallet";
 import { useRouter } from "next/navigation";
 import {
   Wallet,
@@ -34,10 +34,10 @@ import {
   useGuideStatus,
   useGuideTargetReady,
 } from "@/components/ui/interactive-guide";
-import { getBalance } from "@/lib/magicblock-api";
+import { getBalance } from "@/lib/private-payroll-api";
 
-const DASHBOARD_BALANCE_CACHE_KEY = "expaynse:employer-dashboard-balance-cache";
-const PEOPLE_ONBOARDING_HANDOFF_KEY = "expaynse:people-onboarding-handoff";
+const DASHBOARD_BALANCE_CACHE_KEY = "riadfinance:employer-dashboard-balance-cache";
+const PEOPLE_ONBOARDING_HANDOFF_KEY = "riadfinance:people-onboarding-handoff";
 
 type DashboardBalanceCache = {
   wallet: string;
@@ -130,25 +130,25 @@ interface HistoryPayrollRun {
 
 type DashboardRecentActivity =
   | {
-      id: string;
-      kind: "stream_run";
-      date: string;
-      status: RunStatus;
-      title: string;
-      subtitle: string;
-      peopleText: string;
-      amountUsd: number;
-    }
+    id: string;
+    kind: "stream_run";
+    date: string;
+    status: RunStatus;
+    title: string;
+    subtitle: string;
+    peopleText: string;
+    amountUsd: number;
+  }
   | {
-      id: string;
-      kind: "private_transfer";
-      date: string;
-      status: "success" | "failed" | "submitted";
-      title: string;
-      subtitle: string;
-      peopleText: string;
-      amountUsd: number;
-    };
+    id: string;
+    kind: "private_transfer";
+    date: string;
+    status: "success" | "failed" | "submitted";
+    title: string;
+    subtitle: string;
+    peopleText: string;
+    amountUsd: number;
+  };
 
 function resolvePayrollRunMode(
   run: HistoryPayrollRun,
@@ -266,7 +266,7 @@ const ACTIVE_COMPANY_STEPS: GuideStep[] = [
 export default function DashboardPage() {
   const router = useRouter();
   const { connected, publicKey, signMessage } = useWallet();
-  const walletAddr = publicKey?.toBase58() ?? "";
+  const walletAddr = publicKey ?? "";
   const initialBalanceCache = loadDashboardBalanceCache();
 
   const [runs, setRuns] = useState<RealPayrollRun[]>([]);
@@ -562,11 +562,11 @@ export default function DashboardPage() {
           : formatDate(run.date),
         peopleText:
           run.employeeIds?.length ||
-          run.recipientAddresses?.length
+            run.recipientAddresses?.length
             ? String(
-                (run.employeeIds?.length ?? 0) ||
-                  (run.recipientAddresses?.length ?? 0),
-              )
+              (run.employeeIds?.length ?? 0) ||
+              (run.recipientAddresses?.length ?? 0),
+            )
             : "1",
         amountUsd: run.totalAmount,
       }));
@@ -751,11 +751,11 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-bold tracking-tight text-white">{company ? company.name : "Employer Dashboard"}</h1>
             <p className="text-sm text-[#a8a8aa] mt-1">
               {company
-                ? `Treasury: ${company.treasuryPubkey.slice(0, 4)}...${company.treasuryPubkey.slice(-4)} · Base Solana handles funding and exits, while MagicBlock PER runs live private payroll.`
-                : "Base Solana handles setup and treasury funding, while MagicBlock PER runs live private payroll."}
+                ? `Treasury: ${company.treasuryPubkey.slice(0, 6)}...${company.treasuryPubkey.slice(-4)} · Base Arbitrum handles funding and exits, while Sablier V2 runs live private payroll.`
+                : "Base Arbitrum handles setup and treasury funding, while Sablier V2 runs live private payroll."}
             </p>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <button
               onClick={() => void loadDashboard()}
@@ -783,14 +783,17 @@ export default function DashboardPage() {
                   </p>
 
                   <a
-                    href="https://faucet.solana.com/"
+                    href="https://faucet.quicknode.com/arbitrum/sepolia"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition-colors hover:bg-white/10"
+                    className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition-colors hover:bg-white/10"
                   >
-                    <div>
-                      <p className="font-lexend text-sm font-semibold text-white">Get Devnet SOL</p>
-                      <p className="mt-1 text-xs text-[#a8a8aa]">Fund gas and account creation</p>
+                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                      <img src="/eth-logo.png" alt="ETH" className="w-5 h-5 object-contain" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-lexend text-sm font-semibold text-white">Get Sepolia ETH</p>
+                      <p className="mt-0.5 text-xs text-[#a8a8aa]">Fund gas on Arbitrum Sepolia</p>
                     </div>
                     <ExternalLink size={14} className="text-[#a8a8aa]" />
                   </a>
@@ -799,11 +802,14 @@ export default function DashboardPage() {
                     href="https://faucet.circle.com/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-2 flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition-colors hover:bg-white/10"
+                    className="mt-2 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition-colors hover:bg-white/10"
                   >
-                    <div>
+                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                      <img src="/usdc-logo.png" alt="USDC" className="w-5 h-5 object-contain" />
+                    </div>
+                    <div className="flex-1">
                       <p className="font-lexend text-sm font-semibold text-white">Get Devnet USDC</p>
-                      <p className="mt-1 text-xs text-[#a8a8aa]">Top up payroll test funds</p>
+                      <p className="mt-0.5 text-xs text-[#a8a8aa]">Top up payroll test funds</p>
                     </div>
                     <ExternalLink size={14} className="text-[#a8a8aa]" />
                   </a>
@@ -820,12 +826,12 @@ export default function DashboardPage() {
               <Download size={16} className={company ? "text-[#a8a8aa]" : "text-[#a8a8aa]/50"} />
               Deposit
             </button>
-            
+
             {company ? (
               <Link
                 href="/payouts"
                 data-guide="run-payroll"
-                className="inline-flex h-[44px] items-center gap-2 rounded-2xl bg-[#1eba98] px-5 text-sm font-semibold text-black transition-colors hover:bg-[#1eba98]/80 shadow-[0_0_20px_rgba(30,186,152,0.3)]"
+                className="inline-flex h-[44px] items-center gap-2 rounded-2xl bg-[#a855f7] px-5 text-sm font-semibold text-black transition-colors hover:bg-[#a855f7]/80 shadow-[0_0_20px_rgba(168,85,247,0.3)]"
               >
                 <Plus size={16} />
                 Run Payroll
@@ -834,7 +840,7 @@ export default function DashboardPage() {
               <button
                 onClick={() => setSetupOpen(true)}
                 data-guide="setup-company"
-                className="inline-flex h-[44px] items-center gap-2 rounded-2xl bg-[#1eba98] px-5 text-sm font-semibold text-black transition-colors hover:bg-[#1eba98]/80 shadow-[0_0_20px_rgba(30,186,152,0.3)]"
+                className="inline-flex h-[44px] items-center gap-2 rounded-2xl bg-[#a855f7] px-5 text-sm font-semibold text-black transition-colors hover:bg-[#a855f7]/80 shadow-[0_0_20px_rgba(168,85,247,0.3)]"
               >
                 <Building2 size={16} />
                 Setup Company
@@ -851,10 +857,16 @@ export default function DashboardPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-3xl border border-white/10 bg-[#0a0a0a] p-5 shadow-sm">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#a8a8aa]">PER Treasury Balance</p>
-                <p className="mt-2 text-2xl font-bold tracking-tight text-white">{formatUsd(vaultBalance)}</p>
-                <p className="mt-1 text-xs text-[#a8a8aa]">Private USDC treasury liquidity inside MagicBlock PER</p>
+              <div className="rounded-3xl border border-white/10 bg-[#0a0a0a] p-5 shadow-sm relative overflow-hidden">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#a8a8aa]">Private Treasury Balance</p>
+                <p className="mt-2 text-2xl font-bold tracking-tight text-white flex items-baseline gap-1.5">
+                  {formatUsd(vaultBalance)}
+                  <span className="text-xs text-[#8f8f95] font-semibold">USDC</span>
+                </p>
+                <p className="mt-1 text-xs text-[#a8a8aa]">Private USDC treasury liquidity inside TEE enclave</p>
+                <div className="absolute top-5 right-5 w-6 h-6 opacity-80">
+                  <img src="/usdc-logo.png" alt="USDC" className="w-full h-full object-contain" />
+                </div>
               </div>
 
               <div className="rounded-3xl border border-white/10 bg-[#0a0a0a] p-5 shadow-sm">
@@ -918,20 +930,18 @@ export default function DashboardPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             <span
-                              className={`rounded-lg border px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                                activity.kind === "stream_run"
+                              className={`rounded-lg border px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${activity.kind === "stream_run"
                                   ? "border-blue-500/20 bg-blue-500/10 text-blue-300"
                                   : "border-violet-500/20 bg-violet-500/10 text-violet-300"
-                              }`}
+                                }`}
                             >
                               {activity.kind === "stream_run" ? "stream" : "private"}
                             </span>
                             <span
-                              className={`rounded-lg border px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                                activity.kind === "stream_run"
+                              className={`rounded-lg border px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${activity.kind === "stream_run"
                                   ? statusChip(activity.status)
                                   : historyStatusChip(activity.status)
-                              }`}
+                                }`}
                             >
                               {activity.status.replace("_", " ")}
                             </span>

@@ -38,7 +38,7 @@ export function HowItWorks() {
                     className="text-center mb-16"
                 >
                     <h2 className="text-[40px] md:text-[52px] font-medium text-white tracking-tight mb-4">
-                        How Expaynse works
+                        How RIAD Finance works
                     </h2>
                     <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
                         A straightforward workflow for automated payroll. Setup once, stream salaries forever — completely private.

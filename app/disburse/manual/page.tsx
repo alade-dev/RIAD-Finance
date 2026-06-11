@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@/hooks/useWallet";
 import Papa from "papaparse";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -281,7 +281,7 @@ function ManualBatchPayrollContent() {
     if (!publicKey || !signMessage) return;
 
     let cancelled = false;
-    const employerWallet = publicKey.toBase58();
+    const employerWallet = publicKey;
 
     const loadEmployees = async () => {
       try {
@@ -353,7 +353,7 @@ function ManualBatchPayrollContent() {
 
     try {
       setPrivateBalanceLoading(true);
-      const wallet = publicKey.toBase58();
+      const wallet = publicKey;
       const response = await walletAuthenticatedFetch({
         wallet,
         signMessage,
@@ -463,12 +463,12 @@ function ManualBatchPayrollContent() {
 
     try {
       const response = await walletAuthenticatedFetch({
-        wallet: publicKey.toBase58(),
+        wallet: publicKey,
         signMessage,
         path: "/api/private-payroll/send",
         method: "POST",
         body: {
-          employerWallet: publicKey.toBase58(),
+          employerWallet: publicKey,
           payPeriod,
           recipients: validEmployees.map((employee) => ({
             employeeId: employee.employeeId,
@@ -976,7 +976,7 @@ function ManualBatchPayrollContent() {
                       privateBalanceLoading ||
                       !treasuryFundedEnough
                     }
-                    className={`inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-[1.1rem] ${directEmployeeFlow ? "bg-[#1eba98] px-8 py-3.5 text-sm shadow-none hover:translate-y-0 hover:bg-[#22c7a3]" : "bg-neutral-50 px-10 py-4 text-base hover:-translate-y-1 hover:bg-white hover:shadow-[0_10px_30px_rgba(255,255,255,0.2)]"} font-lexend font-bold text-black transition-all duration-300 disabled:pointer-events-none disabled:opacity-30 sm:w-auto`}
+                    className={`inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-[1.1rem] ${directEmployeeFlow ? "bg-[#a855f7] px-8 py-3.5 text-sm shadow-none hover:translate-y-0 hover:bg-[#22c7a3]" : "bg-neutral-50 px-10 py-4 text-base hover:-translate-y-1 hover:bg-white hover:shadow-[0_10px_30px_rgba(255,255,255,0.2)]"} font-lexend font-bold text-black transition-all duration-300 disabled:pointer-events-none disabled:opacity-30 sm:w-auto`}
                   >
                     {running ? (
                       <Loader2 size={20} className="animate-spin" />
@@ -1025,7 +1025,7 @@ function ManualBatchPayrollContent() {
                         </span>
                         {step.sig && (
                           <a
-                            href={`https://solscan.io/tx/${step.sig}?cluster=devnet`}
+                            href={`https://sepolia.arbiscan.io/tx/${step.sig}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/5 px-3 py-1 font-mono text-[12px] text-emerald-400 transition-colors hover:text-emerald-300 hover:underline"
@@ -1095,7 +1095,7 @@ function ManualBatchPayrollContent() {
             {successModal.transferSig && (
               <div className="mb-8 space-y-2">
                 <a
-                  href={`https://solscan.io/tx/${successModal.transferSig}?cluster=devnet`}
+                  href={`https://sepolia.arbiscan.io/tx/${successModal.transferSig}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex w-full items-center justify-between rounded-xl border border-white/5 bg-white/5 px-4 py-3 transition-all hover:border-white/10 hover:bg-white/10"

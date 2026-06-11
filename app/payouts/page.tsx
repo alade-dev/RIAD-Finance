@@ -15,8 +15,8 @@ export default function PayoutsPage() {
 
         <div className="grid items-stretch gap-6 lg:grid-cols-2">
           <section className="flex h-full min-h-[300px] flex-col rounded-3xl border border-white/10 bg-[#0b0f14] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
-            <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[#1eba98]/30 bg-[#1eba98]/10">
-              <Play size={20} className="text-[#1eba98]" />
+            <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[#a855f7]/30 bg-[#a855f7]/10">
+              <Play size={20} className="text-[#a855f7]" />
             </div>
             <h2 className="text-2xl font-bold text-white">Single Payout</h2>
             <p className="mt-2 text-sm text-[#a8a8aa]">
@@ -29,14 +29,14 @@ export default function PayoutsPage() {
             <div className="mt-auto grid gap-3 pt-6 sm:grid-cols-2">
               <Link
                 href="/payouts/single?mode=private"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1eba98] px-4 py-3 text-sm font-bold text-black transition-colors hover:bg-[#1eba98]/85"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#a855f7] px-4 py-3 text-sm font-bold text-black transition-colors hover:bg-[#a855f7]/85"
               >
                 Private Transfer
                 <ArrowRight size={16} />
               </Link>
               <Link
                 href="/payouts/single?mode=stream"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#1eba98]/50 bg-transparent px-4 py-3 text-sm font-bold text-[#1eba98] transition-colors hover:bg-[#1eba98]/10"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#a855f7]/50 bg-transparent px-4 py-3 text-sm font-bold text-[#a855f7] transition-colors hover:bg-[#a855f7]/10"
               >
                 Realtime Stream
                 <ArrowRight size={16} />
@@ -86,7 +86,7 @@ export default function PayoutsPage() {
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-sm text-[#a8a8aa]">
           Need to add or verify team members first? Go to{" "}
-          <Link href="/people" className="font-semibold text-[#1eba98] hover:text-[#31d5b0]">
+          <Link href="/people" className="font-semibold text-[#a855f7] hover:text-[#31d5b0]">
             Employee
           </Link>
           {" "}to manage profiles and private payout readiness.

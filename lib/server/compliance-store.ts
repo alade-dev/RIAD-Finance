@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
-import { MongoClient, type Collection, type Db } from "mongodb";
+import { type Collection, type Db } from "mongodb";
+import { getMongoDb } from "./mongodb";
 
 export interface ComplianceEvent {
   id: string;
@@ -15,25 +16,6 @@ export interface ComplianceEvent {
 }
 
 type ComplianceEventDoc = ComplianceEvent;
-
-const MONGODB_URI = process.env.MONGODB_URI;
-const MONGODB_DB = process.env.MONGODB_DB || "expaynse";
-
-if (!MONGODB_URI) {
-  throw new Error("Missing MONGODB_URI environment variable");
-}
-
-declare global {
-  var __expaynseComplianceMongoClientPromise: Promise<MongoClient> | undefined;
-}
-
-const clientPromise =
-  global.__expaynseComplianceMongoClientPromise ??
-  new MongoClient(MONGODB_URI).connect();
-
-if (process.env.NODE_ENV !== "production") {
-  global.__expaynseComplianceMongoClientPromise = clientPromise;
-}
 
 function normalizeWallet(wallet: string) {
   return wallet.trim();
@@ -52,8 +34,7 @@ function nowIso() {
 }
 
 async function getDb(): Promise<Db> {
-  const client = await clientPromise;
-  return client.db(MONGODB_DB);
+  return getMongoDb();
 }
 
 async function complianceEventsCollection(): Promise<

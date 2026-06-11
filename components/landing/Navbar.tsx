@@ -24,7 +24,7 @@ export function Navbar() {
                     <Link href="/" className="flex items-center gap-3 group">
                         <Logo className="w-10 h-10 group-hover:scale-110 transition-transform duration-300" />
                         <span className="text-xl font-bold tracking-tighter uppercase text-white hover:text-kast-teal transition-colors">
-                            Expaynse
+                            RIAD Finance
                         </span>
                     </Link>
                 </div>

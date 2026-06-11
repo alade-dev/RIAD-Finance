@@ -12,13 +12,20 @@ import {
   isJwtExpired,
   signAndSend,
   type BalanceResponse,
-} from "@/lib/magicblock-api";
+} from "@/lib/private-payroll-api";
 import {
   clearCachedTeeToken,
   getOrCreateCachedTeeToken,
   loadCachedTeeToken,
 } from "@/lib/client/tee-auth-cache";
 import { walletAuthenticatedFetch } from "@/lib/client/wallet-auth-fetch";
+import { useWriteContract, usePublicClient } from "wagmi";
+import { decodeEventLog } from "viem";
+import {
+  RIAD_FINANCE_PAYROLL_ABI,
+  PAYROLL_CONTRACT_ADDRESS,
+  USDC_ADDRESS,
+} from "@/lib/client/contract-config";
 import {
   Loader2,
   Wallet,
@@ -52,24 +59,16 @@ import {
   payoutModeSummary,
   type PayrollPayoutMode,
 } from "@/lib/payroll-payout-mode";
-import {
-  DEFAULT_CHECKPOINT_CRANK_INTERVAL_MS,
-  DEFAULT_CHECKPOINT_CRANK_ITERATIONS,
-} from "@/lib/server/checkpoint-crank";
-import {
-  deriveObservedCheckpointCrankStatus,
-  isCheckpointSyncRunning,
-} from "@/lib/checkpoint-sync";
+
 import type {
   CashoutRequestRecord,
   CashoutRequestStatus,
-  CheckpointCrankBuildResponse,
   DataSourceBadge,
-  MagicBlockHealthState,
   ManagedEmployee,
   OnboardTransactionsResponse,
   PayrollStream,
   PrivateInitStatus,
+  PrivatePayrollHealthState,
   PrivatePayrollStateResponse,
   RestartStreamBuildResponse,
   StreamControlAction,
@@ -98,7 +97,16 @@ import {
 
 function EmployerPageContent() {
   const searchParams = useSearchParams();
-  const { publicKey, connected, signTransaction, signMessage } = useWallet();
+  const { publicKey: publicKeyRaw, connected, signTransaction, signMessage } = useWallet();
+  const { writeContractAsync } = useWriteContract();
+  const publicClient = usePublicClient();
+  const publicKey = useMemo(() => {
+    if (!publicKeyRaw) return null;
+    return {
+      toBase58: () => publicKeyRaw,
+      toString: () => publicKeyRaw,
+    };
+  }, [publicKeyRaw]) as any;
   const [managedEmployees, setManagedEmployees] = useState<ManagedEmployee[]>(
     [],
   );
@@ -138,8 +146,8 @@ function EmployerPageContent() {
   const [resolvingCashoutRequestId, setResolvingCashoutRequestId] = useState<
     string | null
   >(null);
-  const [magicBlockHealth, setMagicBlockHealth] =
-    useState<MagicBlockHealthState>("checking");
+  const [privatePayrollHealth, setPrivatePayrollHealth] =
+    useState<PrivatePayrollHealthState>("checking");
   const [nowMs, setNowMs] = useState(() => Date.now());
   const tokenCache = useRef<string | null>(null);
   const walletAddress = publicKey?.toBase58() ?? "";
@@ -337,25 +345,7 @@ function EmployerPageContent() {
     [managedEmployees, focusedEmployeeId],
   );
 
-  const streamsWithActiveCheckpointSync = useMemo(
-    () =>
-      streams.filter((stream) => {
-        if (
-          !isCheckpointSyncRunning(stream.checkpointCrankStatus) ||
-          !stream.privatePayrollPda ||
-          !stream.employeePda
-        ) {
-          return false;
-        }
 
-        if (focusedEmployeeId) {
-          return stream.id === focusedStreamId;
-        }
-
-        return true;
-      }),
-    [streams, focusedEmployeeId, focusedStreamId],
-  );
 
   const monthlyLiability = useMemo(
     () =>
@@ -430,12 +420,12 @@ function EmployerPageContent() {
     );
   }, []);
 
-  const refreshMagicBlockHealth = useCallback(async () => {
+  const refreshPrivatePayrollHealth = useCallback(async () => {
     try {
       const health = await checkHealth();
-      setMagicBlockHealth(health.status === "ok" ? "ok" : "error");
+      setPrivatePayrollHealth(health.status === "ok" ? "ok" : "error");
     } catch {
-      setMagicBlockHealth("error");
+      setPrivatePayrollHealth("error");
     }
   }, []);
 
@@ -445,11 +435,11 @@ function EmployerPageContent() {
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
-      void refreshMagicBlockHealth();
+      void refreshPrivatePayrollHealth();
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
-  }, [refreshMagicBlockHealth]);
+  }, [refreshPrivatePayrollHealth]);
 
   useEffect(() => {
     missingPrivateStatesRef.current = missingPrivateStates;
@@ -492,7 +482,7 @@ function EmployerPageContent() {
 
   const getTeeRpcUrl = useCallback(
     (teeAuthToken: string) =>
-      `https://devnet-tee.magicblock.app?token=${encodeURIComponent(teeAuthToken)}`,
+      `https://tee.riad.finance?token=${encodeURIComponent(teeAuthToken)}`,
     [],
   );
 
@@ -623,13 +613,8 @@ function EmployerPageContent() {
                   delegatedAt:
                     stateResponse.stream.delegatedAt ?? existing.delegatedAt,
                   checkpointCrankStatus:
-                    deriveObservedCheckpointCrankStatus({
-                      currentStatus:
-                        stateResponse.stream.checkpointCrankStatus ??
-                        existing.checkpointCrankStatus,
-                      lastAccrualTimestamp:
-                        stateResponse.state.lastAccrualTimestamp,
-                    }) ?? existing.checkpointCrankStatus,
+                    (stateResponse.stream.checkpointCrankStatus ??
+                    existing.checkpointCrankStatus) as any,
                   checkpointCrankUpdatedAt:
                     stateResponse.stream.checkpointCrankUpdatedAt ??
                     existing.checkpointCrankUpdatedAt,
@@ -692,21 +677,7 @@ function EmployerPageContent() {
     [walletAddress, getOrFetchToken],
   );
 
-  useEffect(() => {
-    if (!walletAddress || streamsWithActiveCheckpointSync.length === 0) {
-      return;
-    }
 
-    const interval = window.setInterval(() => {
-      void Promise.allSettled(
-        streamsWithActiveCheckpointSync.map((stream) =>
-          fetchPrivatePreview(stream, { silent: true }),
-        ),
-      );
-    }, 1000);
-
-    return () => window.clearInterval(interval);
-  }, [walletAddress, streamsWithActiveCheckpointSync, fetchPrivatePreview]);
 
   const fetchPayrollConfig = useCallback(async () => {
     if (!walletAddress) {
@@ -882,17 +853,6 @@ function EmployerPageContent() {
                           delegatedAt:
                             stateResponse.stream.delegatedAt ??
                             existing.delegatedAt,
-                          checkpointCrankStatus:
-                            deriveObservedCheckpointCrankStatus({
-                              currentStatus:
-                                stateResponse.stream.checkpointCrankStatus ??
-                                existing.checkpointCrankStatus,
-                              lastAccrualTimestamp:
-                                stateResponse.state.lastAccrualTimestamp,
-                            }) ?? existing.checkpointCrankStatus,
-                          checkpointCrankUpdatedAt:
-                            stateResponse.stream.checkpointCrankUpdatedAt ??
-                            existing.checkpointCrankUpdatedAt,
                           lastPaidAt: stateResponse.stream.lastPaidAt,
                           totalPaid: stateResponse.stream.totalPaid,
                         }
@@ -1186,249 +1146,7 @@ function EmployerPageContent() {
     ],
   );
 
-  const buildCheckpointCrankAndFinalize = useCallback(
-    async (args: {
-      employerWallet: string;
-      streamId: string;
-      teeAuthToken: string;
-      mode: "schedule" | "cancel";
-      executionIntervalMillis?: number;
-      iterations?: number;
-    }) => {
-      if (!publicKey || !signTransaction || !signMessage) {
-        throw new Error(
-          "Connect a wallet that supports transaction signing and message signing",
-        );
-      }
 
-      const buildResponse = await walletAuthenticatedFetch({
-        wallet: args.employerWallet,
-        signMessage,
-        path: "/api/streams/checkpoint-crank",
-        method: "POST",
-        body: {
-          employerWallet: args.employerWallet,
-          streamId: args.streamId,
-          teeAuthToken: args.teeAuthToken,
-          mode: args.mode,
-          executionIntervalMillis: args.executionIntervalMillis,
-          iterations: args.iterations,
-        },
-      });
-
-      const buildJson = (await buildResponse.json()) as
-        | CheckpointCrankBuildResponse
-        | { error?: string };
-
-      if (!buildResponse.ok) {
-        throw new Error(
-          "error" in buildJson
-            ? buildJson.error || "Failed to build checkpoint crank transaction"
-            : "Failed to build checkpoint crank transaction",
-        );
-      }
-
-      const crankBuild = buildJson as CheckpointCrankBuildResponse;
-
-      const signature = await signAndSend(
-        crankBuild.transactions.checkpointCrank.transactionBase64,
-        signTransaction,
-        {
-          sendTo: crankBuild.transactions.checkpointCrank.sendTo,
-          rpcUrl: getTeeRpcUrl(args.teeAuthToken),
-          signMessage,
-          publicKey,
-        },
-      );
-
-      const finalizeResponse = await walletAuthenticatedFetch({
-        wallet: args.employerWallet,
-        signMessage,
-        path: "/api/streams/checkpoint-crank",
-        method: "PATCH",
-        body: {
-          employerWallet: args.employerWallet,
-          streamId: args.streamId,
-          mode: args.mode,
-          taskId: crankBuild.taskId,
-          signature,
-          status: args.mode === "schedule" ? "active" : "stopped",
-        },
-      });
-
-      const finalizeJson = (await finalizeResponse.json()) as {
-        error?: string;
-      };
-
-      if (!finalizeResponse.ok) {
-        throw new Error(
-          finalizeJson.error ||
-          "Failed to finalize checkpoint crank transaction",
-        );
-      }
-
-      return {
-        build: crankBuild,
-        signature,
-      };
-    },
-    [publicKey, signTransaction, signMessage, getTeeRpcUrl],
-  );
-
-  const handleCheckpointCrank = useCallback(
-    async (stream: PayrollStream, mode: "schedule" | "cancel") => {
-      if (!walletAddress) {
-        toast.error("Connect your employer wallet first");
-        return;
-      }
-
-      const effectiveStatus = missingPrivateStates[stream.id]
-        ? "stopped"
-        : getEffectiveStreamStatus(stream, privateStates[stream.id] ?? null) ??
-          stream.status;
-      const observedCheckpointStatus = deriveObservedCheckpointCrankStatus({
-        currentStatus: stream.checkpointCrankStatus,
-        lastAccrualTimestamp:
-          privateStates[stream.id]?.state.lastAccrualTimestamp,
-        nowMs,
-      });
-
-      if (mode === "schedule" && effectiveStatus !== "active") {
-        toast.info(
-          "Checkpoint sync should only run for active streams. Resume the stream first if you want live accrual to continue.",
-        );
-        return;
-      }
-
-      if (
-        mode === "cancel" &&
-        observedCheckpointStatus !== "active" &&
-        stream.checkpointCrankStatus !== "active"
-      ) {
-        toast.info("Checkpoint sync is not currently running for this stream.");
-        return;
-      }
-
-      setCheckpointingStream(stream.id);
-      try {
-        const teeAuthToken = await getOrFetchToken();
-        await buildCheckpointCrankAndFinalize({
-          employerWallet: walletAddress,
-          streamId: stream.id,
-          teeAuthToken,
-          mode,
-          executionIntervalMillis: DEFAULT_CHECKPOINT_CRANK_INTERVAL_MS,
-          iterations: DEFAULT_CHECKPOINT_CRANK_ITERATIONS,
-        });
-
-        toast.success(
-          mode === "schedule"
-            ? "Checkpoint sync scheduled on MagicBlock. It will show ticking once the TEE heartbeat advances."
-            : "Checkpoint sync stopped",
-        );
-
-        await Promise.allSettled([
-          fetchPayrollConfig(),
-          fetchPrivatePreview(stream, { silent: true }),
-        ]);
-      } catch (error: unknown) {
-        toast.error(
-          `Checkpoint sync ${mode === "schedule" ? "start" : "stop"} failed: ${
-            error instanceof Error ? error.message : "Unknown"
-          }`,
-        );
-      } finally {
-        setCheckpointingStream(null);
-      }
-    },
-    [
-      walletAddress,
-      getOrFetchToken,
-      buildCheckpointCrankAndFinalize,
-      fetchPayrollConfig,
-      fetchPrivatePreview,
-      missingPrivateStates,
-      nowMs,
-      privateStates,
-    ],
-  );
-
-  const handleRestartCheckpointCrank = useCallback(
-    async (stream: PayrollStream) => {
-      if (!walletAddress) {
-        toast.error("Connect your employer wallet first");
-        return;
-      }
-
-      const effectiveStatus = missingPrivateStates[stream.id]
-        ? "stopped"
-        : getEffectiveStreamStatus(stream, privateStates[stream.id] ?? null) ??
-          stream.status;
-
-      if (effectiveStatus !== "active") {
-        toast.info(
-          "Checkpoint sync restart only makes sense for active streams. Resume the stream first if you want live accrual to continue.",
-        );
-        return;
-      }
-
-      setCheckpointingStream(stream.id);
-      try {
-        const teeAuthToken = await getOrFetchToken();
-        const needsCancelFirst =
-          !!stream.checkpointCrankTaskId ||
-          isCheckpointSyncRunning(stream.checkpointCrankStatus);
-
-        toast.info(
-          needsCancelFirst
-            ? "Approve 2 transactions to restart checkpoint sync and recover real-time TEE updates."
-            : "Approve 1 transaction to start checkpoint sync.",
-        );
-
-        if (needsCancelFirst) {
-          await buildCheckpointCrankAndFinalize({
-            employerWallet: walletAddress,
-            streamId: stream.id,
-            teeAuthToken,
-            mode: "cancel",
-          });
-        }
-
-        await buildCheckpointCrankAndFinalize({
-          employerWallet: walletAddress,
-          streamId: stream.id,
-          teeAuthToken,
-          mode: "schedule",
-          executionIntervalMillis: DEFAULT_CHECKPOINT_CRANK_INTERVAL_MS,
-          iterations: DEFAULT_CHECKPOINT_CRANK_ITERATIONS,
-        });
-
-        toast.success("Checkpoint sync restarted on MagicBlock");
-
-        await Promise.allSettled([
-          fetchPayrollConfig(),
-          fetchPrivatePreview(stream, { silent: true }),
-        ]);
-      } catch (error: unknown) {
-        toast.error(
-          `Checkpoint sync restart failed: ${
-            error instanceof Error ? error.message : "Unknown"
-          }`,
-        );
-      } finally {
-        setCheckpointingStream(null);
-      }
-    },
-    [
-      walletAddress,
-      getOrFetchToken,
-      buildCheckpointCrankAndFinalize,
-      fetchPayrollConfig,
-      fetchPrivatePreview,
-      missingPrivateStates,
-      privateStates,
-    ],
-  );
 
   const handleResolveCashoutRequest = useCallback(
     async (
@@ -1488,10 +1206,8 @@ function EmployerPageContent() {
       action: StreamControlAction,
       options?: { awaitCheckpointCleanup?: boolean },
     ) => {
-      if (!walletAddress || !publicKey || !signTransaction || !signMessage) {
-        toast.error(
-          "Connect a wallet that supports transaction signing and message signing",
-        );
+      if (!walletAddress || !publicKey) {
+        toast.error("Connect a wallet that supports transaction signing");
         return;
       }
 
@@ -1499,189 +1215,34 @@ function EmployerPageContent() {
         (item) => item.id === stream.employeeId,
       );
       if (!employee) {
-        toast.error("Employee record not found");
-        return;
-      }
-
-      if (
-        !stream.employeePda ||
-        !stream.privatePayrollPda ||
-        !stream.delegatedAt
-      ) {
-        toast.error("Onboard this stream to PER before controlling it");
-        return;
-      }
-
-      const privateInitStatus = resolvePrivateInitStatus(employee, stream);
-
-      if (action === "resume" && privateInitStatus !== "confirmed") {
-        toast.info(
-          privateInitStatus === "failed"
-            ? "Private recipient setup failed. The system will retry automatically, or use Retry Init from Employees before resuming payroll."
-            : "Private recipient setup is still pending. Wait for auto-init or use Retry Init from Employees.",
-        );
+        toast.error("Teammate record not found");
         return;
       }
 
       setControllingStream(stream.id);
       try {
-        const teeAuthToken = await getOrFetchToken();
-        const cachedPreview = privateStates[stream.id] ?? null;
-        const isKnownMissing = !!missingPrivateStates[stream.id];
-        let effectiveStatus = getEffectiveStreamStatus(stream, cachedPreview);
-
-        if (isKnownMissing) {
-          if (action === "stop") {
-            setStreams((prev) =>
-              prev.map((existing) =>
-                existing.id === stream.id
-                  ? {
-                    ...existing,
-                    status: "stopped",
-                  }
-                  : existing,
-              ),
-            );
-            await fetchPayrollConfig();
-            toast.info(
-              "No private payroll state remains in PER for this stream. Marked as stopped locally.",
-            );
-            return;
-          }
-
-          toast.info(
-            "Private payroll state is missing in PER. This stream needs a fresh setup before it can go live again.",
-          );
-          return;
-        }
+        let nextStatus: "paused" | "active" | "stopped" =
+          action === "pause" ? "paused" : action === "resume" ? "active" : "stopped";
 
         if (action === "stop") {
-          const preStopPreview = await fetchPrivatePreview(stream, {
-            silent: true,
+          // Get the on-chain streamId from stream.employeePda (where we stored it)
+          const onChainId = BigInt(stream.employeePda || "1");
+          toast.info("Sending transaction to cancel stream on-chain...");
+          const txHash = await writeContractAsync({
+            address: PAYROLL_CONTRACT_ADDRESS,
+            abi: RIAD_FINANCE_PAYROLL_ABI,
+            functionName: "cancelStream",
+            args: [onChainId],
           });
-          if (preStopPreview === "missing") {
-            setStreams((prev) =>
-              prev.map((existing) =>
-                existing.id === stream.id
-                  ? {
-                    ...existing,
-                    status: "stopped",
-                  }
-                  : existing,
-              ),
-            );
-            await fetchPayrollConfig();
-            toast.info(
-              "Private payroll state is already absent in PER. There is nothing left to close here.",
-            );
-            return;
+          
+          toast.info("Waiting for transaction confirmation...");
+          if (publicClient) {
+            await publicClient.waitForTransactionReceipt({ hash: txHash });
           }
-          effectiveStatus = getEffectiveStreamStatus(stream, preStopPreview);
+          toast.success("Stream cancelled successfully on-chain!");
         }
 
-        if (
-          (action === "resume" && effectiveStatus !== "paused") ||
-          (action === "pause" && effectiveStatus !== "active") ||
-          (action === "stop" && effectiveStatus === "stopped")
-        ) {
-          const syncedPreview = await fetchPrivatePreview(stream, {
-            silent: true,
-          });
-          effectiveStatus =
-            getEffectiveStreamStatus(
-              stream,
-              syncedPreview === "missing" ? null : syncedPreview,
-            ) ?? effectiveStatus;
-        }
-
-        if (action === "resume" && effectiveStatus !== "paused") {
-          await fetchPayrollConfig();
-          toast.info(
-            "This stream is not paused in PER right now. The dashboard is syncing the live status first.",
-          );
-          return;
-        }
-
-        if (action === "pause" && effectiveStatus !== "active") {
-          await fetchPayrollConfig();
-          toast.info(
-            "This stream is not active in PER right now. The dashboard is syncing the live status first.",
-          );
-          return;
-        }
-
-        if (action === "stop" && effectiveStatus === "stopped") {
-          await fetchPayrollConfig();
-          toast.info(
-            "This stream is already stopped in PER. The dashboard is syncing the live status first.",
-          );
-          return;
-        }
-
-        const response = await fetch("/api/streams/control", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            employerWallet: walletAddress,
-            streamId: stream.id,
-            action,
-            ratePerSecond: action === "resume" ? stream.ratePerSecond : undefined,
-            teeAuthToken,
-          }),
-        });
-
-        const json = (await response.json()) as
-          | StreamControlBuildResponse
-          | { error?: string };
-
-        if (!response.ok) {
-          throw new Error(
-            "error" in json
-              ? json.error || "Failed to build stream control transactions"
-              : "Failed to build stream control transactions",
-          );
-        }
-
-        const controlBuild = json as StreamControlBuildResponse;
-
-        const hasCommitTx = !!controlBuild.transactions.commitEmployee?.transactionBase64;
-        toast.info(
-          hasCommitTx
-            ? action === "stop"
-              ? "Approve 2 employer transactions to move this stream into its final close state"
-              : "Approve 2 employer transactions to control this stream"
-            : action === "stop"
-              ? "Approve 1 employer transaction to move this stream into its final close state"
-              : "Approve 1 employer transaction to control this stream",
-        );
-
-        const controlSignature = await signAndSend(
-          controlBuild.transactions.control.transactionBase64,
-          signTransaction,
-          {
-            sendTo: controlBuild.transactions.control.sendTo,
-            rpcUrl: getTeeRpcUrl(teeAuthToken),
-            signMessage,
-            publicKey,
-          },
-        );
-
-        let commitSignature: string | undefined;
-        if (hasCommitTx) {
-          commitSignature = await signAndSend(
-            controlBuild.transactions.commitEmployee.transactionBase64,
-            signTransaction,
-            {
-              sendTo: controlBuild.transactions.commitEmployee.sendTo,
-              rpcUrl: getTeeRpcUrl(teeAuthToken),
-              signMessage,
-              publicKey,
-            },
-          );
-        }
-
+        // Call backend route to record status change in MongoDB
         const finalizeResponse = await fetch("/api/streams/control", {
           method: "PATCH",
           headers: {
@@ -1692,10 +1253,6 @@ function EmployerPageContent() {
             streamId: stream.id,
             action,
             ratePerSecond: action === "resume" ? stream.ratePerSecond : undefined,
-            employeePda: controlBuild.employeePda,
-            privatePayrollPda: controlBuild.privatePayrollPda,
-            controlSignature,
-            commitSignature,
           }),
         });
 
@@ -1705,10 +1262,9 @@ function EmployerPageContent() {
 
         if (!finalizeResponse.ok) {
           throw new Error(
-            finalizeJson.error || "Failed to finalize stream control",
+            finalizeJson.error || "Failed to finalize stream control in database",
           );
         }
-        const nextStatus = controlBuild.nextStatus;
 
         setStreams((prev) =>
           prev.map((existing) =>
@@ -1720,128 +1276,20 @@ function EmployerPageContent() {
               : existing,
           ),
         );
-        setPrivateStates((prev) => {
-          const current = prev[stream.id];
-          if (!current) {
-            return prev;
-          }
-
-          return {
-            ...prev,
-            [stream.id]: {
-              ...current,
-              stream: {
-                ...current.stream,
-                status: nextStatus,
-              },
-              state: {
-                ...current.state,
-                status: nextStatus,
-              },
-              syncedAt: new Date().toISOString(),
-            },
-          };
-        });
 
         toast.success(
           action === "pause"
-            ? "Payroll stream paused with employer wallet"
+            ? "Payroll stream paused"
             : action === "resume"
-              ? "Payroll stream resumed with employer wallet"
-              : "Payroll stream moved into its terminal close state on-chain",
+              ? "Payroll stream resumed"
+              : "Payroll stream cancelled on-chain",
         );
 
-        const finalizeCheckpointAndRefresh = async () => {
-          try {
-            if (action === "resume") {
-              await buildCheckpointCrankAndFinalize({
-                employerWallet: walletAddress,
-                streamId: stream.id,
-                teeAuthToken,
-                mode: "schedule",
-                executionIntervalMillis: DEFAULT_CHECKPOINT_CRANK_INTERVAL_MS,
-                iterations: DEFAULT_CHECKPOINT_CRANK_ITERATIONS,
-              });
-            } else if (
-              (action === "pause" || action === "stop") &&
-              (isCheckpointSyncRunning(stream.checkpointCrankStatus) ||
-                !!stream.checkpointCrankTaskId)
-            ) {
-              toast.info(
-                "Approve 1 more transaction to stop checkpoint sync for this stream.",
-              );
-              await buildCheckpointCrankAndFinalize({
-                employerWallet: walletAddress,
-                streamId: stream.id,
-                teeAuthToken,
-                mode: "cancel",
-              });
-            }
-          } catch (backgroundError: unknown) {
-            const message =
-              backgroundError instanceof Error
-                ? backgroundError.message
-                : "Unknown checkpoint task error";
-            toast.info(
-              `Stream state changed, but background checkpoint sync still needs attention: ${message}`,
-            );
-          } finally {
-            await Promise.allSettled([
-              fetchPayrollConfig(),
-              fetchPrivatePreview(
-                {
-                  ...stream,
-                  status: nextStatus,
-                },
-                { silent: true },
-              ),
-            ]);
-          }
-        };
-
-        if (options?.awaitCheckpointCleanup) {
-          await finalizeCheckpointAndRefresh();
-        } else {
-          void finalizeCheckpointAndRefresh();
-        }
-        return;
+        await fetchPayrollConfig();
       } catch (err: unknown) {
-        const message =
-          err instanceof Error ? err.message : "Unknown control error";
-
-        if (
-          action === "resume" &&
-          (message.includes("0x1779") || message.includes("EmployeeNotPaused"))
-        ) {
-          await fetchPrivatePreview(stream);
-          await fetchPayrollConfig();
-          toast.info(
-            "This stream is not paused on-chain. The dashboard is refreshing to sync the real status.",
-          );
-        } else if (
-          action === "pause" &&
-          (message.includes("0x1778") || message.includes("EmployeeNotActive"))
-        ) {
-          await fetchPrivatePreview(stream);
-          await fetchPayrollConfig();
-          toast.info(
-            "This stream is not active on-chain. The dashboard is refreshing to sync the real status.",
-          );
-        } else if (
-          action === "stop" &&
-          (message.includes("0xbc4") ||
-            message.includes("custom program error: 0xbc4") ||
-            message.includes("already stopped") ||
-            message.includes("not active"))
-        ) {
-          await fetchPrivatePreview(stream);
-          await fetchPayrollConfig();
-          toast.info(
-            "Close prep was rejected by current on-chain state. Synced latest stream status from PER.",
-          );
-        } else {
-          toast.error(`Stream control failed: ${message}`);
-        }
+        toast.error(
+          `Stream control failed: ${err instanceof Error ? err.message : "Unknown"}`,
+        );
       } finally {
         setControllingStream(null);
       }
@@ -1849,16 +1297,10 @@ function EmployerPageContent() {
     [
       walletAddress,
       publicKey,
-      signTransaction,
-      signMessage,
       managedEmployees,
-      getOrFetchToken,
-      getTeeRpcUrl,
-      privateStates,
+      writeContractAsync,
+      publicClient,
       fetchPayrollConfig,
-      fetchPrivatePreview,
-      buildCheckpointCrankAndFinalize,
-      missingPrivateStates,
     ],
   );
 
@@ -1988,48 +1430,16 @@ function EmployerPageContent() {
         onProgress?: (message: string) => void;
       },
     ) => {
-      if (!walletAddress || !publicKey || !signTransaction || !signMessage) {
-        toast.error(
-          "Connect a wallet that supports transaction signing and message signing",
-        );
-        return;
-      }
-
-      const createReplacement = options?.createReplacement !== false;
-      const onProgress = options?.onProgress;
-
-      const preview = privateStates[stream.id] ?? null;
-      const effectiveStatus = resolveStatusWithMissing(stream, preview);
-      const stoppedLifecycle = deriveStoppedLifecycleState({
-        effectiveStatus,
-        preview,
-        hasMissingPrivateState: !!missingPrivateStates[stream.id],
-      });
-      const mustSettleBeforeRestart = stoppedLifecycle.mustSettleBeforeClose;
-
-      if (effectiveStatus !== "stopped") {
-        toast.info(
-          createReplacement
-            ? "Only fully closed streams should be replaced. Close this stream first if you want a fresh payroll stream."
-            : "Only stopped streams can be fully closed. Pause or stop the stream first if needed.",
-        );
-        return;
-      }
-
-      if (mustSettleBeforeRestart) {
-        toast.info(
-          createReplacement
-            ? "This stopped stream still has private payroll to reconcile. Settle the remaining payroll first, close the stream, then create a fresh stream."
-            : "This stopped stream still has private payroll to reconcile. Settle the remaining payroll state first, then close the stream.",
-        );
+      if (!walletAddress) {
+        toast.error("Connect your employer wallet first");
         return;
       }
 
       setRestartingStream(stream.id);
+      options?.onProgress?.("Restarting stream...");
       try {
-        const teeAuthToken = await getOrFetchToken();
-
-        const response = await fetch("/api/streams/restart", {
+        // 1. POST request to restart stream (mock initialization)
+        const postRes = await fetch("/api/streams/restart", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -2037,107 +1447,16 @@ function EmployerPageContent() {
           body: JSON.stringify({
             employerWallet: walletAddress,
             streamId: stream.id,
-            teeAuthToken,
-            createReplacement,
           }),
         });
 
-        const json = (await response.json()) as
-          | RestartStreamBuildResponse
-          | { error?: string; message?: string; stream?: PayrollStream };
-
-        if (!response.ok) {
-          throw new Error(
-            "error" in json
-              ? json.error || "Failed to build stopped-stream cleanup"
-              : "Failed to build stopped-stream cleanup",
-          );
+        if (!postRes.ok) {
+          const postJson = await postRes.json();
+          throw new Error(postJson.error || "Failed to initiate stream restart");
         }
 
-        const restartBuild = json as RestartStreamBuildResponse;
-
-        if (restartBuild.status === "already-reset") {
-          toast.success(
-            restartBuild.message ||
-            (createReplacement
-              ? "A fresh replacement stream already exists for this employee."
-              : "This stream is already fully closed."),
-          );
-          onProgress?.(
-            createReplacement
-              ? "Fresh stream already prepared"
-              : "This stream is already fully closed",
-          );
-          await fetchPayrollConfig();
-          return;
-        }
-
-        const transactionCount = [
-          restartBuild.transactions.closePrivatePayroll,
-          restartBuild.transactions.undelegateEmployee,
-          restartBuild.transactions.closeEmployee,
-        ].filter(Boolean).length;
-
-        if (transactionCount > 0) {
-          toast.info(
-            createReplacement
-              ? `Approve ${transactionCount} cleanup transaction${transactionCount === 1 ? "" : "s"} to finish this stream and prepare a fresh one`
-              : `Approve ${transactionCount} cleanup transaction${transactionCount === 1 ? "" : "s"} to fully close this stream`,
-          );
-        }
-
-        const signatures: {
-          closePrivatePayroll?: string;
-          undelegateEmployee?: string;
-          closeEmployee?: string;
-        } = {};
-
-        if (restartBuild.transactions.closePrivatePayroll) {
-          onProgress?.("Closing private payroll");
-          signatures.closePrivatePayroll = await signAndSend(
-            restartBuild.transactions.closePrivatePayroll.transactionBase64,
-            signTransaction,
-            {
-              sendTo: restartBuild.transactions.closePrivatePayroll.sendTo,
-              rpcUrl: getTeeRpcUrl(teeAuthToken),
-              signMessage,
-              publicKey,
-            },
-          );
-        }
-
-        if (restartBuild.transactions.undelegateEmployee) {
-          onProgress?.("Undelegating from PER");
-          signatures.undelegateEmployee = await signAndSend(
-            restartBuild.transactions.undelegateEmployee.transactionBase64,
-            signTransaction,
-            {
-              sendTo: restartBuild.transactions.undelegateEmployee.sendTo,
-              rpcUrl: getTeeRpcUrl(teeAuthToken),
-              signMessage,
-              publicKey,
-            },
-          );
-        }
-
-        if (restartBuild.transactions.closeEmployee) {
-          onProgress?.("Waiting for base ownership sync");
-          await waitForEmployeeOwnership(restartBuild.employeePda);
-
-          onProgress?.("Finalizing close on base");
-          signatures.closeEmployee = await signAndSend(
-            restartBuild.transactions.closeEmployee.transactionBase64,
-            signTransaction,
-            {
-              sendTo: restartBuild.transactions.closeEmployee.sendTo,
-              rpcUrl: BASE_DEVNET_RPC_URL,
-              signMessage,
-              publicKey,
-            },
-          );
-        }
-
-        const finalizeResponse = await fetch("/api/streams/restart", {
+        // 2. PATCH request to finalize and update database status
+        const patchRes = await fetch("/api/streams/restart", {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -2145,60 +1464,26 @@ function EmployerPageContent() {
           body: JSON.stringify({
             employerWallet: walletAddress,
             streamId: stream.id,
-            employeePda: restartBuild.employeePda,
-            privatePayrollPda: restartBuild.privatePayrollPda,
-            permissionPda: restartBuild.permissionPda,
-            teeAuthToken,
-            createReplacement,
-            signatures,
           }),
         });
 
-        onProgress?.("Finalizing close");
-        const finalizeJson = (await finalizeResponse.json()) as {
-          error?: string;
-          message?: string;
-        };
-
-        if (!finalizeResponse.ok) {
-          throw new Error(
-            finalizeJson.error || "Failed to finalize stopped-stream cleanup",
-          );
+        if (!patchRes.ok) {
+          const patchJson = await patchRes.json();
+          throw new Error(patchJson.error || "Failed to finalize stream restart");
         }
 
-        toast.success(
-          finalizeJson.message ||
-          (createReplacement
-            ? "Cleanup complete. A fresh paused stream is ready."
-            : "Stream cleanup complete. This payroll stream is now closed."),
-        );
-        onProgress?.(
-          createReplacement
-            ? "Fresh paused stream is ready"
-            : "Stream cleanup complete",
-        );
+        toast.success("Stream restarted successfully in the database");
+        options?.onProgress?.("Stream restarted successfully");
         await fetchPayrollConfig();
       } catch (err: unknown) {
         toast.error(
-          `${createReplacement ? "Create fresh stream" : "Close stream"} failed: ${err instanceof Error ? err.message : "Unknown"}`,
+          `Failed to restart stream: ${err instanceof Error ? err.message : "Unknown"}`,
         );
       } finally {
         setRestartingStream(null);
       }
     },
-    [
-      walletAddress,
-      publicKey,
-      signTransaction,
-      signMessage,
-      getOrFetchToken,
-      getTeeRpcUrl,
-      waitForEmployeeOwnership,
-      fetchPayrollConfig,
-      privateStates,
-      resolveStatusWithMissing,
-      missingPrivateStates,
-    ],
+    [walletAddress, fetchPayrollConfig],
   );
 
   const handleCloseStream = useCallback(
@@ -2296,149 +1581,126 @@ function EmployerPageContent() {
 
   const handleOnboardToPer = useCallback(
     async (stream: PayrollStream) => {
-      if (!walletAddress || !publicKey || !signTransaction || !signMessage) {
+      if (!walletAddress || !publicKey) {
         toast.error(
-          "Connect a wallet that supports transaction signing and message signing",
+          "Connect a wallet that supports transaction signing",
         );
+        return;
+      }
+
+      const employee = managedEmployees.find((item) => item.id === stream.employeeId);
+      if (!employee) {
+        toast.error("Teammate record not found");
+        return;
+      }
+
+      const recipient = employee.wallet;
+      if (!recipient || !recipient.startsWith("0x")) {
+        toast.error("Invalid employee wallet address (must be a valid EVM address)");
         return;
       }
 
       setOnboardingStream(stream.id);
       try {
-        const teeAuthToken = await getOrFetchToken();
+        const streamStartsAt = stream.startsAt || employee.startDate || new Date().toISOString();
+        const streamEndsAt = stream.endsAt || stream.compensationSnapshot?.endsAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        
+        const startSecs = Math.floor(new Date(streamStartsAt).getTime() / 1000);
+        const endSecs = Math.floor(new Date(streamEndsAt).getTime() / 1000);
+        const totalDuration = Math.max(1, endSecs - startSecs);
+        
+        const depositAmount = stream.ratePerSecond * totalDuration;
+        const depositAmountMicro = BigInt(Math.max(1, Math.round(depositAmount * 1_000_000)));
 
-        const response = await walletAuthenticatedFetch({
-          wallet: walletAddress,
-          signMessage,
-          path: "/api/streams/onboard",
-          method: "POST",
-          body: {
-            employerWallet: walletAddress,
-            streamId: stream.id,
-            teeAuthToken,
-          },
+        toast.info("Sending transaction to create stream on-chain...");
+        const txHash = await writeContractAsync({
+          address: PAYROLL_CONTRACT_ADDRESS,
+          abi: RIAD_FINANCE_PAYROLL_ABI,
+          functionName: "createStream",
+          args: [
+            recipient as `0x${string}`,
+            USDC_ADDRESS,
+            depositAmountMicro,
+            0, // cliffDuration (uint40)
+            totalDuration, // totalDuration (uint40)
+          ],
         });
 
-        let json: OnboardTransactionsResponse | { error?: string; message?: string };
-        const responseText = await response.text();
-
-        try {
-          json = JSON.parse(responseText) as
-            | OnboardTransactionsResponse
-            | { error?: string; message?: string };
-        } catch {
-          throw new Error(
-            `Server returned non-JSON response (status ${response.status}): ${responseText.slice(0, 200)}`
-          );
+        toast.info("Waiting for transaction receipt...");
+        let receipt;
+        if (publicClient) {
+          receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
         }
 
-        if (!response.ok) {
-          throw new Error(
-            "error" in json
-              ? json.error || "Failed to build PER onboarding transactions"
-              : "Failed to build PER onboarding transactions",
-          );
+        // Parse logs to extract stream ID
+        let onChainStreamId = "";
+        if (receipt && receipt.logs) {
+          for (const log of receipt.logs) {
+            try {
+              const decoded = decodeEventLog({
+                abi: RIAD_FINANCE_PAYROLL_ABI,
+                data: log.data,
+                topics: log.topics,
+              });
+              if (decoded.eventName === "StreamCreated") {
+                onChainStreamId = (decoded.args as any).streamId.toString();
+                break;
+              }
+            } catch (e) {
+              // Ignore decoding failures for other events
+            }
+          }
         }
 
-        if ("message" in json && !("transactions" in json)) {
-          toast.success(json.message || "Stream is already onboarded to PER");
-          await fetchPayrollConfig();
-          return;
+        if (!onChainStreamId) {
+          throw new Error("Could not find StreamCreated event in transaction logs");
         }
 
-        const onboarding = json as OnboardTransactionsResponse;
-        const transactionCount = [
-          onboarding.transactions.baseSetup,
-          onboarding.transactions.initializePrivatePayroll,
-          onboarding.transactions.resumeStream,
-        ].filter(Boolean).length;
+        toast.success(`On-chain stream created with ID: ${onChainStreamId}`);
 
-        if (transactionCount > 0) {
-          toast.info(
-            `Approve ${transactionCount} onboarding transaction${transactionCount === 1 ? "" : "s"} in your wallet`,
-            { id: "onboard-txns" }
-          );
-        }
-
-        if (onboarding.transactions.baseSetup) {
-          await signAndSend(
-            onboarding.transactions.baseSetup.transactionBase64,
-            signTransaction,
-            {
-              sendTo: onboarding.transactions.baseSetup.sendTo,
-              rpcUrl: BASE_DEVNET_RPC_URL,
-              signMessage,
-              publicKey,
-            },
-          );
-        }
-
-        if (onboarding.transactions.initializePrivatePayroll) {
-          await signAndSend(
-            onboarding.transactions.initializePrivatePayroll.transactionBase64,
-            signTransaction,
-            {
-              sendTo: onboarding.transactions.initializePrivatePayroll.sendTo,
-              rpcUrl: getTeeRpcUrl(teeAuthToken),
-              signMessage,
-              publicKey,
-              retrySendCount: 3,
-              retryDelayMs: 5_000,
-            },
-          );
-        }
-
-        if (onboarding.transactions.resumeStream) {
-          await signAndSend(
-            onboarding.transactions.resumeStream.transactionBase64,
-            signTransaction,
-            {
-              sendTo: onboarding.transactions.resumeStream.sendTo,
-              rpcUrl: getTeeRpcUrl(teeAuthToken),
-              signMessage,
-              publicKey,
-              retrySendCount: 3,
-              retryDelayMs: 5_000,
-            },
-          );
-        }
-
-        const finalizeResponse = await walletAuthenticatedFetch({
-          wallet: walletAddress,
-          signMessage,
-          path: "/api/streams/onboard",
+        // Sync with database: onboard with onChainStreamId mapping to employeePda
+        const onboardResponse = await fetch("/api/streams/onboard", {
           method: "PATCH",
-          body: {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
             employerWallet: walletAddress,
             streamId: stream.id,
-            employeePda: onboarding.employeePda,
-            privatePayrollPda: onboarding.privatePayrollPda,
-            permissionPda: onboarding.permissionPda,
-            teeAuthToken,
-          },
+            employeePda: onChainStreamId,
+            privatePayrollPda: "0xMockPrivatePayrollPda",
+            permissionPda: "0xMockPermissionPda",
+          }),
         });
 
-        const finalizeJson = (await finalizeResponse.json()) as {
-          error?: string;
-        };
-
-        if (!finalizeResponse.ok) {
-          throw new Error(
-            finalizeJson.error || "Failed to finalize PER onboarding",
-          );
+        if (!onboardResponse.ok) {
+          const errJson = await onboardResponse.ok ? {} : await onboardResponse.json();
+          throw new Error(errJson.error || "Failed to update stream runtime state in database");
         }
 
-        toast.success(
-          onboarding.alreadyOnboarded
-            ? "Stream is already onboarded to PER"
-            : onboarding.transactions.resumeStream
-              ? "Stream onboarded to MagicBlock PER and restored to active payroll."
-              : "Stream onboarded to MagicBlock PER. Resume when you want live accrual to start.",
-        );
+        // Activate stream in database (set status to active)
+        const controlResponse = await fetch("/api/streams/control", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            employerWallet: walletAddress,
+            streamId: stream.id,
+            action: "resume",
+          }),
+        });
+
+        if (!controlResponse.ok) {
+          const errJson = await controlResponse.ok ? {} : await controlResponse.json();
+          throw new Error(errJson.error || "Failed to activate stream in database");
+        }
+
+        toast.success("Stream activated and synchronized with database!");
         await fetchPayrollConfig();
       } catch (err: unknown) {
         toast.error(
-          `PER onboarding failed: ${err instanceof Error ? err.message : "Unknown"}`,
+          `On-chain stream creation failed: ${err instanceof Error ? err.message : "Unknown"}`,
         );
       } finally {
         setOnboardingStream(null);
@@ -2447,10 +1709,9 @@ function EmployerPageContent() {
     [
       walletAddress,
       publicKey,
-      signTransaction,
-      signMessage,
-      getOrFetchToken,
-      getTeeRpcUrl,
+      managedEmployees,
+      writeContractAsync,
+      publicClient,
       fetchPayrollConfig,
     ],
   );
@@ -3037,22 +2298,22 @@ function EmployerPageContent() {
             <ShieldCheck
               size={12}
               className={
-                magicBlockHealth === "ok"
+                privatePayrollHealth === "ok"
                   ? "text-emerald-500"
-                  : magicBlockHealth === "error"
+                  : privatePayrollHealth === "error"
                     ? "text-amber-500"
                     : "text-[#8f8f95]"
               }
             />
             <span
-              className={`text-[9px] font-bold uppercase tracking-[0.15em] ${magicBlockHealth === "ok"
+              className={`text-[9px] font-bold uppercase tracking-[0.15em] ${privatePayrollHealth === "ok"
                 ? "text-emerald-300"
-                : magicBlockHealth === "error"
+                : privatePayrollHealth === "error"
                   ? "text-amber-300"
                   : "text-[#a8a8aa]"
                 }`}
             >
-              MagicBlock {magicBlockHealth === "ok" ? "Online" : magicBlockHealth === "error" ? "Degraded" : "Checking"}
+              RIAD Payments {privatePayrollHealth === "ok" ? "Online" : privatePayrollHealth === "error" ? "Degraded" : "Checking"}
             </span>
           </div>
         </div>
@@ -3349,7 +2610,7 @@ function EmployerPageContent() {
                     <p className="text-[11px] text-[#8f8f95] mt-0.5">
                       {focusedEmployee
                         ? "Live stream controls and private payroll state for this employee"
-                        : "Employer-signed private payroll on MagicBlock PER"}
+                        : "Employer-signed private payroll streams"}
                     </p>
                   </div>
                 </div>
@@ -3455,14 +2716,7 @@ function EmployerPageContent() {
                       const preview = stream
                         ? (privateStates[stream.id] ?? null)
                         : null;
-                      const observedCheckpointStatus = deriveObservedCheckpointCrankStatus(
-                        {
-                          currentStatus: stream?.checkpointCrankStatus,
-                          lastAccrualTimestamp:
-                            preview?.state.lastAccrualTimestamp,
-                          nowMs,
-                        },
-                      );
+                      const observedCheckpointStatus: string = "idle";
                       const checkpointStateFresh = isCheckpointStateFresh(
                         stream,
                         preview,
@@ -3529,12 +2783,7 @@ function EmployerPageContent() {
                         isRecipientPrivateReady,
                         privateInitStatus,
                       });
-                      const canShowCheckpointControl = !!(
-                        stream &&
-                        (effectiveStatus === "active" ||
-                          observedCheckpointStatus === "stale" ||
-                          stream.checkpointCrankStatus === "active")
-                      );
+                      const canShowCheckpointControl = false;
 
                       return (
                         <div
@@ -4037,19 +3286,7 @@ function EmployerPageContent() {
                                 )}
                                 {onboardingStream === stream.id ? "Onboarding to PER..." : "Onboard PER"}
                               </button>
-                            ) : effectiveStatus === "active" && stream && isOnboarded && stream.checkpointCrankStatus !== "active" ? (
-                              <button
-                                onClick={() => handleCheckpointCrank(stream, "schedule")}
-                                disabled={!walletAddress || checkpointingStream === stream.id}
-                                className={`inline-flex items-center gap-1.5 rounded-2xl border px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-all disabled:opacity-60 relative z-50 bg-blue-500 border-blue-400 text-white hover:bg-blue-400 scale-105 shadow-[0_0_0_9999px_rgba(0,0,0,0.85),0_0_40px_rgba(59,130,246,0.8)] ring-2 ring-blue-400 ring-offset-4 ring-offset-[#0a0a0a] animate-pulse hover:animate-none`}
-                              >
-                                {checkpointingStream === stream.id ? (
-                                  <Loader2 size={13} className="animate-spin" />
-                                ) : (
-                                  <RefreshCw size={13} />
-                                )}
-                                {checkpointingStream === stream.id ? "Starting Sync..." : "Start Sync Engine"}
-                              </button>
+
                             ) : (
                               <span className={`inline-flex items-center gap-1.5 rounded-2xl border px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider shadow-sm ${
                                 isOnboarded 
@@ -4086,37 +3323,7 @@ function EmployerPageContent() {
                                       </button>
                                     ) : null}
 
-                                    {canShowCheckpointControl ? (
-                                      <button
-                                        onClick={() => {
-                                          const observedCheckpointStatus = deriveObservedCheckpointCrankStatus({
-                                            currentStatus: stream!.checkpointCrankStatus,
-                                            lastAccrualTimestamp: privateStates[stream!.id]?.state.lastAccrualTimestamp,
-                                            nowMs,
-                                          });
 
-                                          if (observedCheckpointStatus === "stale") {
-                                            void handleRestartCheckpointCrank(stream!);
-                                            return;
-                                          }
-                                          void handleCheckpointCrank(
-                                            stream!,
-                                            stream!.checkpointCrankStatus === "active" ? "cancel" : "schedule",
-                                          );
-                                        }}
-                                        disabled={!walletAddress || checkpointingStream === stream?.id || !isOnboarded || (effectiveStatus !== "active" && stream?.checkpointCrankStatus !== "active")}
-                                        className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-[#b6b6bc] transition-all hover:bg-white/10 hover:text-white disabled:opacity-60"
-                                      >
-                                        {checkpointingStream === stream?.id ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-                                        {stream && deriveObservedCheckpointCrankStatus({
-                                          currentStatus: stream.checkpointCrankStatus,
-                                          lastAccrualTimestamp: privateStates[stream.id]?.state.lastAccrualTimestamp,
-                                          nowMs,
-                                        }) === "stale"
-                                          ? effectiveStatus === "active" ? "Restart Sync" : "Stop Sync"
-                                          : stream?.checkpointCrankStatus === "active" ? "Stop Sync" : "Start Sync"}
-                                      </button>
-                                    ) : null}
 
                                     {stream && (
                                       <button
@@ -4125,7 +3332,7 @@ function EmployerPageContent() {
                                         className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-[#b6b6bc] transition-all hover:bg-white/10 hover:text-white disabled:opacity-60"
                                       >
                                         {refreshingPreview === stream.id ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-                                        Refresh TEE State
+                                        Refresh State
                                       </button>
                                     )}
 

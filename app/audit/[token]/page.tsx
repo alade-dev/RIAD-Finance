@@ -118,7 +118,7 @@ export default function AuditPage({ params }: { params: Promise<{ token: string 
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", `expaynse_audit_ledger_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `riad_finance_audit_ledger_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
@@ -128,7 +128,7 @@ export default function AuditPage({ params }: { params: Promise<{ token: string 
   if (isValidating) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
-        <ShieldCheck size={48} className="text-[#1eba98] animate-pulse mb-6" />
+        <ShieldCheck size={48} className="text-[#a855f7] animate-pulse mb-6" />
         <h2 className="text-xl font-bold text-white mb-2 tracking-tight">Checking auditor link</h2>
         <p className="text-sm text-[#a8a8aa] max-w-sm text-center">
           Verifying read-only access and loading the shared payroll records...
@@ -152,13 +152,13 @@ export default function AuditPage({ params }: { params: Promise<{ token: string 
   }
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-[#1eba98]/30">
+    <div className="min-h-screen bg-black text-white selection:bg-[#a855f7]/30">
       <header className="h-20 border-b border-white/5 bg-[#0a0a0a] flex items-center justify-between px-6 sm:px-12 sticky top-0 z-30">
         <Logo />
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1eba98]/10 border border-[#1eba98]/20">
-            <CheckCircle2 size={14} className="text-[#1eba98]" />
-            <span className="text-xs font-bold text-[#1eba98] tracking-widest uppercase">Read-only auditor view</span>
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#a855f7]/10 border border-[#a855f7]/20">
+            <CheckCircle2 size={14} className="text-[#a855f7]" />
+            <span className="text-xs font-bold text-[#a855f7] tracking-widest uppercase">Read-only auditor view</span>
           </div>
           <button
             onClick={handleExportCSV}
@@ -248,7 +248,7 @@ export default function AuditPage({ params }: { params: Promise<{ token: string 
                         <div className="flex items-center gap-3">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                             item.type === "Vault Deposit" || item.type === "Private Vault Deposit" 
-                              ? "bg-[#1eba98]/10 text-[#1eba98]" 
+                              ? "bg-[#a855f7]/10 text-[#a855f7]" 
                               : "bg-amber-500/10 text-amber-500"
                           }`}>
                             {item.type === "Vault Deposit" || item.type === "Private Vault Deposit" ? <ArrowDownLeft size={14} /> : <ArrowUpRight size={14} />}
@@ -258,7 +258,7 @@ export default function AuditPage({ params }: { params: Promise<{ token: string 
                       </td>
                       <td className="py-4 px-6">
                         <div className="text-sm font-bold text-white">{item.meta}</div>
-                        <div className="text-[10px] text-[#1eba98] font-bold mt-0.5 flex items-center gap-1">
+                        <div className="text-[10px] text-[#a855f7] font-bold mt-0.5 flex items-center gap-1">
                            <ShieldCheck size={10} /> Shared for auditor review
                         </div>
                       </td>
@@ -273,17 +273,17 @@ export default function AuditPage({ params }: { params: Promise<{ token: string 
                         <span className="text-[10px] text-[#8f8f95] ml-2">{new Date(item.date).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}</span>
                       </td>
                       <td className="py-4 px-6">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-[#1eba98]/10 text-[#1eba98] text-[10px] font-bold uppercase tracking-widest">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-[#a855f7]/10 text-[#a855f7] text-[10px] font-bold uppercase tracking-widest">
                           {item.status || "Completed"}
                         </span>
                       </td>
                       <td className="py-4 px-6 text-right">
                         {item.txSig ? (
                           <a
-                            href={`https://solscan.io/tx/${item.txSig}?cluster=devnet`}
+                            href={`https://sepolia.arbiscan.io/tx/${item.txSig}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[11px] font-semibold text-[#a8a8aa] hover:text-[#1eba98] transition-colors cursor-pointer hover:underline"
+                            className="text-[11px] font-semibold text-[#a8a8aa] hover:text-[#a855f7] transition-colors cursor-pointer hover:underline"
                           >
                             Open tx
                           </a>

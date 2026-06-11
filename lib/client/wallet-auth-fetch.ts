@@ -2,10 +2,10 @@
 
 import {
   createSignedWalletRequestHeaders,
-  EXPAYNSE_SESSION_HEADER,
+  RIAD_SESSION_HEADER,
 } from "@/lib/wallet-request-auth";
 
-const SESSION_STORAGE_PREFIX = "expaynse-wallet-session";
+const SESSION_STORAGE_PREFIX = "riadfinance-wallet-session";
 const SESSION_EXPIRY_LEEWAY_MS = 60 * 1000;
 const walletSessionCache = new Map<
   string,
@@ -88,7 +88,7 @@ function persistWalletSession(
 
 async function createWalletSession(input: {
   wallet: string;
-  signMessage: (message: Uint8Array) => Promise<Uint8Array>;
+  signMessage: (message: any) => Promise<string>;
 }) {
   const bodyText = JSON.stringify({ wallet: input.wallet });
   const authHeaders = await createSignedWalletRequestHeaders({
@@ -133,7 +133,7 @@ async function createWalletSession(input: {
 
 async function createWalletSessionDeduped(input: {
   wallet: string;
-  signMessage: (message: Uint8Array) => Promise<Uint8Array>;
+  signMessage: (message: any) => Promise<string>;
 }) {
   const existing = walletSessionCreationCache.get(input.wallet);
   if (existing) {
@@ -172,7 +172,7 @@ function looksLikeAuthFailure(message: string) {
 
 async function getOrCreateWalletSession(input: {
   wallet: string;
-  signMessage: (message: Uint8Array) => Promise<Uint8Array>;
+  signMessage: (message: any) => Promise<string>;
 }) {
   const cached = loadCachedWalletSession(input.wallet);
   if (cached) {
@@ -184,7 +184,7 @@ async function getOrCreateWalletSession(input: {
 
 export async function walletAuthenticatedFetch(input: {
   wallet: string;
-  signMessage: (message: Uint8Array) => Promise<Uint8Array>;
+  signMessage: (message: any) => Promise<string>;
   path: string;
   method?: string;
   body?: unknown;
@@ -198,7 +198,7 @@ export async function walletAuthenticatedFetch(input: {
     wallet: input.wallet,
     signMessage: input.signMessage,
   });
-  headers.set(EXPAYNSE_SESSION_HEADER, session.sessionToken);
+  headers.set(RIAD_SESSION_HEADER, session.sessionToken);
 
   if (bodyText && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
@@ -220,7 +220,7 @@ export async function walletAuthenticatedFetch(input: {
       wallet: input.wallet,
       signMessage: input.signMessage,
     });
-    headers.set(EXPAYNSE_SESSION_HEADER, renewed.sessionToken);
+    headers.set(RIAD_SESSION_HEADER, renewed.sessionToken);
     response = await fetch(input.path, {
       method,
       headers,

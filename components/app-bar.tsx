@@ -53,7 +53,7 @@ export default function Appbar() {
             <Link href="/" className="flex items-center gap-2.5 no-underline group">
               <Logo className="w-8 h-8" />
               <span className="text-lg font-bold text-white tracking-tight hidden sm:block">
-                expaynse
+                riadfinance
               </span>
             </Link>
 
@@ -64,11 +64,10 @@ export default function Appbar() {
                   <Link
                     key={tab.href}
                     href={tab.href}
-                    className={`text-[13px] font-semibold tracking-wide transition-colors duration-200 ${
-                      isActive
+                    className={`text-[13px] font-semibold tracking-wide transition-colors duration-200 ${isActive
                         ? "text-white font-bold"
                         : "text-[#a8a8aa] hover:text-white"
-                    }`}
+                      }`}
                   >
                     {tab.label}
                   </Link>
@@ -157,7 +156,7 @@ export default function Appbar() {
                         setMenuOpen(false);
                         setWalletModalOpen(true);
                       }}
-                      className="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-[#1eba98] text-black font-bold shadow-lg active:scale-95 transition-all cursor-pointer"
+                      className="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-[#a855f7] text-black font-bold shadow-lg active:scale-95 transition-all cursor-pointer"
                     >
                       <Wallet size={18} />
                       Connect Wallet
@@ -204,9 +203,9 @@ export default function Appbar() {
                     Detected
                   </p>
                   <div className="flex flex-col gap-2">
-                    {installedWallets.map((w) => (
+                    {installedWallets.map((w, index) => (
                       <button
-                        key={w.id}
+                        key={`${w.id}-${index}`}
                         onClick={() => wallet.selectAndConnect(w.id)}
                         disabled={wallet.connecting}
                         className="flex items-center gap-4 w-full px-4 py-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-200 group cursor-pointer disabled:opacity-50"

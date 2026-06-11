@@ -1,19 +1,39 @@
 import { useState, useEffect } from "react";
 import { Loader2, X, Wallet, CheckCircle2, ExternalLink, ShieldCheck } from "lucide-react";
 import { useWallet } from "@/hooks/useWallet";
-import { withdraw, signAndSend, checkHealth } from "@/lib/magicblock-api";
 import { walletAuthenticatedFetch } from "@/lib/client/wallet-auth-fetch";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useWriteContract } from "wagmi";
+import {
+  RIAD_FINANCE_PAYROLL_ABI,
+  PAYROLL_CONTRACT_ADDRESS,
+  USDC_ADDRESS,
+} from "@/lib/client/contract-config";
 
-export function WithdrawModal({ isOpen, onClose, baseBalance = 0, privateBalance = 0, treasuryPubkey, companyId, onWithdrawSuccess }: { isOpen: boolean; onClose: () => void; baseBalance?: number; privateBalance?: number; treasuryPubkey?: string; companyId?: string; onWithdrawSuccess?: () => void; }) {
+export function WithdrawModal({
+  isOpen,
+  onClose,
+  baseBalance = 0,
+  privateBalance = 0,
+  treasuryPubkey,
+  companyId,
+  onWithdrawSuccess,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  baseBalance?: number;
+  privateBalance?: number;
+  treasuryPubkey?: string;
+  companyId?: string;
+  onWithdrawSuccess?: () => void;
+}) {
   const { publicKey, signMessage } = useWallet();
-  const signTransaction = undefined as any;
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [successSig, setSuccessSig] = useState<string | null>(null);
   const [withdrawnAmount, setWithdrawnAmount] = useState<number | null>(null);
-  const [magicBlockHealth, setMagicBlockHealth] = useState<"checking" | "ok" | "error">("checking");
+  const { writeContractAsync } = useWriteContract();
 
   // Reset state when modal opens/closes
   useEffect(() => {
@@ -21,11 +41,6 @@ export function WithdrawModal({ isOpen, onClose, baseBalance = 0, privateBalance
       setSuccessSig(null);
       setWithdrawnAmount(null);
       setAmount("");
-
-      setMagicBlockHealth("checking");
-      checkHealth()
-        .then(res => setMagicBlockHealth(res.status === "ok" ? "ok" : "error"))
-        .catch(() => setMagicBlockHealth("error"));
     }
   }, [isOpen]);
 
@@ -49,60 +64,47 @@ export function WithdrawModal({ isOpen, onClose, baseBalance = 0, privateBalance
       return;
     }
     if (val > privateBalance) {
-      toast.error(`Insufficient ${companyId ? "treasury" : "private vault"} balance`);
+      toast.error(`Insufficient treasury balance`);
       return;
     }
 
     setLoading(true);
     try {
-      let sig: string;
+      const amountMicro = BigInt(Math.round(val * 1_000_000));
 
+      // Execute on-chain withdrawal
+      toast.info("Withdrawing funds from payroll treasury contract...");
+      const txHash = await writeContractAsync({
+        address: PAYROLL_CONTRACT_ADDRESS,
+        abi: RIAD_FINANCE_PAYROLL_ABI,
+        functionName: "withdrawFunds",
+        args: [USDC_ADDRESS, amountMicro],
+      });
+
+      // Optional: sync backend if necessary, but history and balance can be updated on success
       if (companyId) {
-        // Withdraw from Company Treasury (requires backend to sign with treasury key)
-        if (!signMessage) throw new Error("Wallet does not support message signing");
-        const res = await walletAuthenticatedFetch({
-          path: `/api/company/${companyId}/withdraw?wallet=${publicKey}`,
-          method: "POST",
-          signMessage,
-          wallet: publicKey,
-          body: {
-            amount: val,
-            destinationAddress: publicKey
-          }
-        });
-        
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || "Failed to withdraw from treasury");
+        try {
+          await walletAuthenticatedFetch({
+            path: `/api/company/${companyId}/withdraw?wallet=${publicKey}`,
+            method: "POST",
+            signMessage,
+            wallet: publicKey,
+            body: {
+              amount: val,
+              destinationAddress: publicKey,
+              txHash,
+            },
+          });
+        } catch (historyErr) {
+          console.error("Failed to notify backend of withdrawal", historyErr);
         }
-        
-        const data = await res.json();
-        sig = data.signature;
-      } else {
-        // Withdraw from Personal Ephemeral Vault (frontend signs)
-        if (!signTransaction) throw new Error("Wallet does not support transaction signing");
-        const buildRes = await withdraw(
-          publicKey,
-          val,
-        );
-
-        if (!buildRes || !buildRes.transactionBase64) {
-          throw new Error("Failed to build withdraw transaction");
-        }
-
-        sig = await signAndSend(
-          buildRes.transactionBase64,
-          signTransaction
-        );
       }
 
-      if (sig) {
-        setSuccessSig(sig);
-        setWithdrawnAmount(val);
-        toast.success(`Successfully withdrew ${val} USDC`);
-        if (onWithdrawSuccess) {
-          onWithdrawSuccess();
-        }
+      setSuccessSig(txHash);
+      setWithdrawnAmount(val);
+      toast.success(`Successfully withdrew ${val} USDC`);
+      if (onWithdrawSuccess) {
+        onWithdrawSuccess();
       }
     } catch (e: any) {
       console.error("Withdraw error:", e);
@@ -114,14 +116,17 @@ export function WithdrawModal({ isOpen, onClose, baseBalance = 0, privateBalance
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div 
+      <div
         className="bg-[#0b0f14] border border-white/10 rounded-3xl w-full max-w-md shadow-[0_30px_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh]"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center p-6 border-b border-white/5 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-transparent pointer-events-none" />
-          <h2 className="text-xl font-bold text-white relative z-10">Withdraw Funds</h2>
-          <button 
+          <h2 className="text-xl font-bold text-white relative z-10 flex items-center gap-2">
+            <img src="/usdc-logo.png" alt="USDC" className="w-5 h-5 object-contain" />
+            Withdraw Funds
+          </h2>
+          <button
             onClick={handleClose}
             className="p-2 hover:bg-white/10 rounded-full transition-colors relative z-10"
           >
@@ -137,18 +142,18 @@ export function WithdrawModal({ isOpen, onClose, baseBalance = 0, privateBalance
               </div>
               <h3 className="text-2xl font-bold text-white mb-2">Withdrawal Successful!</h3>
               <p className="text-[#8f8f95] mb-6 text-center">
-                {withdrawnAmount} USDC has been moved from your private vault to your base wallet.
+                {withdrawnAmount} USDC has been moved from your payroll treasury to your wallet.
               </p>
-              
-              <Link 
+
+              <Link
                 href={`https://sepolia.arbiscan.io/tx/${successSig}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-xs font-bold text-[#1eba98] hover:text-[#1eba98]/80 transition-colors uppercase tracking-wider bg-[#1eba98]/10 px-4 py-2 rounded-xl"
+                className="flex items-center gap-2 text-xs font-bold text-[#a855f7] hover:text-[#a855f7]/80 transition-colors uppercase tracking-wider bg-[#a855f7]/10 px-4 py-2 rounded-xl"
               >
                 View on Explorer <ExternalLink size={14} />
               </Link>
-              
+
               <button
                 onClick={handleClose}
                 className="mt-8 w-full py-3 bg-white hover:bg-gray-200 text-black font-bold rounded-xl transition-colors uppercase tracking-widest text-xs"
@@ -159,13 +164,30 @@ export function WithdrawModal({ isOpen, onClose, baseBalance = 0, privateBalance
           ) : (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 cursor-pointer hover:bg-white/10 transition-colors" onClick={() => setAmount(privateBalance.toString())}>
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-[#8f8f95] mb-1">{companyId ? "Treasury Vault" : "Private Vault"}</p>
-                  <p className="text-lg font-bold text-white tracking-tight">{privateBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-sm text-[#8f8f95]">USDC</span></p>
+                <div
+                  className="bg-white/5 border border-white/10 rounded-2xl p-4 cursor-pointer hover:bg-white/10 transition-colors"
+                  onClick={() => setAmount(privateBalance.toString())}
+                >
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-[#8f8f95] mb-1">
+                    Treasury Balance
+                  </p>
+                  <p className="text-lg font-bold text-white tracking-tight">
+                    {privateBalance.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{" "}
+                    <span className="text-sm text-[#8f8f95]">USDC</span>
+                  </p>
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
                   <p className="text-[10px] uppercase tracking-wider font-bold text-[#8f8f95] mb-1">Base Wallet</p>
-                  <p className="text-lg font-bold text-white tracking-tight">{baseBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-sm text-[#8f8f95]">USDC</span></p>
+                  <p className="text-lg font-bold text-white tracking-tight">
+                    {baseBalance.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{" "}
+                    <span className="text-sm text-[#8f8f95]">USDC</span>
+                  </p>
                 </div>
               </div>
 
@@ -182,7 +204,7 @@ export function WithdrawModal({ isOpen, onClose, baseBalance = 0, privateBalance
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="0.00"
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-8 pr-20 text-white font-bold text-xl placeholder:text-white/20 focus:outline-none focus:border-[#1eba98] focus:ring-1 focus:ring-[#1eba98] transition-all"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-8 pr-20 text-white font-bold text-xl placeholder:text-white/20 focus:outline-none focus:border-[#a855f7] focus:ring-1 focus:ring-[#a855f7] transition-all"
                   />
                   <div className="absolute inset-y-0 right-2 flex items-center">
                     <button
@@ -194,24 +216,22 @@ export function WithdrawModal({ isOpen, onClose, baseBalance = 0, privateBalance
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
                 <ShieldCheck size={20} className="text-amber-500 shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-500/80 leading-relaxed font-medium">
-                  {companyId 
-                    ? "Withdrawing funds will move them out of your company treasury enclave. They will become visible on the public Arbitrum ledger in your base wallet."
-                    : "Withdrawing funds will move them out of your private enclave. They will become visible on the public Arbitrum ledger in your base wallet."}
+                  Withdrawing funds will move them out of your treasury smart contract and transfer them directly to your base wallet.
                 </p>
               </div>
 
               <div className="flex items-center gap-2 text-xs font-medium text-[#8f8f95] px-1">
-                <div className={`w-2 h-2 rounded-full ${magicBlockHealth === 'ok' ? 'bg-[#1eba98]' : magicBlockHealth === 'error' ? 'bg-red-500' : 'bg-yellow-500 animate-pulse'}`} />
-                {magicBlockHealth === 'ok' ? 'MagicBlock Encrypted RPC Online' : magicBlockHealth === 'error' ? 'MagicBlock RPC Offline' : 'Checking RPC Status...'}
+                <div className="w-2 h-2 rounded-full bg-[#a855f7]" />
+                Arbitrum Sepolia Network Online
               </div>
 
               <button
                 onClick={handleWithdraw}
-                disabled={loading || magicBlockHealth !== 'ok' || !amount}
+                disabled={loading || !amount || parseFloat(amount) <= 0}
                 className="w-full py-4 bg-white hover:bg-gray-200 disabled:bg-white/10 disabled:text-[#8f8f95] text-black font-bold rounded-2xl transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)] hover:shadow-[0_0_60px_rgba(255,255,255,0.2)] disabled:shadow-none uppercase tracking-widest text-xs flex items-center justify-center gap-2 active:scale-[0.98]"
               >
                 {loading ? (
