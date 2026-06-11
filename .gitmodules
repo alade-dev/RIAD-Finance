@@ -7,3 +7,12 @@
 	path = contracts/lib/sablier-v2-core
 	url = https://github.com/sablier-labs/v2-core.git
 	branch = main
+[submodule "contracts/lib/forge-std"]
+	path = contracts/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "contracts/lib/prb-math"]
+	path = contracts/lib/prb-math
+	url = https://github.com/paulrberg/prb-math
+[submodule "contracts/lib/chainlink-brownie-contracts"]
+	path = contracts/lib/chainlink-brownie-contracts
+	url = https://github.com/smartcontractkit/chainlink-brownie-contracts
