@@ -751,8 +751,8 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-bold tracking-tight text-white">{company ? company.name : "Employer Dashboard"}</h1>
             <p className="text-sm text-[#a8a8aa] mt-1">
               {company
-                ? `Treasury: ${company.treasuryPubkey.slice(0, 6)}...${company.treasuryPubkey.slice(-4)} · Base Arbitrum handles funding and exits, while Sablier V2 runs live private payroll.`
-                : "Base Arbitrum handles setup and treasury funding, while Sablier V2 runs live private payroll."}
+                ? `Treasury: ${company.treasuryPubkey.slice(0, 6)}...${company.treasuryPubkey.slice(-4)} · Base Arbitrum handles funding and exits, while Sablier   runs live private payroll.`
+                : "Base Arbitrum handles setup and treasury funding, while Sablier   runs live private payroll."}
             </p>
           </div>
 
@@ -931,16 +931,16 @@ export default function DashboardPage() {
                           <div className="flex items-center gap-2">
                             <span
                               className={`rounded-lg border px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${activity.kind === "stream_run"
-                                  ? "border-blue-500/20 bg-blue-500/10 text-blue-300"
-                                  : "border-violet-500/20 bg-violet-500/10 text-violet-300"
+                                ? "border-blue-500/20 bg-blue-500/10 text-blue-300"
+                                : "border-violet-500/20 bg-violet-500/10 text-violet-300"
                                 }`}
                             >
                               {activity.kind === "stream_run" ? "stream" : "private"}
                             </span>
                             <span
                               className={`rounded-lg border px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${activity.kind === "stream_run"
-                                  ? statusChip(activity.status)
-                                  : historyStatusChip(activity.status)
+                                ? statusChip(activity.status)
+                                : historyStatusChip(activity.status)
                                 }`}
                             >
                               {activity.status.replace("_", " ")}

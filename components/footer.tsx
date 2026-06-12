@@ -207,7 +207,7 @@ export function Footer() {
               </h4>
               <ul className="space-y-3 list-none p-0 m-0">
                 <li className="text-gray-500 text-sm">Arbitrum Sepolia</li>
-                <li className="text-gray-500 text-sm">Sablier V2</li>
+                <li className="text-gray-500 text-sm">Sablier  </li>
                 <li className="text-gray-500 text-sm">Fhenix Encryption</li>
                 <li className="text-gray-500 text-sm">Umbra Protocol</li>
               </ul>

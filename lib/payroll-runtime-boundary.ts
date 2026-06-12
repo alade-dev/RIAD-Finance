@@ -9,7 +9,7 @@ export const PAYROLL_RUNTIME_BOUNDARY = {
     label: "Sablier Streams",
     shortLabel: "Sablier",
     description:
-      "Live salary accrual and streaming withdrawals live in Sablier V2 streams.",
+      "Live salary accrual and streaming withdrawals live in Sablier   streams.",
   },
   server: {
     label: "RIAD Finance Bridge",

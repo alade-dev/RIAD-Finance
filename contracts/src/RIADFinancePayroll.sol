@@ -11,7 +11,7 @@ import { Lockup } from "@sablier/v2-core/lockup/src/types/Lockup.sol";
 /**
  * @title RIADFinancePayroll
  * @author RIAD Finance Team
- * @notice Core contract managing payroll streams using Sablier V2 LockupLinear streams on Arbitrum.
+ * @notice Core contract managing payroll streams using Sablier   LockupLinear streams on Arbitrum.
  */
 contract RIADFinancePayroll is Ownable2Step, ReentrancyGuard {
     ISablierLockup public immutable sablierLockup;
@@ -105,7 +105,7 @@ contract RIADFinancePayroll is Ownable2Step, ReentrancyGuard {
     }
 
     /**
-     * @notice Create a linear stream for an employee using Sablier V2
+     * @notice Create a linear stream for an employee using Sablier  
      */
     function createStream(
         address recipient,

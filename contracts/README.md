@@ -83,7 +83,7 @@ forge script script/Deploy.s.sol:DeployScript \
 
 ### Core Features
 
-1. **Streaming Payroll** - Real-time salary distribution via Sablier V2
+1. **Streaming Payroll** - Real-time salary distribution via Sablier  
 2. **Confidential Metrics** - Fhenix integration for encrypted data processing
 3. **Event-Driven Analytics** - Dune-compatible event emission for indexing
 4. **Access Control** - Ownable2Step for multi-sig safety

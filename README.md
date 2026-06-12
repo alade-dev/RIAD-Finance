@@ -6,7 +6,7 @@
 
 [![Network: Arbitrum Sepolia](https://img.shields.io/badge/Network-Arbitrum_Sepolia-blue?logo=arbitrum&style=flat-square)](https://arbitrum.io/)
 [![Compute: Fhenix FHE](https://img.shields.io/badge/Confidential_Compute-Fhenix_FHE-purple?style=flat-square)](https://www.fhenix.io/)
-[![Streaming: Sablier V2](https://img.shields.io/badge/Streaming-Sablier_V2-orange?style=flat-square)](https://sablier.com/)
+[![Streaming: Sablier  ](https://img.shields.io/badge/Streaming-Sablier-orange?style=flat-square)](https://sablier.com/)
 [![Stealth: Umbra Protocol](https://img.shields.io/badge/Privacy-Umbra_Stealth-green?style=flat-square)](https://umbra.cash/)
 [![Frontend: Next.js 14](https://img.shields.io/badge/Frontend-Next.js_14-black?logo=next.js&style=flat-square)](https://nextjs.org/)
 
@@ -90,7 +90,7 @@ RIAD Finance uses simple pieces to keep things fast, cheap, and private:
                  │                      │                      │
                  │                      ▼                      │
                  │  ┌───────────────────────────────────────┐  │
-                 │  │           Sablier V2 Contract         │  │
+                 │  │           Sablier   Contract         │  │
                  │  │       (Streams money second-by-second)│  │
                  │  └───────────────────┬───────────────────┘  │
                  │                      │                      │
