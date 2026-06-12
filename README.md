@@ -1,184 +1,205 @@
-# RIAD Finance
+# <img src="public/logo.png" width="42" height="42" align="center" style="vertical-align: middle;" /> RIAD Finance
 
-**Confidential Real-Time Payroll on Arbitrum — Privacy-Preserving with Streaming Settlement**
-
-[Problem](#the-problem) • [Market](#market-opportunity) • [Competitors](#competitive-landscape) • [Tech Stack](#tech-stack) • [Architecture](#architecture) • [Features](#features) • [Getting Started](#getting-started)
-
-*RIAD Finance — Confidential, real-time payroll infrastructure on EVM Layer 2 networks (Arbitrum, Robinhood Chain, and more).*
+### **Private Real-Time Payroll on Arbitrum — Stream Money Second-by-Second and Keep Salaries Private**
 
 ---
 
-## Overview
+[![Network: Arbitrum Sepolia](https://img.shields.io/badge/Network-Arbitrum_Sepolia-blue?logo=arbitrum&style=flat-square)](https://arbitrum.io/)
+[![Compute: Fhenix FHE](https://img.shields.io/badge/Confidential_Compute-Fhenix_FHE-purple?style=flat-square)](https://www.fhenix.io/)
+[![Streaming: Sablier V2](https://img.shields.io/badge/Streaming-Sablier_V2-orange?style=flat-square)](https://sablier.com/)
+[![Stealth: Umbra Protocol](https://img.shields.io/badge/Privacy-Umbra_Stealth-green?style=flat-square)](https://umbra.cash/)
+[![Frontend: Next.js 14](https://img.shields.io/badge/Frontend-Next.js_14-black?logo=next.js&style=flat-square)](https://nextjs.org/)
 
-RIAD Finance is a confidential, real-time salary streaming protocol on Arbitrum (EVM). Employers fund a private treasury, add employees with per-second salary rates, and salaries accrue autonomously via Sablier V2 LockupLinear streams. Sensitive employee compensation metrics are processed through Fhenix's confidential co-processor to keep individual salary amounts hidden from public block explorers. Employees can view their live earnings and withdraw — all with cryptographic privacy guarantees.
+[About the Project](#about-the-project) • [The Problem](#the-problem) • [Why Companies Need This](#why-companies-need-this) • [How It Works Under the Hood](#how-it-works-under-the-hood) • [How We Keep It Safe](#how-we-keep-it-safe) • [How We Compare](#how-we-compare-to-others) • [How to Set Up and Run the Code](#how-to-set-up-and-run-the-code)
 
-RIAD Finance leverages a modern EVM stack optimized for privacy and efficiency:
+---
 
-1. The employer deposits funds into a treasury and initiates a Sablier V2 stream for each employee.
-2. Sensitive salary metrics (individual rates, totals) are encrypted and processed through Fhenix for confidential computation.
-3. Events are emitted in Dune-compatible format for analytics indexing and compliance.
-4. Employees claim streams directly, with optional stealth address integration (Umbra Protocol) for payment privacy.
+## About the Project
 
-```mermaid
-flowchart LR
-  Employer --> Deposit["Fund Treasury"]
-  Deposit --> Sablier["Sablier V2"]
-  Sablier --> FhenixCalc["Fhenix Confidential Compute"]
-  FhenixCalc --> Events["Emit Dune Events"]
-  Events --> Employee["Employee Claims"]
-  Employee --> Umbra["Optional: Stealth Address"]
-```
+**RIAD Finance** is a tool that lets companies pay their workers in real-time while keeping everyone's salaries private. 
+
+On normal blockchains (like Ethereum or Arbitrum), every transaction is public. This means anyone can look up how much money your company has, who you are paying, and exactly how much each employee makes. 
+
+RIAD Finance solves this by combining three tools:
+1. **Sablier**: Streams money to workers second-by-second.
+2. **Fhenix**: Uses private smart contracts to hide the exact salary amounts from the public.
+3. **Umbra Protocol**: Lets employees withdraw their earnings to a new, private wallet address so their personal wallet is never linked to the company treasury.
 
 ---
 
 ## The Problem
 
-### Salary Transparency Destroys Companies From the Inside
-On a public blockchain, every salary is visible. When employees discover compensation gaps — even justified ones — it breeds resentment and attrition.
-- Employee A discovers Employee B earns 30% more. Morale collapses.
-- Top performers leave when they learn junior hires negotiated higher.
-- Private bonuses become public knowledge. Everyone expects one.
-- Every raise is visible — compensation becomes office gossip.
+### 1. Public Salaries Hurt Team Morale
+When everyone's pay is completely public on the blockchain:
+* **Jealousy and Resentment**: When workers see that someone else makes more money than them, they get unhappy and might quit.
+* **Losing Key Team Members**: Top workers often leave the company if they find out that a newer or less experienced hire negotiated a higher salary.
+* **Bonus Expectations**: If a company gives a private bonus to one employee, everyone else can see it online and will expect a bonus too.
+* **Office Gossip**: Every pay raise is visible on-chain, which turns team compensation into a topic for office gossip.
 
-### Outsiders Can Read Your Entire Payroll
-- Competitors see your burn rate and poach talent by outbidding exact salaries.
-- Investors reverse-engineer your runway from payment flows.
-- Bad actors identify high earners and target them.
-- Every payout creates a permanent employer-to-employee link on-chain.
+### 2. Competitors and Outsiders Can Spy on You
+When payroll is public, anyone can read your company's data:
+* **Spying on Your Savings**: Competitors and investors can watch your main company wallet to see exactly how much you spend and how much money you have left.
+* **Stealing Your Staff**: Competitors can see who works for you and exactly how much they earn. They can use this info to offer your workers a slightly higher salary and steal them away.
+* **Scams and Hacking**: Hackers can easily identify which employees are paid the most and target them with scams.
+* **Permanent Links**: Every payment leaves a permanent link online between the company's wallet and the worker's wallet.
 
-### Workers Earn Every Second But Get Paid Every 30 Days
-Traditional payroll forces a 30-day liquidity gap. Workers generate value from minute one but only access earnings weeks later. Cross-border teams wait 3–5 days for SWIFT settlements, losing 3–7% to fees and FX spreads.
-
----
-
-## Market Opportunity
-
-The on-chain payroll market is accelerating as crypto compensation goes mainstream.
-
-**Why now:** By 2026, stablecoin payroll has crossed the early-adopter chasm. Regulatory clarity is improving, enterprise blockchain adoption is maturing, and Gen-Z workforce expectations are shifting toward real-time, crypto-native compensation. Yet no major protocol offers true salary privacy — until RIAD Finance.
-
-| Segment | Size | Pain Point |
-|---------|------|------------|
-| **Crypto-native companies** | 50,000+ globally | Every salary is public on-chain, exposing org charts. |
-| **Remote-first teams** | 70M+ workers | 3–7% cross-border fees, 3–5 day settlement waits. |
-| **Freelancer platforms** | $1.5T gig economy | 30-day payment gaps, high platform lock-in. |
-| **DAOs & treasuries** | $25B+ managed | No privacy tooling for contributor payments. |
 
 ---
 
-## Competitive Landscape
+## Why Companies Need This
 
-RIAD Finance is the only protocol that combines stealth address privacy, per-second streaming, and private settlement. Here is how we compare:
+As more remote teams and internet companies start paying their workers with crypto, having a private and easy way to pay people is very important.
 
-| Protocol | Streaming | Privacy | Settlement | Chain |
-|----------|-----------|---------|------------|-------|
-| **Superfluid / Sablier** | Per-second | None — all public | Public transfers | EVM (Arbitrum, Mainnet) |
-| **Zebec / Streamflow** | Per-second | None — all public | Public transfers | Solana |
-| **RIAD Finance** | Per-second | Stealth Address Privacy | Stealth Payments | EVM (Arbitrum) |
-
-- **Superfluid / Sablier:** Great streaming primitives, but all salary data is fully public on-chain. Any explorer can see who pays whom and how much. No privacy at all.
-- **Zebec / Streamflow:** Great Solana streaming, but focus on TradFi compliance. Salaries are still transparent on-chain, relying heavily on centralized infrastructure.
-- **RIAD Finance:** The privacy-first payroll protocol. Stealth addresses mean even the employer-employee link is obscured. Sensitive employee metadata is processed privately.
+| Who is this for? | Market Size | The Problem | Our Solution |
+| :--- | :--- | :--- | :--- |
+| **Crypto Companies** | 50,000+ companies | Everyone's pay and company spend are public. | Keeps pay rates and transaction history private. |
+| **Remote Teams** | 70M+ workers | High bank wire fees and long waits to get paid. | Streams stablecoins instantly with almost zero fees on Arbitrum. |
+| **DAOs & Contributor Hubs** | $25B+ Assets | No way to pay contributors privately. | Lets DAOs stream pay to contributors without revealing addresses. |
 
 ---
 
-## Go-to-Market Strategy
+## How It Works Under the Hood
 
-### Phase 1 — Web3 Startups & DAOs (Now)
-- **Why first:** Treasuries are already on-chain, teams are crypto-native, immediate product-market fit.
-- **Wedge:** "Your contributor salaries are public right now — competitors can see your entire org chart and burn rate."
-- **Distribution:** Arbitrum L2 ecosystem partnerships, hackathon demos, developer content, DAO governance proposals.
-
-### Phase 2 — Remote-First Companies (Next)
-- **Why:** 70M+ global remote workers, cross-border payroll is painful.
-- **Wedge:** "Pay your global team in seconds for <$0.01 per transaction — no SWIFT, no intermediaries."
-- **Distribution:** HR/payroll platform integrations, stablecoin on-ramp partnerships.
-
----
-
-## Architecture
-
-RIAD Finance uses a hybrid state model: On-chain Solidity contracts handle stream creation and treasury deposits, cryptographic stealth addresses shield employee addresses, and a MongoDB backend indexes metadata for rapid UI rendering.
-
-### High-Level System Architecture
+RIAD Finance uses simple pieces to keep things fast, cheap, and private:
 
 ```text
-┌─────────────────────────────────────────────────────────────────┐
-│                        FRONTEND (Next.js 16)                    │
-│                                                                 │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
-│  │   Employer   │  │   Employee   │  │     Treasury         │  │
-│  │  Dashboard   │  │    Portal    │  │   Management         │  │
-│  └──────┬───────┘  └──────┬───────┘  └──────────┬───────────┘  │
-│         │                 │                      │              │
-│  ┌──────┴─────────────────┴──────────────────────┴───────────┐  │
-│  │       Wallet Adapter (RainbowKit / Wagmi / Viem)           │  │
-│  └──────────────────────────┬────────────────────────────────┘  │
-│                             │  Signed Requests / Sessions       │
-│  ┌──────────────────────────┴────────────────────────────────┐  │
-│  │            Next.js API Routes (14 route groups)            │  │
-│  │  /api/payroll · /api/employees · /api/streams · /api/auth  │  │
-│  └──────────────────────────┬────────────────────────────────┘  │
-└──────────────────────────────┼──────────────────────────────────┘
-                               │
-           ┌───────────────────┴───────────────────┐
-           │            ARBITRUM SEPOLIA           │
-           │                                       │
-           │  ┌─────────────────────────────────┐  │
-           │  │    RIADFinancePayroll Contract  │  │
-           │  │    USDC/WETH Streaming Logic    │  │
-           │  └───────────────┬─────────────────┘  │
-           │                  │                    │
-           │                  ▼                    │
-           │  ┌─────────────────────────────────┐  │
-           │  │     Sablier V2 LockupLinear     │  │
-           │  │     Real-Time Stream Engine     │  │
-           │  └─────────────────────────────────┘  │
-           │                                       │
-           └───────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                          Next.js Frontend (The Website)                        │
+│                                                                                │
+│   ┌──────────────────────────┐   ┌──────────────────────────┐   ┌──────────┐   │
+│   │    Employer Dashboard    │   │      Employee Portal     │   │ Treasury │   │
+│   └────────────┬─────────────┘   └────────────┬─────────────┘   └────┬─────┘   │
+│                │                              │                      │         │
+│  ┌─────────────▼──────────────────────────────▼──────────────────────▼──────┐  │
+│  │                     RainbowKit / Wagmi / Viem (Connect Wallet)           │  │
+│  └────────────────────────────────────┬─────────────────────────────────────┘  │
+│                                       │ (Secure Signatures & Wallet Info)
+│  ┌────────────────────────────────────▼─────────────────────────────────────┐  │
+│  │                     Next.js API Layer (Backend Server)                   │  │
+│  │                /api/payroll  ·  /api/employees  ·  /api/treasury         │  │
+│  └────────────────────────────────────┬─────────────────────────────────────┘  │
+└───────────────────────────────────────┼────────────────────────────────────────┘
+                                        │
+                 ┌──────────────────────▼──────────────────────┐
+                 │                   ARBITRUM TESTNET L2       │
+                 │                                             │
+                 │  ┌───────────────────────────────────────┐  │
+                 │  │       RIADFinancePayroll Contract     │  │
+                 │  │       (Handles deposits and setups)   │  │
+                 │  └───────────────────┬───────────────────┘  │
+                 │                      │                      │
+                 │                      ▼                      │
+                 │  ┌───────────────────────────────────────┐  │
+                 │  │           Sablier V2 Contract         │  │
+                 │  │       (Streams money second-by-second)│  │
+                 │  └───────────────────┬───────────────────┘  │
+                 │                      │                      │
+                 │                      ▼                      │
+                 │  ┌───────────────────────────────────────┐  │
+                 │  │         Fhenix Private Compute        │  │
+                 │  │       (Hides salary numbers on-chain) │  │
+                 │  └───────────────────────────────────────┘  │
+                 └─────────────────────────────────────────────┘
 ```
 
+### The Technology Stack:
+1. **Frontend**: Built with **Next.js 16** using Tailwind CSS for a clean, modern design.
+2. **Streaming Engine**: Built on **Sablier** to handle the second-by-second streaming of tokens with low transaction costs (gas).
+3. **Privacy engine**: Uses **Fhenix** smart contracts to keep salary math hidden from the public blockchain.
+4. **Stealth Payouts**: Uses **Umbra Protocol** concepts to let employees claim their money to a new, private address each time.
+5. **Database**: Uses **MongoDB** to store user configurations and load dashboards instantly.
+
 ---
 
-## Security Model
+## How We Keep It Safe
 
-- **Wallet-based Authentication:** Every API request is authenticated via wallet signatures. The client signs a structured message (`wallet`, `method`, `path`, `timestamp`, `bodySha256`). The server verifies against the claimed wallet's public key to issue a session.
-- **Company Key Vault:** Treasury and settlement authority keypairs are encrypted at rest using AES-256-GCM with a server-side encryption secret. Keys never leave the server in plaintext.
-- **Stealth Address Generator (Umbra Protocol)**: Direct private payroll transfers generate a one-time stealth destination address for the employee, breaking the public link between the company treasury and the worker’s main wallet.
+* **Sign-in with Wallet**: Instead of usernames and passwords, users sign in securely using their crypto wallet.
+* **Encrypted Keys**: Sensitive keys are locked up safely using industry-standard encryption (AES-256-GCM) so hackers cannot read them.
+* **Safe Smart Contracts**: We build on top of trusted, audited smart contract libraries from OpenZeppelin to prevent common hacks.
+* **Decimal Helper**: Automatically handles different token formats (like USDC which uses 6 decimals and WETH which uses 18 decimals) so transactions are always correct.
+* **Private Destination Wallet**: When workers withdraw their salary, the protocol sends it to a new private address. This cuts the link between the company's main wallet and the employee's personal wallet.
 
 ---
 
-## Getting Started
+## How We Compare to Others
+
+| Feature | Other Streaming Apps (Sablier/Superfluid) | Traditional Bank Wires | RIAD Finance |
+| :--- | :---: | :---: | :---: |
+| **Stream Money Second-by-Second** |  ✅ Yes | ❌ No | ✅ Yes |
+| **Low Fees & Fast Transfer** | ✅ Yes | ❌ No | ✅ Yes |
+| **Hides Salary Amounts** | ❌ No | ✅ Yes | ✅ Yes |
+| **Hides Employee Wallet Address** | ❌ No | ✅ Yes | ✅ Yes |
+
+---
+
+## How to Set Up and Run the Code
 
 ### Prerequisites
-- Node.js 18+
-- Foundry (Forge)
-- MongoDB (Atlas or local)
 
-### 1. Install Dependencies
+You will need the following tools installed on your computer:
+* **Node.js** (v18 or higher)
+* **Foundry** (to compile and test smart contracts)
+* **MongoDB** (installed locally or using a MongoDB Atlas account)
+
+---
+
+### Installation & Setup
+
+#### 1. Clone the Code and Install Packages
+Run these commands in your terminal:
 ```bash
-git clone https://github.com/shumhn/riad-finance.git
-cd riad-finance
+git clone https://github.com/alade-dev/RIAD-Finance.git
+cd RIAD-Finance
 npm install
 ```
 
-### 2. Configure Environment
+#### 2. Configure Your Environment Variables
+Make a copy of the example environment file:
 ```bash
 cp .env.example .env
 ```
-Fill in the required values (MongoDB URI, RPC endpoints, contract addresses).
+Open the new `.env` file in your text editor and fill in the values:
+* `DATABASE_URL` (Your MongoDB connection string)
+* `NEXT_PUBLIC_RPC_URL` (Your Arbitrum Sepolia node endpoint)
+* `PRIVATE_KEY` (Your private key for testing and deploying contracts)
 
-### 3. Build & Test Contracts
+---
+
+### Smart Contract Development
+
+To compile and test the Solidity smart contracts:
+
 ```bash
-# Build contracts
-npm run contracts:build
+cd contracts
 
-# Run contract tests
-npm run contracts:test
+# Install foundry libraries
+forge install
+
+# Build the contracts
+npm run build
+
+# Run tests
+npm run test
 ```
 
-### 4. Run Frontend
+#### Deploying Contracts to Testnet
+When you are ready to deploy the contracts to the Arbitrum Sepolia testnet, run:
 ```bash
+forge script script/Deploy.s.sol:DeployScript \
+  --rpc-url $ARBITRUM_SEPOLIA_RPC_URL \
+  --private-key $PRIVATE_KEY \
+  --broadcast -vvv
+```
+
+---
+
+### Running the Web Application
+
+Go back to the main folder and start the local website server:
+
+```bash
+cd ..
 npm run dev
 ```
-Open `http://localhost:3000` to access the dashboard.
+
+Open [http://localhost:3000](http://localhost:3000) in your web browser. Connect your MetaMask or any other supported Web3 wallet to start using the app.
