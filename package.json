@@ -17,8 +17,10 @@
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-toast": "^1.2.15",
     "@rainbow-me/rainbowkit": "^2.2.11",
+    "@reown/appkit": "^1.8.20",
     "@tanstack/react-query": "^5.101.0",
     "@types/bn.js": "^5.2.0",
+    "@walletconnect/ethereum-provider": "^2.23.9",
     "bn.js": "^5.2.3",
     "bs58": "^6.0.0",
     "canvas-confetti": "^1.9.4",
@@ -45,6 +47,7 @@
     "tailwindcss-animate": "^1.0.7",
     "viem": "^2.21.1",
     "wagmi": "^3.6.16",
+    "ws": "^8.21.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

@@ -2,6 +2,15 @@
 
 import "@rainbow-me/rainbowkit/styles.css";
 import { getDefaultConfig, RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
+import {
+  rainbowWallet,  
+  metaMaskWallet,
+  coinbaseWallet,
+  trustWallet,
+  ledgerWallet,
+  phantomWallet,
+  walletConnectWallet,
+} from "@rainbow-me/rainbowkit/wallets";
 import { WagmiProvider } from "wagmi";
 import { arbitrum, arbitrumSepolia } from "wagmi/chains";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
@@ -15,6 +24,20 @@ const config = getDefaultConfig({
   appName: "RIAD Finance",
   projectId,
   chains: [arbitrum, arbitrumSepolia],
+  wallets: [
+    {
+      groupName: "Popular",
+      wallets: [
+        metaMaskWallet,
+        rainbowWallet,
+        coinbaseWallet,
+        trustWallet,
+        ledgerWallet,
+        phantomWallet,
+        walletConnectWallet,
+      ],
+    },
+  ],
   ssr: true,
 });
 
