@@ -71,7 +71,7 @@ export function ParticleMesh() {
                 if (!ctx) return;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = "rgba(30, 186, 152, 0.4)"; // Teal dots
+                ctx.fillStyle = "rgba(168, 85, 247, 0.4)"; // Purple dots
                 ctx.fill();
             }
         }
@@ -98,7 +98,7 @@ export function ParticleMesh() {
 
                     if (distance < CONNECTION_DISTANCE) {
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(30, 186, 152, ${0.15 - distance / CONNECTION_DISTANCE * 0.15})`;
+                        ctx.strokeStyle = `rgba(168, 85, 247, ${0.15 - distance / CONNECTION_DISTANCE * 0.15})`;
                         ctx.lineWidth = 1;
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);

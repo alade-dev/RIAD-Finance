@@ -151,7 +151,7 @@ export function Footer() {
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 mb-8">
-                <img src="/logo.png" alt="RIAD Finance" className="h-20 w-auto mix-blend-multiply" />
+                <img src="/logo.png" alt="RIAD Finance" className="h-20 w-auto" />
               </div>
               <p className="text-gray-500 mb-6 max-w-sm">
                 Privacy-first payroll infrastructure on Arbitrum. Real-time

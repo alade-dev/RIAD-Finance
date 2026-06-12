@@ -35,9 +35,9 @@ const slides = [
             </p>
           </div>
           <div
-            className="flex items-center justify-center"
+            className="flex items-center justify-start w-full"
           >
-            <div className="relative w-[320px] h-auto overflow-hidden bg-black z-20 shadow-[0_0_100px_-20px_rgba(30,186,152,0.25)] rounded-[2.5rem]">
+            <div className="relative w-full max-w-[540px] h-auto z-20 shadow-[0_0_100px_-20px_rgba(168,85,247,0.25)]">
               <Image
                 src="/phone-screenshot-v2.png"
                 alt="RIAD Finance App"
@@ -500,7 +500,7 @@ const slides = [
             href="https://www.youtube.com/watch?v=EFAKB6muRYg"
             target="_blank"
             rel="noopener noreferrer"
-            className="group w-full max-w-3xl rounded-[32px] border border-kast-teal/30 bg-gradient-to-br from-kast-teal/10 via-zinc-950 to-zinc-950 px-8 py-12 shadow-[0_0_80px_rgba(30,186,152,0.08)] transition-all hover:border-kast-teal/60 hover:bg-kast-teal/10"
+            className="group w-full max-w-3xl rounded-[32px] border border-kast-teal/30 bg-gradient-to-br from-kast-teal/10 via-zinc-950 to-zinc-950 px-8 py-12 shadow-[0_0_80px_rgba(168,85,247,0.08)] transition-all hover:border-kast-teal/60 hover:bg-kast-teal/10"
           >
             <div className="flex flex-col items-center gap-5">
               <div className="flex h-20 w-20 items-center justify-center rounded-full border border-kast-teal/40 bg-kast-teal/10 text-kast-teal">
@@ -556,7 +556,7 @@ export default function PitchDeck() {
 
       <div className="absolute top-0 left-0 w-full z-50 px-6 lg:px-12 py-5 flex items-center gap-3">
         <div className="relative w-8 h-8">
-          <Image src="/logo.png" alt="RIAD Finance Logo" fill className="object-contain invert mix-blend-screen" />
+          <Image src="/logo.png" alt="RIAD Finance Logo" fill className="object-contain" />
         </div>
         <span className="text-white text-lg font-semibold tracking-tight">RIAD Finance</span>
       </div>

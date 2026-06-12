@@ -28,7 +28,7 @@ export function Hero() {
                 </div>
             </motion.div>
 
-            <div className="max-w-7xl grid lg:grid-cols-2 gap-16 items-center w-full mt-16 md:mt-24">
+            <div className="max-w-8xl grid lg:grid-cols-2 gap-16 items-center w-full mt-16 md:mt-24">
                 <div className="flex flex-col gap-6 z-10 -mt-8 md:-mt-20">
 
                     <motion.h1
@@ -78,9 +78,9 @@ export function Hero() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3, duration: 1, ease: [0.16, 1, 0.3, 1] }}
                     style={{ willChange: "transform, opacity" }}
-                    className="flex items-center justify-center"
+                    className="flex items-center justify-start w-full"
                 >
-                    <div className="relative w-[320px] h-auto overflow-hidden bg-black z-20 shadow-[0_0_100px_-20px_rgba(30,186,152,0.25)] rounded-[2.5rem]">
+                    <div className="relative w-full max-w-[540px] h-auto z-20 ">
                         <Image
                             src="/phone-screenshot-v2.png"
                             alt="RIAD Finance App"

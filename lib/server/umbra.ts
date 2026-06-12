@@ -1,4 +1,4 @@
-import { secp256k1 } from "@noble/curves/secp256k1";
+import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { keccak256, getAddress } from "viem";
 
 /**
@@ -31,8 +31,8 @@ export function generateStealthAddress(recipientAddress: string): {
   const viewingPrivateKey = BigInt(viewingPrivateKeyHex);
 
   // 2. Derive spending/viewing public key points (P = k * G)
-  const P_s = secp256k1.ProjectivePoint.BASE.multiply(spendingPrivateKey);
-  const P_v = secp256k1.ProjectivePoint.BASE.multiply(viewingPrivateKey);
+  const P_s = secp256k1.Point.BASE.multiply(spendingPrivateKey);
+  const P_v = secp256k1.Point.BASE.multiply(viewingPrivateKey);
 
   // 3. Generate a random ephemeral private key
   const randomBytes = new Uint8Array(32);
@@ -47,7 +47,7 @@ export function generateStealthAddress(recipientAddress: string): {
   const r = BigInt(ephemeralPrivateKeyHex);
 
   // 4. Compute ephemeral public key (R = r * G)
-  const R = secp256k1.ProjectivePoint.BASE.multiply(r);
+  const R = secp256k1.Point.BASE.multiply(r);
   const ephemeralPublicKey = "0x" + R.toHex(false); // Uncompressed hex string (starts with 04)
 
   // 5. Compute shared secret (S = r * P_v)
@@ -59,7 +59,7 @@ export function generateStealthAddress(recipientAddress: string): {
   const s = BigInt(sHex);
 
   // 7. Compute stealth public key (P_stealth = P_s + s * G)
-  const sG = secp256k1.ProjectivePoint.BASE.multiply(s);
+  const sG = secp256k1.Point.BASE.multiply(s);
   const P_stealth = P_s.add(sG);
 
   // 8. Convert stealth public key to Ethereum address

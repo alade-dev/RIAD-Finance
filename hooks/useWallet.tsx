@@ -2,12 +2,14 @@
 
 import { useAccount, useConnect, useDisconnect, useSignMessage } from "wagmi";
 import { useMemo } from "react";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 
 export function useWallet() {
   const { address, isConnected, isConnecting } = useAccount();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
   const { signMessageAsync } = useSignMessage();
+  const { openConnectModal } = useConnectModal();
 
   const truncated = useMemo(() => {
     if (!address) return null;
@@ -20,9 +22,13 @@ export function useWallet() {
     publicKey: address || null,
     truncated,
     connect: async () => {
-      const connector = connectors[0];
-      if (connector) {
-        connect({ connector });
+      if (openConnectModal) {
+        openConnectModal();
+      } else {
+        const connector = connectors[0];
+        if (connector) {
+          connect({ connector });
+        }
       }
     },
     disconnect: async () => {

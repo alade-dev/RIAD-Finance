@@ -14,7 +14,7 @@ export function CTA() {
                 style={{ willChange: "transform, opacity" }}
                 className="max-w-7xl mx-auto"
             >
-                <div className="bg-[#08E0A3] rounded-2xl p-12 flex flex-col items-center text-center">
+                <div className="bg-kast-teal rounded-2xl p-12 flex flex-col items-center text-center">
                     <h2 className="text-[28px] md:text-[32px] leading-tight font-bold text-[#000000] tracking-tight font-lexend">
                         Pay. Stream. Stack.
                         <br />
