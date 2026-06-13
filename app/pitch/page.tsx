@@ -25,13 +25,13 @@ const slides = [
             <h1
               className="text-[36px] md:text-[52px] font-medium tracking-tight leading-[1.2] text-white"
             >
-              A Real Time{" "}
-              <span className="text-kast-teal">Private</span> Payroll.
+              Private Real-Time{" "}
+              <span className="text-kast-teal">Payroll</span> on Arbitrum.
             </h1>
             <p
               className="text-2xl md:text-3xl text-gray-400 max-w-2xl leading-relaxed"
             >
-              Instant payment and confidential settlement.
+              Stream money second-by-second and keep salaries private.
             </p>
           </div>
           <div
@@ -65,12 +65,12 @@ const slides = [
         <h1
           className="relative z-10 text-[42px] md:text-[68px] lg:text-[78px] font-medium tracking-tight text-white mb-8 leading-[1.1] max-w-5xl text-balance"
         >
-          Salaries were never meant to be <span className="text-kast-teal">public on chain</span>.
+          Salaries were never meant to be <span className="text-kast-teal">public on-chain</span>.
         </h1>
         <p
           className="relative z-10 text-[18px] md:text-[28px] text-gray-400 leading-[1.4] max-w-3xl text-balance"
         >
-          Payroll should be private — whether paid monthly or streamed every second.
+          Payroll should be private — whether paid all at once or streamed every second.
         </p>
       </div>
     ),
@@ -81,31 +81,26 @@ const slides = [
       <div className="flex flex-col h-full justify-center max-w-6xl mx-auto px-6 w-full">
         <div className="text-center mb-12">
           <p className="text-kast-teal text-sm font-semibold tracking-wide uppercase mb-4">The Challenge</p>
-          <h2 className="text-[40px] md:text-[52px] font-medium text-white tracking-tight">Problems</h2>
+          <h2 className="text-[40px] md:text-[52px] font-medium text-white tracking-tight">The Problems We Solve</h2>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-6">
           {[
-            { tag: "SPEED", stat: "78%", desc: "of U.S. workers would face financial difficulty if a paycheck were delayed by one week.", source: "PayrollOrg" },
-            { tag: "PRIVACY", stat: "80%", desc: "of 755 employees preferred to hide salary information from coworkers.", source: "UCLA / Harvard Business School" },
-            { tag: "ADOPTION", stat: "Adoption blocker", desc: "Companies want faster payroll on-chain, but public balance, salary, and burn-rate visibility makes it nearly impossible to adopt." },
+            { tag: "TEAM MORALE", stat: "Morale Killer", desc: "When workers see what others make, it causes jealousy, unhappiness, and makes good workers want to leave." },
+            { tag: "SPYING", stat: "Easy Target", desc: "Competitors can see exactly who you pay and how much, making it easy for them to steal your best workers." },
+            { tag: "ADOPTION", stat: "Blocked", desc: "Companies want to pay workers with crypto, but having all salaries and company savings public makes it impossible." },
           ].map((c, i) => (
             <div key={i} className="bg-[#0c0c0c] border border-white/10 rounded-2xl p-8 shadow-xl flex flex-col relative">
               <p className="text-[12px] font-bold text-gray-400 uppercase tracking-[0.25em] mb-4">{c.tag}</p>
               <p className="text-[36px] font-bold tracking-tight text-kast-teal mb-4 whitespace-nowrap">{c.stat}</p>
               <p className="text-[18px] font-bold text-white/95 leading-[1.6] flex-grow">{c.desc}</p>
-              {c.source && (
-                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mt-8">
-                  SOURCE: {c.source}
-                </p>
-              )}
             </div>
           ))}
         </div>
 
         <div className="bg-[#0c0c0c] border border-white/10 rounded-2xl p-7 px-8 w-full shadow-xl">
           <p className="text-[22px] font-bold text-white flex justify-between items-center">
-            <span>Solving these problems unlocks a <span className="text-kast-teal">$13 Trillion</span> payroll market.</span>
+            <span>Solving these problems opens up a <span className="text-kast-teal">$13 Trillion</span> payroll market.</span>
             <span className="text-[12px] font-bold text-gray-500 uppercase tracking-widest">SOURCE: FRED / BEA</span>
           </p>
         </div>
@@ -126,17 +121,17 @@ const slides = [
             {
               tag: "MODE 1 · INSTANT",
               title: "Instant private payouts",
-              bullets: ["Private payroll.", "Instant settlement.", "No public salaries."]
+              bullets: ["Pay workers instantly.", "No public salaries.", "Hides transactions from the public."]
             },
             {
               tag: "MODE 2 · REAL-TIME",
               title: "Per-second streaming",
-              bullets: ["Live salary accrual.", "Access pay anytime.", "Private by default."]
+              bullets: ["Stream money second-by-second.", "Workers can access pay anytime.", "Fully private by default."]
             },
             {
-              tag: "COMPLIANCE",
-              title: "Enterprise controls",
-              bullets: ["Hidden compensation.", "Protected team data.", "Clean reporting."]
+              tag: "SECURITY",
+              title: "Security controls",
+              bullets: ["Hides how much people are paid.", "Keeps company savings private.", "Safe and easy reports."]
             }
           ].map((c, i) => (
             <div key={i} className="bg-zinc-900/40 border border-white/20 rounded-2xl p-8 shadow-xl flex flex-col justify-start min-h-[220px]">
@@ -162,7 +157,7 @@ const slides = [
             <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[0.32em] text-kast-teal">Architecture</p>
             <h2 className="text-[30px] font-semibold leading-tight text-white">How RIAD Finance Works</h2>
             <p className="mx-auto mt-3 max-w-[340px] text-[13px] font-semibold leading-relaxed text-gray-400">
-              Arbitrum anchors payroll. Sablier and Fhenix run private payroll streams.
+              Arbitrum handles the network. Sablier and Fhenix run the private streams.
             </p>
           </div>
 
@@ -178,10 +173,10 @@ const slides = [
                 </span>
               </div>
               <p className="mb-4 text-[13px] font-semibold leading-relaxed text-gray-400">
-                One-off or batch payroll without public salary exposure.
+                Pay workers instantly without anyone seeing the amounts.
               </p>
               <div className="grid grid-cols-3 gap-2 text-center">
-                {["Fund private treasury", "Send privately", "Employee private wallet"].map((step, idx) => (
+                {["Deposit money", "Send privately", "Receive in private wallet"].map((step, idx) => (
                   <div key={step} className="rounded-xl border border-white/10 bg-black px-2 py-3">
                     <p className="mb-1 text-[10px] font-extrabold tracking-[0.2em] text-kast-teal">0{idx + 1}</p>
                     <p className="text-[10px] font-extrabold leading-tight text-white">{step}</p>
@@ -201,10 +196,10 @@ const slides = [
                 </span>
               </div>
               <p className="mb-4 text-[13px] font-semibold leading-relaxed text-gray-400">
-                Salary accrues every second inside a selected date range.
+                Money flows second-by-second between chosen dates.
               </p>
               <div className="grid grid-cols-3 gap-2 text-center">
-                {["Set date range", "Accrue per sec", "Claim privately"].map((step, idx) => (
+                {["Choose dates", "Money streams", "Withdraw privately"].map((step, idx) => (
                   <div key={step} className="rounded-xl border border-white/10 bg-black px-2 py-3">
                     <p className="mb-1 text-[10px] font-extrabold tracking-[0.2em] text-kast-teal">0{idx + 1}</p>
                     <p className="text-[10px] font-extrabold leading-tight text-white">{step}</p>
@@ -241,9 +236,9 @@ const slides = [
 
         <div className="grid md:grid-cols-3 gap-6 mb-10">
           {[
-            { tag: "ADOPTION", stat: "25%", desc: "of businesses globally now use crypto payroll." },
-            { tag: "RAIL", stat: "90%+", desc: "of crypto payroll is paid in USDC/USDT." },
-            { tag: "VOLUME", stat: "$226B", desc: "B2B stablecoin payment volume in 2025." },
+            { tag: "ADOPTION", stat: "25%", desc: "of businesses around the world now pay workers using crypto." },
+            { tag: "RAIL", stat: "90%+", desc: "of crypto payroll is paid in digital dollars (USDC/USDT)." },
+            { tag: "VOLUME", stat: "$226B", desc: "of business-to-business crypto payments in 2025." },
           ].map((c, i) => (
             <div key={i} className="bg-[#0c0c0c] border border-white/10 rounded-2xl p-8 shadow-xl flex flex-col relative min-h-[220px]">
               <p className="text-[12px] font-bold text-gray-400 uppercase tracking-[0.3em] mb-5">{c.tag}</p>
@@ -269,10 +264,10 @@ const slides = [
         </div>
         <div className="grid md:grid-cols-2 gap-6">
           {[
-            { icon: DollarSign, text: "Companies paying teams in StableCoins" },
-            { icon: Globe, text: "DAOs paying contributors globally" },
-            { icon: Zap, text: "Crypto-native teams with remote workforces" },
-            { icon: Shield, text: "Companies wanting on-chain payroll with compensation privacy" },
+            { icon: DollarSign, text: "Companies paying their teams with digital dollars" },
+            { icon: Globe, text: "Online groups (DAOs) paying people all over the world" },
+            { icon: Zap, text: "Crypto teams with remote workers" },
+            { icon: Shield, text: "Companies that want to use crypto but keep salaries private" },
           ].map((item, idx) => (
             <div key={idx} className="bg-[#0c0c0c] border border-white/10 rounded-2xl p-10 shadow-xl flex items-center gap-8 min-h-[160px]">
               <div className="p-5 bg-kast-teal/10 rounded-2xl shrink-0">
@@ -291,7 +286,7 @@ const slides = [
       <div className="flex flex-col h-full justify-center max-w-7xl mx-auto px-6 w-full">
         <div className="text-center mb-14">
           <p className="text-[12px] font-bold text-kast-teal tracking-[0.3em] uppercase mb-5">How we compare</p>
-          <h2 className="text-[44px] md:text-[50px] font-medium text-white tracking-tight">Competitive Landscape</h2>
+          <h2 className="text-[44px] md:text-[50px] font-medium text-white tracking-tight">How We Compare to Others</h2>
         </div>
 
         <div className="w-full rounded-2xl bg-[#0c0c0c] border border-white/10 overflow-hidden shadow-2xl">
@@ -299,16 +294,16 @@ const slides = [
             <div className="py-7 px-4 md:px-6 flex items-center">Company</div>
             <div className="py-7 px-4 md:px-6 flex items-center justify-center">Payroll Support</div>
             <div className="py-7 px-4 md:px-6 flex items-center justify-center">Real-Time Pay</div>
-            <div className="py-7 px-4 md:px-6 flex items-center justify-center">On-Chain Native</div>
-            <div className="py-7 px-4 md:px-6 flex items-center justify-center">Salary Privacy</div>
+            <div className="py-7 px-4 md:px-6 flex items-center justify-center">Uses Blockchain</div>
+            <div className="py-7 px-4 md:px-6 flex items-center justify-center">Keeps Pay Private</div>
             <div className="py-7 px-4 md:px-6 flex items-center">Best Fit</div>
           </div>
 
           <div className="divide-y divide-white/10 bg-[#0c0c0c]">
             {[
-              { company: "Zebec", payroll: true, realtime: true, native: true, privacy: false, fit: "Crypto payroll streaming", hl: false },
+              { company: "Zebec", payroll: true, realtime: true, native: true, privacy: false, fit: "Normal crypto streaming", hl: false },
               { company: "Superfluid", payroll: false, realtime: true, native: true, privacy: false, fit: "General token streaming", hl: false },
-              { company: "Gusto", payroll: true, realtime: false, native: false, privacy: false, fit: "Traditional payroll compliance", hl: false },
+              { company: "Gusto", payroll: true, realtime: false, native: false, privacy: false, fit: "Traditional bank payroll", hl: false },
               { company: "RIAD Finance", payroll: true, realtime: true, native: true, privacy: true, fit: "Private real-time payroll", hl: true },
             ].map((row, idx) => (
               <div key={idx} className={`grid grid-cols-6 items-stretch text-[15px] divide-x divide-white/10 transition-colors ${row.hl ? "bg-kast-teal/[0.03]" : ""}`}>
@@ -351,12 +346,12 @@ const slides = [
     content: (
       <div className="flex flex-col h-full justify-center max-w-5xl mx-auto px-6 w-full">
         <div className="text-center mb-14">
-          <p className="text-kast-teal text-sm font-semibold tracking-wide uppercase mb-4">Revenue Streams</p>
+          <p className="text-kast-teal text-sm font-semibold tracking-wide uppercase mb-4">How We Make Money</p>
           <h2 className="text-[40px] md:text-[52px] font-medium text-white tracking-tight">Business Model</h2>
         </div>
         <div className="grid md:grid-cols-2 gap-6">
           <div className={`${card} p-10 flex flex-col items-center text-center`}>
-            <p className="text-base text-kast-teal mb-5 font-bold uppercase tracking-[0.15em]">Recurring Revenue</p>
+            <p className="text-base text-kast-teal mb-5 font-bold uppercase tracking-[0.15em]">Monthly Subscription</p>
             <div className="text-6xl font-bold text-white mb-2 flex items-baseline justify-center">
               $99<span className="text-4xl text-gray-300 ml-3">– $499</span>
             </div>
@@ -364,19 +359,19 @@ const slides = [
             <ul className="space-y-5 text-lg text-white font-semibold text-left w-full max-w-[280px]">
               <li className="flex items-center gap-4"><CheckCircle className="w-6 h-6 text-kast-teal shrink-0" /> Dashboard Access</li>
               <li className="flex items-center gap-4"><CheckCircle className="w-6 h-6 text-kast-teal shrink-0" /> Private Payroll Vaults</li>
-              <li className="flex items-center gap-4"><CheckCircle className="w-6 h-6 text-kast-teal shrink-0" /> Advanced Reporting</li>
+              <li className="flex items-center gap-4"><CheckCircle className="w-6 h-6 text-kast-teal shrink-0" /> Simple Reports</li>
             </ul>
           </div>
           <div className={`${card} p-10 flex flex-col items-center text-center`}>
-            <p className="text-base text-kast-teal mb-5 font-bold uppercase tracking-[0.15em]">Active Worker Fee</p>
+            <p className="text-base text-kast-teal mb-5 font-bold uppercase tracking-[0.15em]">One-Time Worker Fee</p>
             <div className="text-6xl font-bold text-kast-teal mb-2 flex items-baseline justify-center">
               $3<span className="text-4xl text-kast-teal/90 ml-3">– $8</span>
             </div>
             <p className="text-gray-300 font-mono text-base mb-10">one-time / worker</p>
             <ul className="space-y-5 text-lg text-white font-semibold text-left w-full max-w-[280px]">
-              <li className="flex items-center gap-4"><CheckCircle className="w-6 h-6 text-kast-teal shrink-0" /> Private Balance Accounts</li>
-              <li className="flex items-center gap-4"><CheckCircle className="w-6 h-6 text-kast-teal shrink-0" /> Claim Gas Subsidization</li>
-              <li className="flex items-center gap-4"><CheckCircle className="w-6 h-6 text-kast-teal shrink-0" /> Payment History Verification</li>
+              <li className="flex items-center gap-4"><CheckCircle className="w-6 h-6 text-kast-teal shrink-0" /> Private worker accounts</li>
+              <li className="flex items-center gap-4"><CheckCircle className="w-6 h-6 text-kast-teal shrink-0" /> Help with network fees</li>
+              <li className="flex items-center gap-4"><CheckCircle className="w-6 h-6 text-kast-teal shrink-0" /> Verified payment history</li>
             </ul>
           </div>
         </div>
@@ -392,14 +387,14 @@ const slides = [
           <h2 className="text-[44px] md:text-[50px] font-medium text-white tracking-tight">
             Why <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#10a5e9] to-[#2563eb]">Arbitrum</span>
           </h2>
-          <p className="text-[18px] text-gray-300 max-w-2xl mx-auto mt-6 font-semibold">Arbitrum has the stablecoin liquidity and L2 efficiency needed for scalable payroll.</p>
+          <p className="text-[18px] text-gray-300 max-w-2xl mx-auto mt-6 font-semibold">Arbitrum is fast, cheap, and has the stablecoins we need for payroll.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           {[
-            { value: "$150B+", label: "Stablecoin volume" },
-            { value: "Sub-cent", label: "Transaction fees" },
-            { value: "$3B+", label: "Stablecoin market cap" },
+            { value: "$150B+", label: "Stablecoin activity" },
+            { value: "Sub-cent", label: "Tiny network fees" },
+            { value: "$3B+", label: "Stablecoins held on-chain" },
           ].map((stat, idx) => (
             <div key={idx} className="bg-[#0c0c0c] border border-white/10 rounded-2xl flex flex-col items-center justify-center text-center p-12 min-h-[200px] shadow-xl">
               <p className="text-[54px] font-bold text-kast-teal mb-4 leading-none tracking-tight">{stat.value}</p>
@@ -425,7 +420,7 @@ const slides = [
         <div className="text-center mb-20">
           <p className="text-[12px] font-bold text-kast-teal tracking-[0.3em] uppercase mb-6">The team behind RIAD Finance</p>
           <h2 className="text-[44px] md:text-[50px] font-medium text-white tracking-tight">Team</h2>
-          <p className="text-[18px] text-gray-300 mt-6 max-w-2xl mx-auto font-semibold leading-relaxed">Founder-led execution with the right mix: payments, product, operations, and marketing.</p>
+          <p className="text-[18px] text-gray-300 mt-6 max-w-2xl mx-auto font-semibold leading-relaxed">Founder-led team with the right skills to build and market the product.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -433,7 +428,7 @@ const slides = [
             {
               name: "Teslim",
               role: "Founder & CEO",
-              desc: "Web3 Builder and Crypto Native with full-stack experience in finance.",
+              desc: "Web3 builder with full-stack experience in finance.",
               image: "/teslim.jpg",
               imgClass: "object-[50%_62%] scale-[1.15]",
             }
@@ -468,7 +463,7 @@ const slides = [
         <div className="-mt-12">
           <p className="text-[12px] font-bold text-kast-teal tracking-[0.3em] uppercase mb-16">Find us on</p>
           <h2 className="text-[54px] md:text-[68px] font-bold text-white tracking-tight mb-8">riadfinance.xyz</h2>
-          <p className="text-[18px] md:text-[22px] text-gray-400 font-medium">Follow our journey and stay close to the build.</p>
+          <p className="text-[18px] md:text-[22px] text-gray-400 font-medium">Follow our journey and watch us build.</p>
         </div>
 
         <div className="flex flex-wrap justify-center items-center gap-6 text-[15px] md:text-[17px] font-medium tracking-wide">
@@ -492,7 +487,7 @@ const slides = [
             <p className="text-[12px] font-bold uppercase tracking-[0.3em] text-kast-teal">Last Step</p>
             <h2 className="text-[50px] md:text-[72px] font-bold tracking-tight text-white">Watch the Demo</h2>
             <p className="mx-auto max-w-3xl text-[18px] md:text-[24px] font-medium leading-relaxed text-gray-400">
-              See how RIAD Finance handles private transfers and real-time private payroll end to end.
+              See how RIAD Finance runs private payments and real-time streaming.
             </p>
           </div>
 

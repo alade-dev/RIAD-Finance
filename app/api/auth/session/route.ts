@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       headers: request.headers,
       expectedWallet: wallet,
       method: request.method,
-      path: request.nextUrl.pathname,
+      path: "/api/auth/session",
       body: rawBody,
     });
 

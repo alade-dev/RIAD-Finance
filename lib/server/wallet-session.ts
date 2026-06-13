@@ -76,7 +76,7 @@ export function verifyWalletSessionToken(
     base64UrlDecode(encodedPayload),
   ) as WalletSessionPayload;
 
-  if (payload.wallet !== expectedWallet) {
+  if (payload.wallet.toLowerCase() !== expectedWallet.toLowerCase()) {
     throw new Error("Wallet session does not match the requested wallet");
   }
 

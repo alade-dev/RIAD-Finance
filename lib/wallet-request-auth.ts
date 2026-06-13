@@ -21,9 +21,17 @@ function getSubtleCrypto() {
 function normalizePath(path: string) {
   try {
     const url = new URL(path, "http://localhost");
-    return `${url.pathname}${url.search}`;
+    let pathname = url.pathname;
+    if (pathname.length > 1 && pathname.endsWith("/")) {
+      pathname = pathname.slice(0, -1);
+    }
+    return `${pathname}${url.search}`;
   } catch {
-    return path;
+    let normalized = path;
+    if (normalized.length > 1 && normalized.endsWith("/")) {
+      normalized = normalized.slice(0, -1);
+    }
+    return normalized;
   }
 }
 
