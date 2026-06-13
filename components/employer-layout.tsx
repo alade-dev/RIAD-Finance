@@ -5,6 +5,7 @@ import { Wallet, ChevronLeft } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { AppSidebar } from "./app-sidebar";
 import { ConnectWalletBtn } from "./connect-wallet-btn";
+import { WalletAuthWrapper } from "./wallet-auth-wrapper";
 
 export function EmployerLayout({ children }: { children: ReactNode }) {
   const { connected } = useWallet();
@@ -46,7 +47,7 @@ export function EmployerLayout({ children }: { children: ReactNode }) {
               </p>
             </div>
           ) : (
-            children
+            <WalletAuthWrapper>{children}</WalletAuthWrapper>
           )}
         </main>
       </div>

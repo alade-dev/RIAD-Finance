@@ -20,7 +20,7 @@ function getSessionStorageKey(wallet: string) {
   return `${SESSION_STORAGE_PREFIX}:${wallet}`;
 }
 
-function loadCachedWalletSession(wallet: string) {
+export function loadCachedWalletSession(wallet: string) {
   const inMemory = walletSessionCache.get(wallet);
   if (inMemory && inMemory.expiresAt > Date.now() + SESSION_EXPIRY_LEEWAY_MS) {
     return inMemory;
@@ -170,7 +170,7 @@ function looksLikeAuthFailure(message: string) {
   );
 }
 
-async function getOrCreateWalletSession(input: {
+export async function getOrCreateWalletSession(input: {
   wallet: string;
   signMessage: (message: any) => Promise<string>;
 }) {
