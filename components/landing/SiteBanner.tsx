@@ -34,7 +34,7 @@ export function SiteBanner() {
           href="/pitch"
           className="text-[#faf8f5] text-[18px] font-[500] tracking-[0.01em] !underline !decoration-transparent underline-offset-4 transition-[text-decoration-color] duration-200 hover:!decoration-current"
         >
-          Introducing RIAD: The verifiable payroll and compliance layer
+          Introducing RIAD: The private payroll and compliance protocol
         </Link>
         <button
           onClick={handleDismiss}
@@ -57,7 +57,7 @@ export function SiteBanner() {
           href="/pitch"
           className="text-[#faf8f5] flex-1 text-center text-[0.9375rem] leading-[1.2] font-[500] tracking-[0.01em] !underline !decoration-transparent underline-offset-8 transition-[text-decoration-color] duration-200 hover:!decoration-current"
         >
-          Introducing RIAD: The verifiable payroll and compliance layer
+          Introducing RIAD: The private payroll and compliance protocol
         </Link>
       </div>
     </div>
