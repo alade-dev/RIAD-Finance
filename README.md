@@ -14,13 +14,22 @@
 
 ---
 
+## 🎥 Pitch Deck & Demo Video
+
+**[👉 Click here to view the Interactive Pitch Deck](https://riadfinance.vercel.app/pitch)** (Or navigate to `/pitch` on the live deployment).
+
+**[👉 Click here to watch the YouTube Demo Video](https://www.youtube.com/watch?v=PbRDaEBsGc4)**
+
+---
+
 ## About the Project
 
-**RIAD Finance** is a tool that lets companies pay their workers in real-time while keeping everyone's salaries private. 
+**RIAD Finance** is a tool that lets companies pay their workers in real-time while keeping everyone's salaries private.
 
-On normal blockchains (like Ethereum or Arbitrum), every transaction is public. This means anyone can look up how much money your company has, who you are paying, and exactly how much each employee makes. 
+On normal blockchains (like Ethereum or Arbitrum), every transaction is public. This means anyone can look up how much money your company has, who you are paying, and exactly how much each employee makes.
 
 RIAD Finance solves this by combining three tools:
+
 1. **Sablier**: Streams money to workers second-by-second.
 2. **Fhenix**: Uses private smart contracts to hide the exact salary amounts from the public.
 3. **Umbra Protocol**: Lets employees withdraw their earnings to a new, private wallet address so their personal wallet is never linked to the company treasury.
@@ -30,19 +39,22 @@ RIAD Finance solves this by combining three tools:
 ## The Problem
 
 ### 1. Public Salaries Hurt Team Morale
+
 When everyone's pay is completely public on the blockchain:
-* **Jealousy and Resentment**: When workers see that someone else makes more money than them, they get unhappy and might quit.
-* **Losing Key Team Members**: Top workers often leave the company if they find out that a newer or less experienced hire negotiated a higher salary.
-* **Bonus Expectations**: If a company gives a private bonus to one employee, everyone else can see it online and will expect a bonus too.
-* **Office Gossip**: Every pay raise is visible on-chain, which turns team compensation into a topic for office gossip.
+
+- **Jealousy and Resentment**: When workers see that someone else makes more money than them, they get unhappy and might quit.
+- **Losing Key Team Members**: Top workers often leave the company if they find out that a newer or less experienced hire negotiated a higher salary.
+- **Bonus Expectations**: If a company gives a private bonus to one employee, everyone else can see it online and will expect a bonus too.
+- **Office Gossip**: Every pay raise is visible on-chain, which turns team compensation into a topic for office gossip.
 
 ### 2. Competitors and Outsiders Can Spy on You
-When payroll is public, anyone can read your company's data:
-* **Spying on Your Savings**: Competitors and investors can watch your main company wallet to see exactly how much you spend and how much money you have left.
-* **Stealing Your Staff**: Competitors can see who works for you and exactly how much they earn. They can use this info to offer your workers a slightly higher salary and steal them away.
-* **Scams and Hacking**: Hackers can easily identify which employees are paid the most and target them with scams.
-* **Permanent Links**: Every payment leaves a permanent link online between the company's wallet and the worker's wallet.
 
+When payroll is public, anyone can read your company's data:
+
+- **Spying on Your Savings**: Competitors and investors can watch your main company wallet to see exactly how much you spend and how much money you have left.
+- **Stealing Your Staff**: Competitors can see who works for you and exactly how much they earn. They can use this info to offer your workers a slightly higher salary and steal them away.
+- **Scams and Hacking**: Hackers can easily identify which employees are paid the most and target them with scams.
+- **Permanent Links**: Every payment leaves a permanent link online between the company's wallet and the worker's wallet.
 
 ---
 
@@ -50,11 +62,11 @@ When payroll is public, anyone can read your company's data:
 
 As more remote teams and internet companies start paying their workers with crypto, having a private and easy way to pay people is very important.
 
-| Who is this for? | Market Size | The Problem | Our Solution |
-| :--- | :--- | :--- | :--- |
-| **Crypto Companies** | 50,000+ companies | Everyone's pay and company spend are public. | Keeps pay rates and transaction history private. |
-| **Remote Teams** | 70M+ workers | High bank wire fees and long waits to get paid. | Streams stablecoins instantly with almost zero fees on Arbitrum. |
-| **DAOs & Contributor Hubs** | $25B+ Assets | No way to pay contributors privately. | Lets DAOs stream pay to contributors without revealing addresses. |
+| Who is this for?            | Market Size       | The Problem                                     | Our Solution                                                      |
+| :-------------------------- | :---------------- | :---------------------------------------------- | :---------------------------------------------------------------- |
+| **Crypto Companies**        | 50,000+ companies | Everyone's pay and company spend are public.    | Keeps pay rates and transaction history private.                  |
+| **Remote Teams**            | 70M+ workers      | High bank wire fees and long waits to get paid. | Streams stablecoins instantly with almost zero fees on Arbitrum.  |
+| **DAOs & Contributor Hubs** | $25B+ Assets      | No way to pay contributors privately.           | Lets DAOs stream pay to contributors without revealing addresses. |
 
 ---
 
@@ -103,6 +115,7 @@ RIAD Finance uses simple pieces to keep things fast, cheap, and private:
 ```
 
 ### The Technology Stack:
+
 1. **Frontend**: Built with **Next.js 16** using Tailwind CSS for a clean, modern design.
 2. **Streaming Engine**: Built on **Sablier** to handle the second-by-second streaming of tokens with low transaction costs (gas).
 3. **Privacy engine**: Uses **Fhenix** smart contracts to keep salary math hidden from the public blockchain.
@@ -113,22 +126,22 @@ RIAD Finance uses simple pieces to keep things fast, cheap, and private:
 
 ## How We Keep It Safe
 
-* **Sign-in with Wallet**: Instead of usernames and passwords, users sign in securely using their crypto wallet.
-* **Encrypted Keys**: Sensitive keys are locked up safely using industry-standard encryption (AES-256-GCM) so hackers cannot read them.
-* **Safe Smart Contracts**: We build on top of trusted, audited smart contract libraries from OpenZeppelin to prevent common hacks.
-* **Decimal Helper**: Automatically handles different token formats (like USDC which uses 6 decimals and WETH which uses 18 decimals) so transactions are always correct.
-* **Private Destination Wallet**: When workers withdraw their salary, the protocol sends it to a new private address. This cuts the link between the company's main wallet and the employee's personal wallet.
+- **Sign-in with Wallet**: Instead of usernames and passwords, users sign in securely using their crypto wallet.
+- **Encrypted Keys**: Sensitive keys are locked up safely using industry-standard encryption (AES-256-GCM) so hackers cannot read them.
+- **Safe Smart Contracts**: We build on top of trusted, audited smart contract libraries from OpenZeppelin to prevent common hacks.
+- **Decimal Helper**: Automatically handles different token formats (like USDC which uses 6 decimals and WETH which uses 18 decimals) so transactions are always correct.
+- **Private Destination Wallet**: When workers withdraw their salary, the protocol sends it to a new private address. This cuts the link between the company's main wallet and the employee's personal wallet.
 
 ---
 
 ## How We Compare to Others
 
-| Feature | Other Streaming Apps (Sablier/Superfluid) | Traditional Bank Wires | RIAD Finance |
-| :--- | :---: | :---: | :---: |
-| **Stream Money Second-by-Second** |  ✅ Yes | ❌ No | ✅ Yes |
-| **Low Fees & Fast Transfer** | ✅ Yes | ❌ No | ✅ Yes |
-| **Hides Salary Amounts** | ❌ No | ✅ Yes | ✅ Yes |
-| **Hides Employee Wallet Address** | ❌ No | ✅ Yes | ✅ Yes |
+| Feature                           | Other Streaming Apps (Sablier/Superfluid) | Traditional Bank Wires | RIAD Finance |
+| :-------------------------------- | :---------------------------------------: | :--------------------: | :----------: |
+| **Stream Money Second-by-Second** |                  ✅ Yes                   |         ❌ No          |    ✅ Yes    |
+| **Low Fees & Fast Transfer**      |                  ✅ Yes                   |         ❌ No          |    ✅ Yes    |
+| **Hides Salary Amounts**          |                   ❌ No                   |         ✅ Yes         |    ✅ Yes    |
+| **Hides Employee Wallet Address** |                   ❌ No                   |         ✅ Yes         |    ✅ Yes    |
 
 ---
 
@@ -137,16 +150,19 @@ RIAD Finance uses simple pieces to keep things fast, cheap, and private:
 ### Prerequisites
 
 You will need the following tools installed on your computer:
-* **Node.js** (v18 or higher)
-* **Foundry** (to compile and test smart contracts)
-* **MongoDB** (installed locally or using a MongoDB Atlas account)
+
+- **Node.js** (v18 or higher)
+- **Foundry** (to compile and test smart contracts)
+- **MongoDB** (installed locally or using a MongoDB Atlas account)
 
 ---
 
 ### Installation & Setup
 
 #### 1. Clone the Code and Install Packages
+
 Run these commands in your terminal:
+
 ```bash
 git clone https://github.com/alade-dev/RIAD-Finance.git
 cd RIAD-Finance
@@ -154,14 +170,18 @@ npm install
 ```
 
 #### 2. Configure Your Environment Variables
+
 Make a copy of the example environment file:
+
 ```bash
 cp .env.example .env
 ```
+
 Open the new `.env` file in your text editor and fill in the values:
-* `DATABASE_URL` (Your MongoDB connection string)
-* `NEXT_PUBLIC_RPC_URL` (Your Arbitrum Sepolia node endpoint)
-* `PRIVATE_KEY` (Your private key for testing and deploying contracts)
+
+- `DATABASE_URL` (Your MongoDB connection string)
+- `NEXT_PUBLIC_RPC_URL` (Your Arbitrum Sepolia node endpoint)
+- `PRIVATE_KEY` (Your private key for testing and deploying contracts)
 
 ---
 
@@ -183,7 +203,9 @@ npm run test
 ```
 
 #### Deploying Contracts to Testnet
+
 When you are ready to deploy the contracts to the Arbitrum Sepolia testnet, run:
+
 ```bash
 forge script script/Deploy.s.sol:DeployScript \
   --rpc-url $ARBITRUM_SEPOLIA_RPC_URL \
