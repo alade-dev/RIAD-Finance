@@ -30,7 +30,12 @@ export async function GET(request: NextRequest) {
       path: `${request.nextUrl.pathname}${request.nextUrl.search}`,
     });
     
-    const streams = await listStreams(employerWallet);
+    const dbStreams = await listStreams(employerWallet);
+    const streams = dbStreams.map(stream => ({
+      ...stream,
+      checkpointCrankStatus: "active",
+      checkpointCrankUpdatedAt: new Date().toISOString()
+    }));
 
     await saveComplianceEvent({
       actorWallet: employerWallet,

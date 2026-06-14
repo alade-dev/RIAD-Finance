@@ -282,3 +282,21 @@
 *::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.25);
 }
+
+@keyframes border-glow-spin {
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.border-glow {
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    transparent 0deg,
+    var(--glow-color) calc((180 - var(--glow-half-spread)) * 1deg),
+    var(--light-color) 180deg,
+    var(--glow-color) calc((180 + var(--glow-half-spread)) * 1deg),
+    transparent 360deg
+  );
+  animation: border-glow-spin 4s linear infinite;
+}

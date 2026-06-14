@@ -430,7 +430,16 @@ function EmployerPageContent() {
   }, []);
 
   useEffect(() => {
-    tokenCache.current = null;
+    if (publicKey) {
+      const persisted = loadCachedTeeToken(publicKey.toBase58());
+      if (persisted && !isJwtExpired(persisted)) {
+        tokenCache.current = persisted;
+      } else {
+        tokenCache.current = null;
+      }
+    } else {
+      tokenCache.current = null;
+    }
   }, [publicKey]);
 
   useEffect(() => {
@@ -2785,6 +2794,21 @@ function EmployerPageContent() {
                       });
                       const canShowCheckpointControl = false;
 
+                      const lastMs = preview ? Number(preview.state.lastAccrualTimestamp) * 1000 : 0;
+                      const ratePerSecondMicro = stream ? stream.ratePerSecond * 1_000_000 : 0;
+                      
+                      let liveAccruedUnpaidMicro = preview ? Number(preview.state.accruedUnpaidMicro) || 0 : 0;
+                      let liveTotalPaidPrivateMicro = preview ? Number(preview.state.totalPaidPrivateMicro) || 0 : 0;
+                      let liveEffectiveClaimableAmountMicro = preview ? Number(preview.state.effectiveClaimableAmountMicro) || 0 : 0;
+                      
+                      if (preview && effectiveStatus === "active" && lastMs > 0 && nowMs > lastMs) {
+                        const diffSeconds = (nowMs - lastMs) / 1000;
+                        const accruedSinceLast = diffSeconds * ratePerSecondMicro;
+                        
+                        liveAccruedUnpaidMicro += accruedSinceLast;
+                        liveEffectiveClaimableAmountMicro += accruedSinceLast;
+                      }
+
                       return (
                         <div
                           key={employee.id}
@@ -2917,7 +2941,7 @@ function EmployerPageContent() {
                                 )}
                               </div>
                               <h2 className="text-6xl font-black text-white tracking-tighter leading-none mb-2 font-mono">
-                                {preview ? formatMicroUsdc(preview.state.accruedUnpaidMicro) : "0.000000"}
+                                {preview ? formatMicroUsdc(Math.floor(liveAccruedUnpaidMicro).toString()) : "0.000000"}
                               </h2>
                               <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8f8f95]">
                                 Accrued USDC
@@ -2998,11 +3022,11 @@ function EmployerPageContent() {
                               </div>
                               <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3 text-center hover:bg-white/[0.04] transition-colors">
                                 <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#8f8f95] mb-0.5">Total Paid</p>
-                                <p className="text-xs font-mono font-bold text-white">{preview ? formatMicroUsdc(preview.state.totalPaidPrivateMicro) : "0.000000"} USDC</p>
+                                <p className="text-xs font-mono font-bold text-white">{preview ? formatMicroUsdc(Math.floor(liveTotalPaidPrivateMicro).toString()) : "0.000000"} USDC</p>
                               </div>
                               <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3 text-center hover:bg-white/[0.04] transition-colors">
                                 <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#8f8f95] mb-0.5">Claimable Now</p>
-                                <p className="text-xs font-mono font-bold text-white">{preview ? formatMicroUsdc(preview.state.effectiveClaimableAmountMicro) : "0.000000"} USDC</p>
+                                <p className="text-xs font-mono font-bold text-white">{preview ? formatMicroUsdc(Math.floor(liveEffectiveClaimableAmountMicro).toString()) : "0.000000"} USDC</p>
                               </div>
                             </div>
                           </div>
@@ -3222,7 +3246,7 @@ function EmployerPageContent() {
                                       settlementAmountMicro:
                                         parsedAmount !== undefined
                                           ? Math.round(parsedAmount * 1_000_000)
-                                          : undefined,
+                                          : Math.floor(liveAccruedUnpaidMicro),
                                     });
                                   }}
                                   disabled={

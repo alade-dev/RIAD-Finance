@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireEmployerCompanyRequest } from "@/lib/server/company-route-auth";
 import { loadCompanyPrivateKey } from "@/lib/server/company-key-vault";
 import { savePayrollRun } from "@/lib/server/history-store";
-import { createPublicClient, http } from "viem";
+import { createPublicClient, http, createWalletClient } from "viem";
 import { arbitrumSepolia } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { generateStealthAddress } from "@/lib/server/umbra";
@@ -95,15 +95,15 @@ export async function POST(request: NextRequest) {
   const account = privateKeyToAccount(privateKey as `0x${string}`);
 
   // Fetch the company's treasury balance from the smart contract
-  let onChainBalanceMicro = BigInt("1000000000"); // Default fallback to 1000 USDC
+  let onChainBalanceMicro = BigInt("0"); // Default fallback to 0
   try {
     const balance = await publicClient.readContract({
       address: PAYROLL_CONTRACT_ADDRESS,
       abi: RIAD_FINANCE_PAYROLL_ABI,
       functionName: "treasuryBalances",
-      args: [account.address, USDC_ADDRESS],
+      args: [employerWallet as `0x${string}`, USDC_ADDRESS],
     });
-    onChainBalanceMicro = BigInt(balance);
+    onChainBalanceMicro = BigInt(balance as string | number | bigint);
   } catch (error) {
     console.error("Failed to fetch on-chain treasury balance:", error);
   }
@@ -123,10 +123,43 @@ export async function POST(request: NextRequest) {
       ephemeralPublicKey,      // Ephemeral public key needed by recipient to claim funds
       originalAddress: recipient.address,
       amount: recipient.amount,
-      signature: "0xmocktransfertxsignature",
+      amountMicro: Math.round(recipient.amount * 1_000_000), // Store as number to avoid JSON BigInt serialization error
+      signature: "",
       sendTo: "ephemeral",
     };
   });
+
+  if (onChainBalanceMicro < BigInt(totalAmountMicro)) {
+    return badRequest("Insufficient treasury balance");
+  }
+
+  // Execute on-chain TEE transfer via smart contract
+  const walletClient = createWalletClient({
+    account,
+    chain: arbitrumSepolia,
+    transport: http(rpcUrl),
+  });
+
+  try {
+    const recipientAddresses = transferResults.map(r => r.address as `0x${string}`);
+    const amountsMicro = transferResults.map(r => BigInt(r.amountMicro));
+
+    const { request: txRequest } = await publicClient.simulateContract({
+      address: PAYROLL_CONTRACT_ADDRESS,
+      abi: RIAD_FINANCE_PAYROLL_ABI,
+      functionName: "teeTransfer",
+      args: [employerWallet as `0x${string}`, USDC_ADDRESS, recipientAddresses, amountsMicro],
+      account,
+    });
+    
+    const globalTxHash = await walletClient.writeContract(txRequest);
+    
+    // Assign the global tx hash to all results
+    transferResults.forEach(r => r.signature = globalTxHash);
+  } catch (error: any) {
+    console.error("Failed to execute TEE transfer:", error);
+    return badRequest(`Smart contract transfer failed: ${error.message}`);
+  }
 
   const payrollRun = await savePayrollRun({
     wallet: employerWallet,
@@ -156,6 +189,7 @@ export async function POST(request: NextRequest) {
       sendTo: transferResults[0]?.sendTo,
       transferProofs: transferResults.map((transfer) => ({
         address: transfer.address,
+        originalAddress: transfer.originalAddress,
         ephemeralPublicKey: transfer.ephemeralPublicKey,
         amount: transfer.amount,
         signature: transfer.signature ?? "",

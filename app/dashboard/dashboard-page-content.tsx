@@ -279,6 +279,7 @@ export default function DashboardPage() {
   const [streams, setStreams] = useState<Array<{
     id: string; employeeId: string; status: "active" | "paused" | "stopped";
     ratePerSecond: number; totalPaid: number;
+    startsAt?: string | null; lastPaidAt?: string | null;
   }>>([]);
   const [loading, setLoading] = useState(false);
   const [vaultBalance, setVaultBalance] = useState<number>(
@@ -368,6 +369,11 @@ export default function DashboardPage() {
     }
   }, [walletAddr]);
 
+  const signMessageRef = useRef(signMessage);
+  useEffect(() => {
+    signMessageRef.current = signMessage;
+  }, [signMessage]);
+
   const refreshVaultBalance = useCallback(async () => {
     if (!walletAddr) return;
     try {
@@ -381,10 +387,11 @@ export default function DashboardPage() {
       // private balance, otherwise the dashboard shows misleading funds.
       const currentCompany = companyRef.current;
       if (currentCompany?.id) {
-        if (!signMessage) return;
+        const currentSignMessage = signMessageRef.current;
+        if (!currentSignMessage) return;
         const treasuryRes = await walletAuthenticatedFetch({
           wallet: walletAddr,
-          signMessage,
+          signMessage: currentSignMessage,
           path: `/api/company/${currentCompany.id}/balance?wallet=${walletAddr}`,
         }).catch(() => null);
         if (treasuryRes && treasuryRes.ok) {
@@ -397,10 +404,11 @@ export default function DashboardPage() {
     } catch {
       // Keep stale values instead of crashing dashboard render.
     }
-  }, [walletAddr, signMessage]);
+  }, [walletAddr]);
 
   const loadDashboard = useCallback(async () => {
-    if (!walletAddr || !signMessage) {
+    const currentSignMessage = signMessageRef.current;
+    if (!walletAddr || !currentSignMessage) {
       setRuns([]);
       setCycles([]);
       setHistoryPayrollRuns([]);
@@ -413,32 +421,32 @@ export default function DashboardPage() {
       const [runsRes, cyclesRes, empRes, strRes, compRes, historyRes] = await Promise.all([
         walletAuthenticatedFetch({
           wallet: walletAddr,
-          signMessage,
+          signMessage: currentSignMessage,
           path: `/api/payroll-runs/runs?employerWallet=${walletAddr}`,
         }),
         walletAuthenticatedFetch({
           wallet: walletAddr,
-          signMessage,
+          signMessage: currentSignMessage,
           path: `/api/payroll-runs/cycles?employerWallet=${walletAddr}`,
         }),
         walletAuthenticatedFetch({
           wallet: walletAddr,
-          signMessage,
+          signMessage: currentSignMessage,
           path: `/api/employees?employerWallet=${walletAddr}`,
         }),
         walletAuthenticatedFetch({
           wallet: walletAddr,
-          signMessage,
+          signMessage: currentSignMessage,
           path: `/api/streams?employerWallet=${walletAddr}`,
         }),
         walletAuthenticatedFetch({
           wallet: walletAddr,
-          signMessage,
+          signMessage: currentSignMessage,
           path: `/api/company/me?employerWallet=${walletAddr}`,
         }),
         walletAuthenticatedFetch({
           wallet: walletAddr,
-          signMessage,
+          signMessage: currentSignMessage,
           path: `/api/history?wallet=${walletAddr}`,
         }).catch(() => null),
       ]);
@@ -486,15 +494,25 @@ export default function DashboardPage() {
 
     // Keep balance refresh independent so run/cycle API issues don't block funds UI.
     void refreshVaultBalance();
-  }, [walletAddr, signMessage, refreshVaultBalance]);
+  }, [walletAddr, refreshVaultBalance]);
 
+  // Load dashboard on initial connection or wallet changes
   useEffect(() => {
-    const timer = window.setTimeout(() => {
+    if (walletAddr) {
       void loadDashboard();
-    }, 0);
+    }
+  }, [walletAddr]);
 
-    return () => window.clearTimeout(timer);
-  }, [loadDashboard]);
+  // Auto-refresh every 1 minute (60,000 ms)
+  useEffect(() => {
+    if (!walletAddr) return;
+
+    const interval = window.setInterval(() => {
+      void loadDashboard();
+    }, 60000);
+
+    return () => window.clearInterval(interval);
+  }, [walletAddr]);
 
   useEffect(() => {
     const shouldBlockFromCompletion = hasCompletedDashboardGuide;
@@ -691,12 +709,29 @@ export default function DashboardPage() {
     [monthlyStreamingBurnRate, currentMonthPrivateTransferBurn],
   );
 
-  const totalDisbursed = useMemo(
-    () =>
-      streams.reduce((sum, s) => sum + (s.totalPaid ?? 0), 0) +
-      privateTransferDisbursed,
-    [streams, privateTransferDisbursed],
-  );
+  const [nowMs, setNowMs] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const totalDisbursed = useMemo(() => {
+    let accruedAmount = 0;
+    for (const stream of streams) {
+      if (stream.status !== "active") continue;
+      
+      const startsAtMs = stream.startsAt ? new Date(stream.startsAt).getTime() : nowMs;
+      const lastAccrualTs = stream.lastPaidAt ? new Date(stream.lastPaidAt).getTime() : startsAtMs;
+      
+      const effectiveNowMs = Math.max(nowMs, lastAccrualTs);
+      const secondsDiff = (effectiveNowMs - lastAccrualTs) / 1000;
+      
+      accruedAmount += stream.ratePerSecond * secondsDiff;
+    }
+    
+    const baseDisbursed = streams.reduce((sum, s) => sum + (s.totalPaid ?? 0), 0) + privateTransferDisbursed;
+    return baseDisbursed + accruedAmount;
+  }, [streams, privateTransferDisbursed, nowMs]);
 
   const failedRuns = useMemo(
     () =>
@@ -770,7 +805,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setDevnetFundsOpen((prev) => !prev)}
-                className="inline-flex h-[44px] items-center gap-2 rounded-2xl border border-white/10 bg-[#0a0a0a] px-5 text-sm font-semibold text-white transition-colors hover:bg-white/5 shadow-sm"
+                className="inline-flex h-[44px] w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-[#0a0a0a] px-5 text-sm font-semibold text-white transition-colors hover:bg-white/5 shadow-sm"
               >
                 <Coins size={16} className="text-[#a8a8aa]" />
                 Devnet Funds
@@ -831,7 +866,7 @@ export default function DashboardPage() {
               <Link
                 href="/payouts"
                 data-guide="run-payroll"
-                className="inline-flex h-[44px] items-center gap-2 rounded-2xl bg-[#a855f7] px-5 text-sm font-semibold text-black transition-colors hover:bg-[#a855f7]/80 shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+                className="inline-flex h-[44px] w-full items-center justify-center gap-2 rounded-2xl bg-[#a855f7] px-5 text-xs font-semibold text-black transition-colors hover:bg-[#a855f7]/80 shadow-[0_0_20px_rgba(168,85,247,0.3)]"
               >
                 <Plus size={16} />
                 Run Payroll
@@ -1010,11 +1045,6 @@ export default function DashboardPage() {
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-4 text-xs text-[#a8a8aa]">
-              Data sources: <span className="font-semibold text-white">/api/payroll-runs/runs</span>,{" "}
-              <span className="font-semibold text-white">/api/payroll-runs/cycles</span>,{" "}
-              <span className="font-semibold text-white">/api/history</span>,{" "}
-              <span className="font-semibold text-white">/api/employees</span>,{" "}
-              <span className="font-semibold text-white">/api/streams</span>.
               Total gross tracked: <span className="font-semibold text-white">{formatUsd(totalGross)}</span>.
             </div>
           </>

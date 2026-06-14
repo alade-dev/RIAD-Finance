@@ -210,19 +210,22 @@ export default function ClaimDashboardPage() {
                     : "See whether your payroll is live, how much has accrued privately, and what is already available in your vault."}
               </p>
 
-              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
-                <ShieldCheck size={14} className={privatePayrollHealth === "ok" ? "text-[#a855f7]" : privatePayrollHealth === "error" ? "text-amber-300" : "text-[#8f8f95]"} />
-                <span className={`text-[9px] font-bold uppercase tracking-[0.15em] ${privatePayrollHealth === "ok" ? "text-[#a855f7]" : privatePayrollHealth === "error" ? "text-amber-300" : "text-[#8f8f95]"}`}>
-                  RIAD Payments {privatePayrollHealth === "ok" ? "Online" : privatePayrollHealth === "error" ? "Degraded" : "Checking"}
-                </span>
-              </div>
-              {primaryPayrollStream && hasLiveSnapshot ? (
-                <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-[#a855f7]/25 bg-[#a855f7]/10 px-3 py-1.5">
-                  <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#c084fc]">
-                    Live Stream Synced
+              <div className="flex gap-3 mt-5 items-center justify-start">
+
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
+                  <ShieldCheck size={14} className={privatePayrollHealth === "ok" ? "text-[#a855f7]" : privatePayrollHealth === "error" ? "text-amber-300" : "text-[#8f8f95]"} />
+                  <span className={`text-[9px] font-bold uppercase tracking-[0.15em] ${privatePayrollHealth === "ok" ? "text-[#a855f7]" : privatePayrollHealth === "error" ? "text-amber-300" : "text-[#8f8f95]"}`}>
+                    RIAD Payments {privatePayrollHealth === "ok" ? "Online" : privatePayrollHealth === "error" ? "Degraded" : "Checking"}
                   </span>
                 </div>
-              ) : null}
+                {primaryPayrollStream && hasLiveSnapshot ? (
+                  <div className=" inline-flex items-center gap-2 rounded-full border border-[#a855f7]/25 bg-[#a855f7]/10 px-3 py-1.5">
+                    <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#c084fc]">
+                      Live Stream Synced
+                    </span>
+                  </div>
+                ) : null}
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">

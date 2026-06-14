@@ -27,7 +27,7 @@ contract MockSablierLockupLinear {
         LockupLinear.Durations calldata
     ) external payable returns (uint256 streamId) {
         streamId = nextStreamId++;
-        params.token.transferFrom(msg.sender, address(this), params.depositAmount);
+        require(params.token.transferFrom(msg.sender, address(this), params.depositAmount));
         streamRefunds[streamId] = params.depositAmount;
         streamTokens[streamId] = address(params.token);
     }
@@ -35,7 +35,7 @@ contract MockSablierLockupLinear {
     function cancel(uint256 streamId) external payable returns (uint128 refundedAmount) {
         refundedAmount = streamRefunds[streamId];
         address token = streamTokens[streamId];
-        IERC20(token).transfer(msg.sender, refundedAmount);
+        require(IERC20(token).transfer(msg.sender, refundedAmount));
     }
 }
 
@@ -55,7 +55,7 @@ contract RIADFinancePayrollTest is Test {
         vm.stopPrank();
 
         token = new MockERC20();
-        token.transfer(employer, 10000 * 10**6);
+        require(token.transfer(employer, 10000 * 10**6));
     }
 
     function testCompanyRegistration() public {

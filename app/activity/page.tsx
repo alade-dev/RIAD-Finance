@@ -15,7 +15,7 @@ import { walletAuthenticatedFetch } from "@/lib/client/wallet-auth-fetch";
 
 interface ActivityItem {
   _id: string;
-  type: "payroll-run" | "claim";
+  type: "payroll-run" | "claim" | "setup-action";
   amount?: number;
   status?: string;
   employeeName?: string;
@@ -72,7 +72,47 @@ export default function ActivityPage() {
       });
       if (!res.ok) throw new Error("Failed to fetch activity");
       const data = await res.json();
-      setItems(data.items ?? []);
+      
+      const combinedItems: ActivityItem[] = [];
+      
+      if (data.payrollRuns) {
+        data.payrollRuns.forEach((run: any) => {
+          combinedItems.push({
+            _id: run.id,
+            type: "payroll-run",
+            amount: run.totalAmount,
+            status: run.status,
+            createdAt: run.date,
+          });
+        });
+      }
+      
+      if (data.setupActions) {
+        data.setupActions.forEach((action: any) => {
+          combinedItems.push({
+            _id: action.id,
+            type: "setup-action",
+            amount: action.amount,
+            status: action.status,
+            createdAt: action.date,
+          });
+        });
+      }
+      
+      if (data.claimRecords) {
+        data.claimRecords.forEach((claim: any) => {
+          combinedItems.push({
+            _id: claim.id,
+            type: "claim",
+            amount: claim.amount,
+            status: claim.status,
+            createdAt: claim.date,
+          });
+        });
+      }
+      
+      combinedItems.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setItems(combinedItems);
     } catch {
       setItems([]);
     } finally {
@@ -148,9 +188,11 @@ export default function ActivityPage() {
                       <p className="text-sm font-bold text-white tracking-tight">
                         {item.type === "payroll-run"
                           ? "Payroll Run Disbursed"
-                          : item.employeeName
-                            ? `Claim by ${item.employeeName}`
-                            : "Private Claim Withdrawal"}
+                          : item.type === "setup-action"
+                            ? "Company Setup / Treasury Funding"
+                            : item.employeeName
+                              ? `Claim by ${item.employeeName}`
+                              : "Private Claim Withdrawal"}
                       </p>
                       {item.status && (
                         <span

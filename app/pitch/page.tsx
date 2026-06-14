@@ -423,13 +423,13 @@ const slides = [
           <p className="text-[18px] text-gray-300 mt-6 max-w-2xl mx-auto font-semibold leading-relaxed">Founder-led team with the right skills to build and market the product.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="flex flex-col   justify-center items-center gap-6">
           {[
             {
               name: "Teslim",
               role: "Founder & CEO",
               desc: "Web3 builder with full-stack experience in finance.",
-              image: "/teslim.jpg",
+              image: "/teslim.jpeg",
               imgClass: "object-[50%_62%] scale-[1.15]",
             }
           ].map((member, idx) => (
@@ -462,18 +462,18 @@ const slides = [
 
         <div className="-mt-12">
           <p className="text-[12px] font-bold text-kast-teal tracking-[0.3em] uppercase mb-16">Find us on</p>
-          <h2 className="text-[54px] md:text-[68px] font-bold text-white tracking-tight mb-8">riadfinance.xyz</h2>
+          <h2 className="text-[54px] md:text-[68px] font-bold text-white tracking-tight mb-8">riadfinance.vercel.app</h2>
           <p className="text-[18px] md:text-[22px] text-gray-400 font-medium">Follow our journey and watch us build.</p>
         </div>
 
         <div className="flex flex-wrap justify-center items-center gap-6 text-[15px] md:text-[17px] font-medium tracking-wide">
-          <a href="https://riadfinance.xyz" target="_blank" rel="noopener noreferrer" className="text-white hover:text-kast-teal transition-colors">
-            https://riadfinance.xyz
+          <a href="https://riadfinance.vercel.app" target="_blank" rel="noopener noreferrer" className="text-white hover:text-kast-teal transition-colors">
+            https://riadfinance.vercel.app
           </a>
-          <span className="text-white/20">/</span>
+          {/* <span className="text-white/20">/</span>
           <a href="https://x.com/riadfinance" target="_blank" rel="noopener noreferrer" className="text-kast-teal hover:text-kast-teal/80 transition-colors">
             https://x.com/riadfinance
-          </a>
+          </a> */}
         </div>
       </div>
     ),
@@ -492,7 +492,7 @@ const slides = [
           </div>
 
           <a
-            href="https://www.youtube.com/watch?v=EFAKB6muRYg"
+            href="https://www.youtube.com/watch?v="
             target="_blank"
             rel="noopener noreferrer"
             className="group w-full max-w-3xl rounded-[32px] border border-kast-teal/30 bg-gradient-to-br from-kast-teal/10 via-zinc-950 to-zinc-950 px-8 py-12 shadow-[0_0_80px_rgba(168,85,247,0.08)] transition-all hover:border-kast-teal/60 hover:bg-kast-teal/10"
@@ -506,7 +506,7 @@ const slides = [
                   Open YouTube Demo
                 </p>
                 <p className="text-[15px] md:text-[18px] font-medium text-gray-400">
-                  https://www.youtube.com/watch?v=EFAKB6muRYg
+                  https://www.youtube.com/watch?v=
                 </p>
               </div>
             </div>

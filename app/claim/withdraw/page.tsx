@@ -680,6 +680,7 @@ export default function ClaimWithdrawPage() {
           streamId: primaryPayrollStream.stream.id,
           teeAuthToken: token,
           employeeWallet: publicKey.toBase58(),
+          amountMicro: Math.round(amount * 1_000_000),
         },
       });
       const processJson = await processRes.json();

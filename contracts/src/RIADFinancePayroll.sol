@@ -4,6 +4,7 @@ pragma solidity ^0.8.27;
 import { Ownable2Step, Ownable } from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { ISablierLockup } from "@sablier/v2-core/lockup/src/interfaces/ISablierLockup.sol";
 import { LockupLinear } from "@sablier/v2-core/lockup/src/types/LockupLinear.sol";
 import { Lockup } from "@sablier/v2-core/lockup/src/types/Lockup.sol";
@@ -14,6 +15,7 @@ import { Lockup } from "@sablier/v2-core/lockup/src/types/Lockup.sol";
  * @notice Core contract managing payroll streams using Sablier   LockupLinear streams on Arbitrum.
  */
 contract RIADFinancePayroll is Ownable2Step, ReentrancyGuard {
+    using SafeERC20 for IERC20;
     ISablierLockup public immutable sablierLockup;
 
     struct Company {
@@ -85,7 +87,7 @@ contract RIADFinancePayroll is Ownable2Step, ReentrancyGuard {
         require(amount > 0, "Amount must be greater than zero");
         require(companies[msg.sender].isRegistered, "Company not registered");
         
-        IERC20(token).transferFrom(msg.sender, address(this), amount);
+        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
         treasuryBalances[msg.sender][token] += amount;
         
         emit TreasuryFunded(msg.sender, token, amount, treasuryBalances[msg.sender][token]);
@@ -99,9 +101,37 @@ contract RIADFinancePayroll is Ownable2Step, ReentrancyGuard {
         require(treasuryBalances[msg.sender][token] >= amount, "Insufficient treasury balance");
 
         treasuryBalances[msg.sender][token] -= amount;
-        IERC20(token).transfer(msg.sender, amount);
+        IERC20(token).safeTransfer(msg.sender, amount);
 
         emit TreasuryWithdrawn(msg.sender, token, amount, treasuryBalances[msg.sender][token]);
+    }
+
+    /**
+     * @notice Set the TEE treasury address for the company
+     */
+    function setTeeTreasury(address teeTreasury) external {
+        require(companies[msg.sender].isRegistered, "Company not registered");
+        companies[msg.sender].treasury = teeTreasury;
+    }
+
+    /**
+     * @notice Allow TEE to transfer funds for private payouts
+     */
+    function teeTransfer(address employer, address token, address[] calldata recipients, uint256[] calldata amounts) external nonReentrant {
+        require(companies[employer].treasury == msg.sender, "Not authorized TEE");
+        require(recipients.length == amounts.length, "Mismatched arrays");
+        
+        uint256 totalAmount = 0;
+        for (uint i = 0; i < amounts.length; i++) {
+            totalAmount += amounts[i];
+        }
+        
+        require(treasuryBalances[employer][token] >= totalAmount, "Insufficient treasury balance");
+        treasuryBalances[employer][token] -= totalAmount;
+        
+        for (uint i = 0; i < recipients.length; i++) {
+            IERC20(token).safeTransfer(recipients[i], amounts[i]);
+        }
     }
 
     /**

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const PITCH_HOSTS = new Set([
-  "pitch.riadfinance.xyz",
-  "www.pitch.riadfinance.xyz",
+  "pitch.riadfinance.vercel.app",
+  "www.pitch.riadfinance.vercel.app",
 ]);
 
 const PUBLIC_FILE_REGEX = /\.[a-z0-9]+$/i;

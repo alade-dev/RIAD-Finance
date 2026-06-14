@@ -1,127 +1,74 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState } from "react";
 import { Plus, Minus } from "lucide-react";
 
 const faqs = [
-    {
-        question: "How does payroll streaming work?",
-        answer: "Instead of paying salaries monthly, RIAD Finance streams USDC to employees every single second on Arbitrum. You deposit funds into a treasury, set per-second rates for each employee, and salaries accrue continuously. Employees can cash out anytime.\n\nRefer to our Documentation for detailed guides on setting up your first stream."
-    },
-    {
-        question: "Why stream payroll instead of monthly payments?",
-        answer: "Streaming gives employees instant access to earned wages — no more waiting for payday. Employers get better cash flow management, reduced administrative overhead, and happier teams. It's payroll that moves at the speed of work."
-    },
-    {
-        question: "How is salary data kept private on-chain?",
-        answer: "RIAD Finance uses zero-knowledge proofs to settle streams. The blockchain only sees that a payment occurred — never the amount, never the recipient, never the employer. Validators and explorers see encrypted hashes, not salary data."
-    },
-    {
-        question: "What tokens are supported?",
-        answer: "Currently, RIAD Finance supports USDC on Arbitrum. We're adding support for USDT and ERC-20 tokens in the coming weeks. All settlements happen instantly on our L2 rollup."
-    },
-    {
-        question: "Can I pause or cancel a stream?",
-        answer: "Yes. You have full lifecycle control over every stream. Pause, resume, adjust rates, or cancel entirely — all from a single dashboard. Changes take effect immediately on-chain with no delay."
-    },
-    {
-        question: "How do I integrate RIAD Finance into my existing HR system?",
-        answer: "RIAD Finance provides a REST API and webhooks for seamless integration with any HRIS, accounting software, or payroll provider. Sync employee lists, automate rate adjustments, and export reports with a few API calls."
-    },
+  {
+    question: "How does payroll streaming work?",
+    answer:
+      "Instead of paying salaries monthly, RIAD Finance streams USDC to employees every single second. You deposit funds into a treasury, set per-second rates for each employee, and salaries accrue continuously. Employees can cash out anytime.",
+  },
+  {
+    question: "How is salary data kept private on-chain?",
+    answer:
+      "RIAD Finance uses Trusted Execution Environments (TEEs) to process payroll. The blockchain only records that a private payment occurred—never the amount, the recipient, or the employer. All sensitive data is kept completely off-chain and verifiable.",
+  },
+  {
+    question: "Why stream payroll instead of monthly payments?",
+    answer:
+      "Streaming gives employees instant access to earned wages—no more waiting for payday. Employers get better cash flow management, reduced administrative overhead, and happier teams. It's payroll that moves at the speed of work.",
+  },
+  {
+    question: "Can I pause or cancel a stream?",
+    answer:
+      "Yes. You have full lifecycle control over every stream. Pause, resume, adjust rates, or cancel entirely—all from a single dashboard. Changes take effect immediately.",
+  },
 ];
 
 export function FAQ() {
-    const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-    return (
-        <section className="py-24 px-6 bg-black border-t border-white/5">
-            <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
-                    <motion.div
-                        className="lg:w-[300px] flex-shrink-0"
-                        initial={{ opacity: 0, x: -30 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                    >
-                        <h2 className="text-[40px] md:text-[52px] font-medium tracking-tight text-white">
-                            FAQS
-                        </h2>
-                    </motion.div>
+  return (
+    <section className="py-32 px-6 lg:px-12 bg-[#000] border-t border-[rgba(250,248,245,0.1)] relative">
+      <div id="faq" className="max-w-4xl mx-auto">
+        <h2 className="text-[32px] md:text-[48px] font-bold tracking-tighter text-[#faf8f5] mb-16 text-center">
+          Frequently asked questions
+        </h2>
 
-                    <div className="flex-1 space-y-0">
-                        {faqs.map((faq, index) => (
-                            <FAQItem
-                                key={index}
-                                question={faq.question}
-                                answer={faq.answer}
-                                isOpen={openIndex === index}
-                                onToggle={() => setOpenIndex(openIndex === index ? null : index)}
-                                index={index}
-                            />
-                        ))}
-                    </div>
+        <div className="flex flex-col gap-4">
+          {faqs.map((faq, index) => {
+            const isOpen = openIndex === index;
+            return (
+              <div
+                key={index}
+                className="rounded-[24px] border border-[rgba(250,248,245,0.1)] bg-[#0a0a0a] overflow-hidden transition-colors hover:bg-[#111]"
+              >
+                <button
+                  onClick={() => setOpenIndex(isOpen ? null : index)}
+                  className="w-full px-8 py-6 flex items-center justify-between text-left focus:outline-none focus-visible:bg-white/5"
+                >
+                  <span className="text-[18px] md:text-[20px] font-bold text-[#faf8f5]">
+                    {faq.question}
+                  </span>
+                  <div className="flex-shrink-0 ml-4 text-[#a8a8aa]">
+                    {isOpen ? <Minus size={20} strokeWidth={2.5} /> : <Plus size={20} strokeWidth={2.5} />}
+                  </div>
+                </button>
+                <div
+                  className={`px-8 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
+                    isOpen ? "max-h-[500px] opacity-100 pb-8" : "max-h-0 opacity-0 pb-0"
+                  }`}
+                >
+                  <p className="text-[#8f8f95] text-[16px] leading-[1.6] font-[430]">
+                    {faq.answer}
+                  </p>
                 </div>
-            </div>
-        </section>
-    );
-}
-
-function FAQItem({
-    question,
-    answer,
-    isOpen,
-    onToggle,
-    index
-}: {
-    question: string;
-    answer: string;
-    isOpen: boolean;
-    onToggle: () => void;
-    index: number;
-}) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: index * 0.05, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            style={{ willChange: "transform, opacity" }}
-            className={`border-t border-white/10 last:border-b transition-all duration-300 ${isOpen ? "border-l-2 border-l-kast-teal pl-4 -ml-4" : ""}`}
-        >
-            <button
-                onClick={onToggle}
-                className="w-full py-6 flex items-center justify-between gap-4 text-left group"
-            >
-                <span className="text-lg md:text-xl font-medium text-white group-hover:text-kast-teal transition-colors">
-                    {question}
-                </span>
-                <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center transition-colors">
-                    {isOpen ? (
-                        <Minus className="w-5 h-5 text-white/50 group-hover:text-kast-teal transition-colors" />
-                    ) : (
-                        <Plus className="w-5 h-5 text-white/50 group-hover:text-kast-teal transition-colors" />
-                    )}
-                </div>
-            </button>
-
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                        className="overflow-hidden"
-                    >
-                        <div className="pb-8 pr-12">
-                            <p className="text-zinc-400 text-lg leading-relaxed whitespace-pre-line max-w-2xl">
-                                {answer}
-                            </p>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </motion.div>
-    );
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
 }

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Loader2, X, Building2, CheckCircle2, ShieldCheck, ArrowRight } from "lucide-react";
+import { Loader2, X, Building2, CheckCircle2, ShieldCheck, ArrowRight, Droplets } from "lucide-react";
 import { useWallet } from "@/hooks/useWallet";
 import { toast } from "sonner";
 import { walletAuthenticatedFetch } from "@/lib/client/wallet-auth-fetch";
-import { useWriteContract } from "wagmi";
+import { useWriteContract, useSendTransaction } from "wagmi";
+import { parseEther } from "viem";
 import { RIAD_FINANCE_PAYROLL_ABI, PAYROLL_CONTRACT_ADDRESS } from "@/lib/client/contract-config";
 
 export function SetupCompanyModal({
@@ -17,9 +18,11 @@ export function SetupCompanyModal({
 }) {
   const { publicKey, signMessage } = useWallet();
   const [name, setName] = useState("");
+  const [gasFeeAmount, setGasFeeAmount] = useState("0.005");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const { writeContractAsync } = useWriteContract();
+  const { sendTransactionAsync } = useSendTransaction();
 
   useEffect(() => {
     if (isOpen) {
@@ -63,6 +66,7 @@ export function SetupCompanyModal({
       toast.success(`Transaction sent: ${txHash.slice(0, 10)}...`);
 
       // 2. Call backend route to record company metadata in MongoDB
+      toast.info("Generating secure TEE treasury key...");
       const res = await walletAuthenticatedFetch({
         wallet: publicKey,
         signMessage,
@@ -75,8 +79,29 @@ export function SetupCompanyModal({
       });
 
       const data = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Failed to save company in database");
+      if (!res.ok || !data.ok || !data.company?.treasuryPubkey) {
+        throw new Error(data.error || "Failed to generate company treasury in database");
+      }
+
+      // 3. Authorize the TEE treasury on-chain
+      toast.info("Authorizing secure TEE treasury on Arbitrum...");
+      const teeTxHash = await writeContractAsync({
+        address: PAYROLL_CONTRACT_ADDRESS,
+        abi: RIAD_FINANCE_PAYROLL_ABI,
+        functionName: "setTeeTreasury",
+        args: [data.company.treasuryPubkey as `0x${string}`],
+      });
+      toast.success(`TEE Authorized: ${teeTxHash.slice(0, 10)}...`);
+
+      // 4. Fund TEE treasury with ETH for gas
+      const ethAmount = parseFloat(gasFeeAmount);
+      if (ethAmount > 0) {
+        toast.info(`Funding TEE treasury with ${ethAmount} ETH for gas...`);
+        const fundTxHash = await sendTransactionAsync({
+          to: data.company.treasuryPubkey as `0x${string}`,
+          value: parseEther(gasFeeAmount),
+        });
+        toast.success(`TEE Funded: ${fundTxHash.slice(0, 10)}...`);
       }
 
       setSuccess(true);
@@ -156,6 +181,27 @@ export function SetupCompanyModal({
                     autoFocus
                   />
                 </div>
+              </div>
+
+              <div className="rounded-2xl border border-white/5 bg-[#111111] p-4 focus-within:border-[#a855f7]/50 focus-within:bg-[#a855f7]/5 transition-colors">
+                <label className="mb-2 block flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-[#a8a8aa]">
+                  <span>Initial Gas Funding (ETH)</span>
+                  <Droplets size={12} className="text-amber-400" />
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    step="0.001"
+                    min="0"
+                    placeholder="0.005"
+                    value={gasFeeAmount}
+                    onChange={(e) => setGasFeeAmount(e.target.value)}
+                    className="w-full bg-transparent text-lg font-semibold text-white placeholder-white/20 outline-none"
+                  />
+                </div>
+                <p className="mt-2 text-[10px] text-[#8f8f95]">
+                  Funds the TEE with ETH to pay gas fees for private streaming payouts.
+                </p>
               </div>
             </div>
 

@@ -150,7 +150,12 @@ export async function getWalletActivityHistory(wallet: string) {
 export async function listEmployeePayrollRuns(recipientWallet: string) {
   const normalizedWallet = assertWallet(recipientWallet);
   return (await payrollRunsCollection())
-    .find({ recipientAddresses: normalizedWallet })
+    .find({
+      $or: [
+        { recipientAddresses: normalizedWallet },
+        { "providerMeta.transferProofs.originalAddress": normalizedWallet }
+      ]
+    })
     .sort({ date: -1 })
     .toArray();
 }

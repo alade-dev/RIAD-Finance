@@ -18,11 +18,19 @@ export async function checkHealth(): Promise<{ status: string }> {
 }
 
 export async function getBalance(walletAddress: string): Promise<{ balance: string }> {
-  return { balance: "1000000000" }; // Mock balance (1000.00 USDC in 6 decimals)
+  return { balance: "0" }; 
 }
 
-export async function getPrivateBalance(walletAddress: string, token: string): Promise<{ balance: string }> {
-  return { balance: "500000000" }; // Mock private balance (500.00 USDC)
+export async function getPrivateBalance(walletAddress: string, token: string): Promise<{ balance: string; location?: string }> {
+  try {
+    const res = await fetch(`/api/claim/balance?wallet=${walletAddress}`);
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  return { balance: "0", location: "ephemeral" };
 }
 
 export async function fetchTeeAuthToken(publicKey: any, signMessage: any): Promise<string> {

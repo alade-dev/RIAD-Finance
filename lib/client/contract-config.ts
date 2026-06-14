@@ -120,6 +120,37 @@ export const RIAD_FINANCE_PAYROLL_ABI = [
       { name: "active", type: "bool", internalType: "bool" }
     ],
     stateMutability: "view"
+  },
+  {
+    type: "event",
+    name: "StreamCreated",
+    inputs: [
+      { name: "streamId", type: "uint256", indexed: true, internalType: "uint256" },
+      { name: "employer", type: "address", indexed: true, internalType: "address" },
+      { name: "employee", type: "address", indexed: true, internalType: "address" },
+      { name: "token", type: "address", indexed: false, internalType: "address" },
+      { name: "amount", type: "uint128", indexed: false, internalType: "uint128" }
+    ],
+    anonymous: false
+  },
+  {
+    type: "function",
+    name: "setTeeTreasury",
+    inputs: [{ name: "teeTreasury", type: "address", internalType: "address" }],
+    outputs: [],
+    stateMutability: "nonpayable"
+  },
+  {
+    type: "function",
+    name: "teeTransfer",
+    inputs: [
+      { name: "employer", type: "address", internalType: "address" },
+      { name: "token", type: "address", internalType: "address" },
+      { name: "recipients", type: "address[]", internalType: "address[]" },
+      { name: "amounts", type: "uint256[]", internalType: "uint256[]" }
+    ],
+    outputs: [],
+    stateMutability: "nonpayable"
   }
 ] as const;
 
